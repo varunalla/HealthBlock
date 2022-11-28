@@ -1,18 +1,21 @@
-import React, { FunctionComponent } from "react";
-import { useEthers } from "@usedapp/core";
+import React, { FunctionComponent, useContext, useEffect } from "react";
+import { HealthContext } from "../providers/HealthProvider";
 const WalletComponent: FunctionComponent<{}> = () => {
-    const { account, activateBrowserWallet, deactivate } = useEthers()
+    const { currentAccount, checkIfWalletIsConnected, connectWallet } = useContext(HealthContext);
+    useEffect(() => {
+        (async () => {
+            await checkIfWalletIsConnected?.();
+        })();
+    }, [])
+
     return (<div className="text-white">
-        {account &&
-            <div>
-                Wallet ID :  {account}
-            </div>
-        }
-        {!account &&
-            <button onClick={() => activateBrowserWallet()}>
+        {currentAccount && <div> Account: {currentAccount}</div>}
+        {!currentAccount &&
+            <button onClick={() => connectWallet?.()}>
                 Connect
             </button>
         }
+
     </div>)
 }
 export default WalletComponent;

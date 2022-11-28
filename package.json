@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "@metamask/eth-sig-util": "^5.0.2",
+    "@typechain/ethers-v5": "^10.1.1",
+    "@typechain/truffle-v5": "workspace:^8.0.2",
+    "@typechain/web3-v1": "^6.0.2",
+    "@types/bn.js": "^4.11.6",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@types/web3": "^1.2.2",
+    "body-parser": "^1.20.1",
+    "ethereum-cryptography": "^1.1.2",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^8.5.1",
+    "memory-cache": "^0.2.0",
+    "meta-auth": "^1.1.2",
+    "morgan": "^1.10.0",
+    "truffle": "^5.1.22",
+    "typechain": "workspace:^8.1.1",
+    "typescript": "^4.6",
+    "web3": "^1.8.1",
+    "web3-core": "^1",
+    "web3-eth-contract": "^1",
+    "web3-utils": "^1"
+  },
+  "scripts": {
+    "generate-types": "typechain --target=ethers-v5 'client/src/contracts/*.json' --out-dir client/src/contracts",
+    "migrate": "tsc -p ./tsconfig.migrate.json --outDir ./migrations && truffle migrate",
+    "typecheck": "truffle compile && pnpm generate-types && tsc --noEmit"
+  }
+}

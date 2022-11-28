@@ -45,8 +45,6 @@ contract DoctorHealthBlock {
         require((_age > 0) && (_age < 100));
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
-        
-        
   }
   
 }
