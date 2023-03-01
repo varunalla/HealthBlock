@@ -30,8 +30,10 @@ const RoutesComponent: FunctionComponent<{}> = () => {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/patientlogin" element={<PatientLanding />} />
                 <Route path="/doctorlogin" element={<DoctorLanding />} />
+                <Route path="/providerlogin" element={<Dashboard />} />
                 <Route path='/patient' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />} />
                 <Route path='/doctor' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorDashboard />} />} />
+                <Route path="/provider" element={<Dashboard />} />
             </Routes>
         </>
 
