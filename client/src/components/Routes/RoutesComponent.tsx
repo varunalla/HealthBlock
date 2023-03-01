@@ -36,6 +36,7 @@ const RoutesComponent: FunctionComponent<{}> = () => {
                 <Route path='/patient' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />} />
                 <Route path='/doctor' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorDashboard />} />} />
                 <Route path='/hcprovider' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCProviderDashboard />} />} />
+
             </Routes>
         </>
 

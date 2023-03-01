@@ -1,8 +1,5 @@
 const cache = require("memory-cache");
 const crypto = require('crypto');
-const eutil = require('ethereumjs-util');
-const { keccak256 } = require("ethereum-cryptography/keccak");
-const { utf8ToBytes, bytesToHex } = require("ethereum-cryptography/utils");
 const web3 = require('web3');
 const { fetchUserProfile, getWeb3Obj, fetchDoctorProfile } = require("../web3-utils/user");
 const { encode_jwt, verify_token } = require("../utils/jwt");
@@ -53,16 +50,22 @@ module.exports = (app, metaAuth) => {
         let challenge = cache.get(client_address);
         if (req.params.signature && challenge) {
             const pk = ethers.utils.recoverPublicKey(ethers.utils.arrayify(ethers.utils.hashMessage(ethers.utils.arrayify(web3.utils.keccak256(challenge)))), req.params.signature);
-            const recoveredAddress = ethers.utils.computeAddress(pk)
+            const recoveredAddress = ethers.utils.computeAddress(pk);
             if (recoveredAddress.toLowerCase() === client_address) {
                 fetchUserProfile(client_address, (err, profile) => {
-                    let user = {
-                        name: profile[0],
-                        email: profile[2],
-                        age: profile[1]
+                    if(profile['0']&&profile['1']&&profile['2']){
+                        let user = {
+                            name: profile[0],
+                            email: profile[2],
+                            age: profile[1]
+                        }
+                        user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        res.send({ "success": true, user });
                     }
-                    user.token = encode_jwt(Object.assign({}, user, { client_address }));
-                    res.send({ "success": true, user });
+                    else{
+                       res.status(401).send();
+                    }
+                    
                 });
             }
             else {
@@ -81,13 +84,18 @@ module.exports = (app, metaAuth) => {
             const recoveredAddress = ethers.utils.computeAddress(pk)
             if (recoveredAddress.toLowerCase() === client_address) {
                 fetchDoctorProfile(client_address, (err, profile) => {
-                    let user = {
-                        name: profile[0],
-                        email: profile[2],
-                        age: profile[1]
+                    if(profile['0']&&profile['1']&&profile['2']){
+                        let user = {
+                            name: profile[0],
+                            email: profile[2],
+                            age: profile[1]
+                        }
+                        user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        res.send({ "success": true, user });
                     }
-                    user.token = encode_jwt(Object.assign({}, user, { client_address }));
-                    res.send({ "success": true, user });
+                    else{
+                        res.status(401).send();
+                    }
                 });
             }
             else {

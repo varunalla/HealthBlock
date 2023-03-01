@@ -1,1 +1,9 @@
 node_modules/
+.env.production
+.env.development
+
+
+client/src/contracts/HealthBlock.json
+client/src/contracts/DoctorHealthBlock.json
+
+
