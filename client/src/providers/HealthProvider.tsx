@@ -58,7 +58,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             const provider = new ethers.providers.Web3Provider(connection);
             const signer = provider.getSigner();
             const contract = await fetchContract(signer);
-
             console.log(contract);
 
         }
