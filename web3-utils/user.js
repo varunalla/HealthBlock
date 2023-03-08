@@ -1,8 +1,7 @@
 const Web3 = require('web3');
 const fs = require('fs');
-
+const {healthBlockAddress}=require('../config/constants');
 const providerUrl = "http://127.0.0.1:8545";
-const contractPort = "5777";
 class WebObj {
     constructor() {
         this.contract = {};
@@ -17,10 +16,8 @@ class WebObj {
     loadContract() {
         let source = fs.readFileSync("./client/src/contracts/HealthBlock.json");
         this.contract = JSON.parse(source);
-        //console.log(this.web3.eth);
-        let tempContract = new this.web3.eth.Contract(this.contract.abi, "0x90018148DbAe289989f6beD30148963Cc960B3F7");
-        //console.log(tempContract);
-        this.healthBlock = tempContract;//tempContract.at(this.contract.networks[contractPort].address);
+        let tempContract = new this.web3.eth.Contract(this.contract.abi,healthBlockAddress );
+        this.healthBlock = tempContract;
     }
 
     getWeb3() {
@@ -49,18 +46,15 @@ const fetchUserProfile = async (userAddress, callback) => {
         callback(null, profile);
     }
     catch (e) {
-        console.log(e);
-        callback("error");
+        callback(e);
     }
 }
 const fetchDoctorProfile = async (userAddress, callback) => {
     try {
-        console.log(userAddress);
         let profile = await getWeb3Obj().getHealthBlock().methods.getDoctorInfoAll(userAddress).call();
         callback(null, profile);
     }
     catch (e) {
-        console.log(e);
         callback("error");
     }
 }
