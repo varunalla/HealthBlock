@@ -29,11 +29,6 @@ const DoctorLogin: FunctionComponent<{}> = () => {
                         console.log("login success ", auth_resp.data);
                         login?.(auth_resp.data.user, auth_resp.data.user.token, "doctor");
                         navigate('/doctor');
-                        //setUserData(auth_resp.data.user);
-                        //this.props.setAuthData(auth_resp.data.user);
-                        // that.props.history.push('/home');
-
-
                     } else {
                         console.error("login failed");
                     }

@@ -65,9 +65,22 @@ const fetchDoctorProfile = async (userAddress, callback) => {
     }
 }
 
+const fetchHCProviderProfile = async (userAddress, callback) => {
+    try {
+        console.log(userAddress);
+        let profile = await getWeb3Obj().getHealthBlock().methods.getDoctorInfoAll(userAddress).call();
+        callback(null, profile);
+    }
+    catch (e) {
+        console.log(e);
+        callback("error");
+    }
+}
+
 module.exports = {
     fetchUserProfile,
     fetchDoctorProfile,
+    fetchHCProviderProfile,
     init_web3,
     getWeb3Obj
 }

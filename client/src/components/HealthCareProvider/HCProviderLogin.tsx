@@ -22,7 +22,7 @@ const HCProviderLogin: FunctionComponent<{}> = () => {
             console.log(signed)
             if (signed) {
                 web3.eth.sign(signed, account, async (err, signature) => {
-                    let auth_resp = await axios.get('/verify_auth/' + signature + '?client_address=' + account);
+                    let auth_resp = await axios.get('/verify_auth/hcprovider/' + signature + '?client_address=' + account);
 
                     if (auth_resp.data && auth_resp.data.success) {
 

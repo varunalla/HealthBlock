@@ -98,6 +98,31 @@ module.exports = (app, metaAuth) => {
             res.status(500).send();
         }
     });
+    app.get('/verify_auth/hcprovider/:signature', (req, res) => {
+        let { client_address } = req.query;
+        let challenge = cache.get(client_address);
+        if (req.params.signature && challenge) {
+            const pk = ethers.utils.recoverPublicKey(ethers.utils.arrayify(ethers.utils.hashMessage(ethers.utils.arrayify(web3.utils.keccak256(challenge)))), req.params.signature);
+            const recoveredAddress = ethers.utils.computeAddress(pk)
+            if (recoveredAddress.toLowerCase() === client_address) {
+                fetchHCProviderProfile(client_address, (err, profile) => {
+                    let user = {
+                        name: profile[0],
+                        email: profile[2],
+                        age: profile[1]
+                    }
+                    user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                    res.send({ "success": true, user });
+                });
+            }
+            else {
+                res.status(500).send();
+            }
+        }
+        else {
+            res.status(500).send();
+        }
+    });
     app.head('/verify_token/', verify_token, (req, res) => {
         res.writeHead(200, { 'success': true });
         res.end();

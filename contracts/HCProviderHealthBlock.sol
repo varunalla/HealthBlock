@@ -37,7 +37,7 @@ contract HCProviderHealthBlock {
         return (h.name, h.email, h.providerAddress, h.phone);
   }
 
-  function registerDoctor(string memory _name, string memory _email, string memory _address, string memory _phone) public {
+  function registerHCProvider(string memory _name, string memory _email, string memory _address, string memory _phone) public {
         hcprovider storage h = hcproviders[msg.sender];
         require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
         require(keccak256(abi.encodePacked(_email)) != keccak256(abi.encodePacked("")));
