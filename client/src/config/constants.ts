@@ -1,4 +1,4 @@
 import HealthBlock from '../contracts/HealthBlock.json';
 
-export const healthBlockAddress = process.env.REACT_APP_HEALTHBLOCK_ADDRESS||"Test";// || "0x6Fd2B45F4Eff401654028c5097fdE9c6a8f07298";
+export const healthBlockAddress = "0xBBB785C8BB3FF9c59f13422fEb68f674b1E1a707";
 export const healthBlockABI = HealthBlock.abi;
