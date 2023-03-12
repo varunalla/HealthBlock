@@ -61,8 +61,7 @@ const fetchDoctorProfile = async (userAddress, callback) => {
 
 const fetchHCProviderProfile = async (userAddress, callback) => {
     try {
-        console.log(userAddress);
-        let profile = await getWeb3Obj().getHealthBlock().methods.getDoctorInfoAll(userAddress).call();
+        let profile = await getWeb3Obj().getHealthBlock().methods.getHCProviderInfoAll(userAddress).call();
         callback(null, profile);
     }
     catch (e) {

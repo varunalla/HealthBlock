@@ -1,7 +1,7 @@
 const cache = require("memory-cache");
 const crypto = require('crypto');
 const web3 = require('web3');
-const { fetchUserProfile, getWeb3Obj, fetchDoctorProfile } = require("../web3-utils/user");
+const { fetchUserProfile, getWeb3Obj, fetchDoctorProfile, fetchHCProviderProfile} = require("../web3-utils/user");
 const { encode_jwt, verify_token } = require("../utils/jwt");
 const ethers = require('ethers');
 
@@ -88,7 +88,7 @@ module.exports = (app, metaAuth) => {
                         let user = {
                             name: profile[0],
                             email: profile[2],
-                            age: profile[1]
+                            address: profile[1]
                         }
                         user.token = encode_jwt(Object.assign({}, user, { client_address }));
                         res.send({ "success": true, user });
@@ -114,13 +114,20 @@ module.exports = (app, metaAuth) => {
             const recoveredAddress = ethers.utils.computeAddress(pk)
             if (recoveredAddress.toLowerCase() === client_address) {
                 fetchHCProviderProfile(client_address, (err, profile) => {
-                    let user = {
-                        name: profile[0],
-                        email: profile[2],
-                        age: profile[1]
-                    }
-                    user.token = encode_jwt(Object.assign({}, user, { client_address }));
-                    res.send({ "success": true, user });
+                    console.log("profile-->", profile)
+                    //if(profile['0']&&profile['1']&&profile['2']&& profile['3']){
+                        let user = {
+                            name: profile[0],
+                            email: profile[1],
+                            address: profile[2],
+                            phone: profile[3]
+                        }
+                        user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        res.send({ "success": true, user });
+                    //}
+                    // else{
+                    //     res.status(401).send();
+                    // }
                 });
             }
             else {
