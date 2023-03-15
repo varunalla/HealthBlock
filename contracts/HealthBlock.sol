@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 //https://ethereum.stackexchange.com/questions/8615/child-contract-vs-struct?newreg=9940955131d740a1a85cef648b771ef3
 contract HealthBlock {
-    address private owner;
+    address private admin;
 
     struct patient {
         string name;
@@ -28,6 +28,67 @@ contract HealthBlock {
         address id;
     }
 
+    event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
+    event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
+    event RequestRejected(address indexed doctor, address indexed provider, uint256 indexed requestId);
+
+    struct Request {
+        address doctor;
+        string doctorName;
+        string credentialsHash;
+        bool approved;
+    }
+    mapping(address => bool) private isDoctorVerified;
+    mapping(address => Request[]) private doctorRequests;
+
+   /*
+    * @dev Set contract deployer as owner
+    */
+    constructor() {
+        admin = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can call this function");
+        _;
+    }
+
+    function verifyDoctor(address doctor) public onlyAdmin {
+        isDoctorVerified[doctor] = true;
+    }
+
+    function raiseRequest(string memory doctorName, string memory credentialsHash) public {
+        require(isDoctorVerified[msg.sender], "Only verified doctors can raise request");
+        Request memory request = Request({
+            doctor: msg.sender,
+            doctorName: doctorName,
+            credentialsHash: credentialsHash,
+            approved: false
+        });
+        doctorRequests[admin].push(request);
+        emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
+    }
+
+    function getRequests() public view returns(Request[] memory) {
+        require(msg.sender == admin, "Only admin can call this function");
+        return doctorRequests[admin];
+    }
+
+    function approveRequest(uint256 requestId) public {
+        require(msg.sender == admin, "Only admin can call this function");
+        Request storage request = doctorRequests[admin][requestId];
+        require(!request.approved, "Request is already approved");
+        request.approved = true;
+        emit RequestApproved(request.doctor, admin, requestId);
+    }
+
+    function rejectRequest(uint256 requestId) public {
+        require(msg.sender == admin, "Only admin can call this function");
+        Request storage request = doctorRequests[admin][requestId];
+        require(!request.approved, "Request is already approved");
+        emit RequestRejected(request.doctor, admin, requestId);
+    }
+
     // event for EVM logging
     event NPatient(address indexed _from, string indexed _name);
     event NDoctor(address indexed _from, string indexed _name);
@@ -47,14 +108,13 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
-
-    /**
-     * @dev Set contract deployer as owner
-     */
-    constructor() {
-        owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
-    }
+    
     modifier checkPatient(address id) {
+        patient storage p = patients[id];
+        require(p.id > address(0x0));//check if patient exist
+        _;
+    }
+    modifier checkRequests(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
