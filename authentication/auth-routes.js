@@ -123,4 +123,7 @@ module.exports = (app, metaAuth) => {
         res.writeHead(200, { 'success': true });
         res.end();
     });
+    app.post('/verify_token/',verify_token, (req, res) => {
+        res.json({status:"alive"});
+    });
 }
