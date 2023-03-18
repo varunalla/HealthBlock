@@ -2,6 +2,7 @@ import React, { FunctionComponent, useContext, useEffect } from "react";
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { AuthContext } from "../../providers/AuthProvider";
 import { Dashboard } from "../Dashboard";
+import DoctorAppointments from "../Doctor/DoctorAppointments";
 import DoctorDashboard from "../Doctor/DoctorDashboard";
 import DoctorLanding from "../Doctor/DoctorLanding";
 import PatientDashboard from "../Patient/PatientDashboard";
@@ -34,6 +35,7 @@ const RoutesComponent: FunctionComponent<{}> = () => {
                 <Route path='/patient' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />} />
                 <Route path='/doctor' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorDashboard />} />} />
                 <Route path="/provider" element={<Dashboard />} />
+                <Route path='/doctorappointments' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorAppointments />} />} />
             </Routes>
         </>
 

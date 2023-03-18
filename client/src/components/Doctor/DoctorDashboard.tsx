@@ -9,8 +9,15 @@ const DoctorDashboard: FunctionComponent<{}> = () => {
         logout?.();
         navigate('/doctorlogin');
     }
+    const appointmentHandler = () => {
+        navigate('/doctorappointments');
+    }
     return (
+    <div>
+        <button className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={() => appointmentHandler()}>Appointments</button>
+        
         <div className="flex flex-row min-h-screen justify-center items-center">
+
             <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex flex-col items-center pb-10">
                     {/* <img className="w-24 h-24 mb-3 rounded-full shadow-lg" src="/docs/images/people/profile-picture-3.jpg" alt="Patient image" />*/}
@@ -23,6 +30,7 @@ const DoctorDashboard: FunctionComponent<{}> = () => {
                 </div>
             </div>
         </div>
+    </div>
     )
 }
 
