@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static('client/build'));
 require('./authentication/auth-routes')(app, metaAuth);
+require("./appointments/appointment-routes")(app)
 app.listen(3001, () => {
     console.log('server started at ', 3001);
 });
