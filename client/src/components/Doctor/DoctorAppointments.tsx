@@ -23,8 +23,7 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
   ];
   const getStatusColor = (status: String) => {
     switch (status) {
-      case "Pending":
-        return "bg-yellow-200";
+      
       case "Confirmed":
         return "bg-green-200";
       case "Cancelled":
@@ -116,7 +115,15 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
                           appointment.status
                         )}`}
                       >
-                        {appointment.status}
+                        {appointment.status=="Pending"?<div  className="flex justify-between">
+  <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+    Reject
+  </button>
+  <div className="w-4"></div>
+  <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+    Confirm
+  </button>
+</div>:<div>{appointment.status}</div>}
                       </span>
                     </td>
                   </tr>
