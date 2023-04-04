@@ -38,7 +38,6 @@ contract HealthBlock {
         string credentialsHash;
         bool approved;
     }
-    mapping(address => bool) private isDoctorVerified;
     mapping(address => Request[]) private doctorRequests;
 
    /*
