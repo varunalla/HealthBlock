@@ -40,7 +40,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(account[0]);
         }
         else {
-            console.log("error")
             return setError("Please Install Metamask& connect, reload");
         }
     }
@@ -82,7 +81,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(register);
         }
         catch (err) {
-            console.log(err)
             setError("Error Loading Health Contract")
         }
     }
@@ -102,7 +100,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(register);
         }
         catch (err) {
-            console.log(err)
             setError("Error Loading Health Contract")
         }
     }
@@ -123,7 +120,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(register);
         }
         catch (err) {
-            console.log(err)
             setError("Error Loading Health Contract")
         }
     }
@@ -141,7 +137,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(info);
         }
         catch (err) {
-            console.log(err);
             setError("Error Fetching User Information");
         }
     }
@@ -159,7 +154,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(info);
         }
         catch (err) {
-            console.log(err);
             setError("Error Fetching User Information");
         }
     }
