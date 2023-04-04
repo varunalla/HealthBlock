@@ -53,12 +53,12 @@ contract HealthBlock {
         _;
     }
 
-    function verifyDoctor(address doctor) public onlyAdmin {
-        isDoctorVerified[doctor] = true;
-    }
+    // function verifyDoctor(address doctor) public onlyAdmin {
+    //     isDoctorVerified[doctor] = true;
+    // }
 
     function raiseRequest(string memory doctorName, string memory credentialsHash) public {
-        require(isDoctorVerified[msg.sender], "Only verified doctors can raise request");
+        //require(isDoctorVerified[msg.sender], "Only verified doctors can raise request");
         Request memory request = Request({
             doctor: msg.sender,
             doctorName: doctorName,
@@ -85,7 +85,8 @@ contract HealthBlock {
     function rejectRequest(uint256 requestId) public {
         require(msg.sender == admin, "Only admin can call this function");
         Request storage request = doctorRequests[admin][requestId];
-        require(!request.approved, "Request is already approved");
+        require(!request.approved, "Request is already rejected");
+        request.approved = false;
         emit RequestRejected(request.doctor, admin, requestId);
     }
 
