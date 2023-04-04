@@ -2,7 +2,7 @@ let jwt = require('jsonwebtoken');
 
 const jwt_config = {
     secret: "TEST",
-    expiry_time: 30
+    expiry_time: 1800
 }
 
 const validate_jwt = (token, callback) => {
