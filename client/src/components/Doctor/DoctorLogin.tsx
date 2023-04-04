@@ -10,30 +10,22 @@ const DoctorLogin: FunctionComponent<{}> = () => {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const loginhandler = async () => {
-        console.log('login')
         let resp = await axios.get('/custom_auth/' + currentAccount);
-
         if (resp && resp.data) {
             const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
             const web3 = new Web3(provider);
             const account = currentAccount || "";
-
             const signed = web3.utils.keccak256(resp.data.challenge);
-            console.log(signed)
             if (signed) {
                 web3.eth.sign(signed, account, async (err, signature) => {
                     let auth_resp = await axios.get('/verify_auth/doctor/' + signature + '?client_address=' + account);
 
                     if (auth_resp.data && auth_resp.data.success) {
-
-                        console.log("login success ", auth_resp.data);
                         login?.(auth_resp.data.user, auth_resp.data.user.token, "doctor");
                         navigate('/doctor');
                         //setUserData(auth_resp.data.user);
                         //this.props.setAuthData(auth_resp.data.user);
                         // that.props.history.push('/home');
-
-
                     } else {
                         console.error("login failed");
                     }

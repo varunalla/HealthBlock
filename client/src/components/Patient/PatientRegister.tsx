@@ -9,24 +9,19 @@ const PatientRegister: FunctionComponent<{}> = ({ }) => {
     const [age, setAge] = useState<number>(32);
     const [email, setEmail] = useState<string>("abc@abc.com");
     const registerPatient = async () => {
-        console.log(name, age, email);
-        console.log(registerHealthBlockContract);
         try {
-
             await registerHealthBlockContract?.(name, age, email);
         }
         catch (err) {
-            console.log(err);
+            console.log('Register Error',err);
         }
     }
     const fetchPatient = async () => {
-        console.log(name, age, email);
-        console.log(fetchPatientContract);
         try {
             await fetchPatientContract?.();
         }
         catch (err) {
-            console.log(err);
+            console.log('Fetch Patient Error',err);
         }
     }
     useEffect(() => {

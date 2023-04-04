@@ -59,7 +59,6 @@ export const AuthProvider: React.FC<Props> = ({ children, ...props }) => {
             setUser(user);
             setLoginStatus(true);
             setRole(role);
-            console.log('already logged in ');
         }
     }, []);
     return (<AuthContext.Provider value={{ isLoggedIn: loginStatus, login, logout, user, role }}>{children}</AuthContext.Provider>)

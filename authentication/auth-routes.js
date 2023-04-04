@@ -54,9 +54,7 @@ module.exports = (app, metaAuth) => {
             const recoveredAddress = ethers.utils.computeAddress(pk);
             if (recoveredAddress.toLowerCase() === client_address) {
                 if(hasKey(`patient_${client_address}`)){
-                    
                     const user=get(`patient_${client_address}`);
-                    console.log('from cache ',user);
                     return res.send({ "success": true, user });
                 }
                 fetchUserProfile(client_address, (err, profile) => {
@@ -66,7 +64,7 @@ module.exports = (app, metaAuth) => {
                             email: profile[2],
                             age: profile[1]
                         }
-                        user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        user.token = encode_jwt(Object.assign({}, user, { client_address, type:'patient' }));
                         store(`patient_${client_address}`,user,10000);
                         res.send({ "success": true, user });
                     }
@@ -102,7 +100,7 @@ module.exports = (app, metaAuth) => {
                             email: profile[2],
                             age: profile[1]
                         }
-                        user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        user.token = encode_jwt(Object.assign({}, user, { client_address, type:'doctor' }));
                         store(`doctor_${client_address}`,user,10000);
                         res.send({ "success": true, user });
                     }

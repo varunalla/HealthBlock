@@ -18,7 +18,6 @@ const RoutesComponent: FunctionComponent<{}> = () => {
         authenticationPath: '/',
     };
     useEffect(() => {
-        console.log(isLoggedIn, role, user);
         if (isLoggedIn) {
             navigate('/' + role);
         }
