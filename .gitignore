@@ -7,3 +7,4 @@ client/src/contracts/HealthBlock.json
 client/src/contracts/DoctorHealthBlock.json
 
 
+.env
