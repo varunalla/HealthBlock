@@ -4,17 +4,21 @@ pragma solidity >=0.4.22 <0.9.0;
 //https://ethereum.stackexchange.com/questions/8615/child-contract-vs-struct?newreg=9940955131d740a1a85cef648b771ef3
 contract HealthBlock {
     address private owner;
+
     struct patient {
         string name;
         uint8 age;
         string email;
         address id;
     }
-    // event for EVM logging
-    event NPatient(address indexed _from, string indexed _name);
-    event NDoctor(address indexed _from, string indexed _name);
-    mapping (address => patient) public patients;
-    mapping (address => doctor) internal doctors;
+
+    struct hcprovider {
+        string name;
+        string email;
+        string providerAddress;
+        string phone;
+        address id;
+    }
 
     struct doctor {
         string name;
@@ -22,6 +26,20 @@ contract HealthBlock {
         string email;
         string specialization;
         address id;
+    }
+
+    // event for EVM logging
+    event NPatient(address indexed _from, string indexed _name);
+    event NDoctor(address indexed _from, string indexed _name);
+    event NHCProvider(address indexed _from, string indexed _name);
+    mapping (address => patient) public patients;
+    mapping (address => doctor) internal doctors;
+    mapping (address => hcprovider) internal hcproviders;
+
+    modifier checkHealthCareProvider(address id) {
+            hcprovider storage h = hcproviders[id];
+            require(h.id > address(0x0));//check if HealthCare Provider exists
+            _;
     }
 
     modifier checkDoctor(address id) {
@@ -41,14 +59,6 @@ contract HealthBlock {
         require(p.id > address(0x0));//check if patient exist
         _;
     }
-    function registerPatient(string memory _name, uint8 _age,string memory _email) public {
-        //patient storage p = patients[msg.sender];
-        require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
-        require(keccak256(abi.encodePacked(_email)) != keccak256(abi.encodePacked("")));
-        require((_age > 0) && (_age < 100));
-        patients[msg.sender] = patient({name:_name,age:_age,id:msg.sender,email:_email});
-        emit NPatient(msg.sender, _name);
-    }
     function getPatientInfo() public view checkPatient(msg.sender) returns(string memory, uint8, string memory) {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);
@@ -56,6 +66,14 @@ contract HealthBlock {
     function getPatientInfoAll(address _address) public view returns(string memory, uint8, string memory) {
         patient storage p = patients[_address];
         return (p.name, p.age, p.email);
+    }
+    function registerPatient(string memory _name, uint8 _age,string memory _email) public {
+        //patient storage p = patients[msg.sender];
+        require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
+        require(keccak256(abi.encodePacked(_email)) != keccak256(abi.encodePacked("")));
+        require((_age > 0) && (_age < 100));
+        patients[msg.sender] = patient({name:_name,age:_age,id:msg.sender,email:_email});
+        emit NPatient(msg.sender, _name);
     }
     function getDoctorInfo() public view checkDoctor(msg.sender) returns(string memory, uint8,string memory, string memory) {
         doctor storage d = doctors[msg.sender];
@@ -74,5 +92,22 @@ contract HealthBlock {
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
         emit NPatient(msg.sender, _name);
-    }  
+    } 
+    function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory) {
+            hcprovider storage h = hcproviders[msg.sender];
+            return (h.name, h.email, h.providerAddress, h.phone);
+    }
+    function getHCProviderInfoAll(address _address) public view returns(string memory, string memory, string memory, string memory) {
+        hcprovider storage h = hcproviders[_address];
+        return (h.name, h.email, h.providerAddress, h.phone);
+    }
+    function registerHCProvider(string memory _name, string memory _email, string memory _address, string memory _phone) public {
+            hcprovider storage h = hcproviders[msg.sender];
+            require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
+            require(keccak256(abi.encodePacked(_email)) != keccak256(abi.encodePacked("")));
+            require(keccak256(abi.encodePacked(_address)) != keccak256(abi.encodePacked("")));
+            require(keccak256(abi.encodePacked(_phone)) != keccak256(abi.encodePacked("")));
+            require(!(h.id > address(0x0)));
+            hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
+    } 
 }

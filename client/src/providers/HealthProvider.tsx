@@ -12,6 +12,7 @@ interface HealthAppContextInterface {
     healthBlockContract?: () => Promise<void>,
     registerHealthBlockContract?: (name: string, age: number, email: string) => Promise<void>,
     registerDoctorHealthBlockContract?: (name: string, age: number, email: string, specialization: string) => Promise<void>,
+    registerHCProviderHealthBlockContract?: (name: string, email: string, address: string, phone: string) => Promise<void>,
     fetchPatientContract?: () => Promise<void>,
     fetchPatientInfoContract?: (address: string) => Promise<void>,
     currentAccount?: string
@@ -39,7 +40,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(account[0]);
         }
         else {
-            console.log("error")
             return setError("Please Install Metamask& connect, reload");
         }
     }
@@ -57,7 +57,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             const provider = new ethers.providers.Web3Provider(connection);
             const signer = provider.getSigner();
             const contract = await fetchContract(signer);
-
             console.log(contract);
 
         }
@@ -82,7 +81,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(register);
         }
         catch (err) {
-            console.log(err)
             setError("Error Loading Health Contract")
         }
     }
@@ -102,7 +100,26 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(register);
         }
         catch (err) {
-            console.log(err)
+            setError("Error Loading Health Contract")
+        }
+    }
+
+    const registerHCProviderHealthBlockContract = async (name: string, email: string, address: string, phone: string) => {
+        try {
+            const web3modal = new Web3Modal();
+            const connection = await web3modal.connect();
+            console.log(connection);
+            const provider = new ethers.providers.Web3Provider(connection);
+            console.log(provider);
+            const signer = provider.getSigner();
+            const contract: HealthBlock = await fetchContract(signer);
+
+            console.log(contract);
+            const register = await contract.registerHCProvider(name, email, address, phone);
+            register.wait();
+            console.log(register);
+        }
+        catch (err) {
             setError("Error Loading Health Contract")
         }
     }
@@ -120,7 +137,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(info);
         }
         catch (err) {
-            console.log(err);
             setError("Error Fetching User Information");
         }
     }
@@ -138,9 +154,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.log(info);
         }
         catch (err) {
-            console.log(err);
             setError("Error Fetching User Information");
         }
     }
-    return (<HealthContext.Provider value={{ checkIfWalletIsConnected, connectWallet, currentAccount, healthBlockContract, registerHealthBlockContract, fetchPatientContract, fetchPatientInfoContract, registerDoctorHealthBlockContract }}>{children}</HealthContext.Provider>)
+    return (<HealthContext.Provider value={{ checkIfWalletIsConnected, connectWallet, currentAccount, healthBlockContract, registerHealthBlockContract, fetchPatientContract, fetchPatientInfoContract, registerDoctorHealthBlockContract, registerHCProviderHealthBlockContract}}>{children}</HealthContext.Provider>)
 }
