@@ -49,6 +49,7 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
       console.log('resp', resp.data);
     }
   };
+
   return (
     <div className='flex flex-col  px-4 lg:px-8 '>
       <div className='bg-gray-100 py-4 px-4 flex items-center justify-between'>
