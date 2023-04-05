@@ -65,7 +65,6 @@ const fetchHCProviderProfile = async (userAddress, callback) => {
         callback(null, profile);
     }
     catch (e) {
-        console.log(e);
         callback("error");
     }
 }
