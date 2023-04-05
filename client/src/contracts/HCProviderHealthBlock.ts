@@ -4,7 +4,6 @@
 import type {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -23,48 +22,48 @@ import type {
   PromiseOrValue,
 } from "./common";
 
-export interface DoctorHealthBlockInterface extends utils.Interface {
+export interface HCProviderHealthBlockInterface extends utils.Interface {
   functions: {
-    "getDoctorInfo()": FunctionFragment;
-    "registerDoctor(string,uint8,string,string)": FunctionFragment;
+    "getHCProviderInfo()": FunctionFragment;
+    "registerHCProvider(string,string,string,string)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "getDoctorInfo" | "registerDoctor"
+    nameOrSignatureOrTopic: "getHCProviderInfo" | "registerHCProvider"
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "getDoctorInfo",
+    functionFragment: "getHCProviderInfo",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "registerDoctor",
+    functionFragment: "registerHCProvider",
     values: [
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "getDoctorInfo",
+    functionFragment: "getHCProviderInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerDoctor",
+    functionFragment: "registerHCProvider",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export interface DoctorHealthBlock extends BaseContract {
+export interface HCProviderHealthBlock extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: DoctorHealthBlockInterface;
+  interface: HCProviderHealthBlockInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -86,41 +85,41 @@ export interface DoctorHealthBlock extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    getDoctorInfo(
+    getHCProviderInfo(
       overrides?: CallOverrides
-    ): Promise<[string, number, string, string]>;
+    ): Promise<[string, string, string, string]>;
 
-    registerDoctor(
+    registerHCProvider(
       _name: PromiseOrValue<string>,
-      _age: PromiseOrValue<BigNumberish>,
       _email: PromiseOrValue<string>,
-      _specialization: PromiseOrValue<string>,
+      _address: PromiseOrValue<string>,
+      _phone: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
-  getDoctorInfo(
+  getHCProviderInfo(
     overrides?: CallOverrides
-  ): Promise<[string, number, string, string]>;
+  ): Promise<[string, string, string, string]>;
 
-  registerDoctor(
+  registerHCProvider(
     _name: PromiseOrValue<string>,
-    _age: PromiseOrValue<BigNumberish>,
     _email: PromiseOrValue<string>,
-    _specialization: PromiseOrValue<string>,
+    _address: PromiseOrValue<string>,
+    _phone: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    getDoctorInfo(
+    getHCProviderInfo(
       overrides?: CallOverrides
-    ): Promise<[string, number, string, string]>;
+    ): Promise<[string, string, string, string]>;
 
-    registerDoctor(
+    registerHCProvider(
       _name: PromiseOrValue<string>,
-      _age: PromiseOrValue<BigNumberish>,
       _email: PromiseOrValue<string>,
-      _specialization: PromiseOrValue<string>,
+      _address: PromiseOrValue<string>,
+      _phone: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -128,25 +127,25 @@ export interface DoctorHealthBlock extends BaseContract {
   filters: {};
 
   estimateGas: {
-    getDoctorInfo(overrides?: CallOverrides): Promise<BigNumber>;
+    getHCProviderInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
-    registerDoctor(
+    registerHCProvider(
       _name: PromiseOrValue<string>,
-      _age: PromiseOrValue<BigNumberish>,
       _email: PromiseOrValue<string>,
-      _specialization: PromiseOrValue<string>,
+      _address: PromiseOrValue<string>,
+      _phone: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getDoctorInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getHCProviderInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    registerDoctor(
+    registerHCProvider(
       _name: PromiseOrValue<string>,
-      _age: PromiseOrValue<BigNumberish>,
       _email: PromiseOrValue<string>,
-      _specialization: PromiseOrValue<string>,
+      _address: PromiseOrValue<string>,
+      _phone: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
