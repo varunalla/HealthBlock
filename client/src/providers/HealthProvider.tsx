@@ -30,7 +30,7 @@ interface HealthAppContextInterface {
     handleApproveRequest?: (requestId: number) => Promise<void>,
     handleRejectRequest?: (requestId: number) => Promise<void>,
     handleVerifyDoctor?:() => Promise<void>,
-    fetchPatientContract?: () => Promise<void>,
+    fetchPatientContract?: () => Promise<Patient | undefined>;
     fetchPatientInfoContract?: (address: string) => Promise<void>,
     fetchRequests?:()  => Promise<void>,
     currentAccount?: string
