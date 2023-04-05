@@ -10,7 +10,8 @@ import { AuthContext } from "../../providers/AuthProvider";
 interface AppointmentDetails {
   name: string;
   patient_email: string;
-  appointment_id:string;
+  appointment_id: string;
+  patient_name: string;
 
   created_at: string;
   appointment_time: string;
@@ -34,44 +35,30 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
       setAppointmentData([]);
     }
   };
-  const appointments = [
-    {
-      name: "Shruthi",
-      email: "shruthi@gmail.com",
-      date: "03/26/2023",
-      time: "9.00 AM",
-      status: "Pending",
-      id: "1",
-    },
-    {
-      name: "Hasini",
-      email: "hasini@gmail.com",
-      date: "03/27/2023",
-      time: "10.00 AM",
-      status: "Confirmed",
-      id: "1",
-    },
-  ];
+
   const getStatusColor = (status: String) => {
     switch (status) {
-      case "Confirmed":
+      case "confirmed":
         return "bg-green-200";
-      case "Cancelled":
+      case "reject":
         return "bg-red-200";
       default:
         return "";
     }
   };
-  const updateStatus= async(status:String,appointmentId:String)=>{
-   // /updateAppointmentStatus/:appointmentID/status
-    let resp = await axios.put("/updateAppointmentStatus/"+appointmentId+"/status",{
-      appointmentStatus:status
-    })
-    if(resp && resp.data){
-      console.log("resp",resp.data)
+  const updateStatus = async (status: String, appointmentId: String) => {
+    console.log("status", status);
+    // /updateAppointmentStatus/:appointmentID/status
+    let resp = await axios.put(
+      "/updateAppointmentStatus/" + appointmentId + "/status",
+      {
+        appointmentStatus: status,
+      }
+    );
+    if (resp && resp.data) {
+      console.log("resp", resp.data);
     }
-
-  }
+  };
   return (
     <div className="flex flex-col  px-4 lg:px-8 ">
       <div className="bg-gray-100 py-4 px-4 flex items-center justify-between">
@@ -133,7 +120,9 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
                 {appointmentData.map((appointment) => (
                   <tr key={appointment.appointment_id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{"Preethi"}</div>
+                      <div className="text-sm text-gray-900">
+                        {appointment.patient_name}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
@@ -156,13 +145,26 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
                         {appointment.appointment_status == "pending" ? (
                           <div className="flex justify-between">
                             <button
-                             className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                             onClick={()=>updateStatus("reject",appointment.appointment_id)}
-                             >
+                              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                              onClick={() =>
+                                updateStatus(
+                                  "reject",
+                                  appointment.appointment_id
+                                )
+                              }
+                            >
                               Reject
                             </button>
                             <div className="w-4"></div>
-                            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                            <button
+                              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                              onClick={() =>
+                                updateStatus(
+                                  "confirmed",
+                                  appointment.appointment_id
+                                )
+                              }
+                            >
                               Confirm
                             </button>
                           </div>
