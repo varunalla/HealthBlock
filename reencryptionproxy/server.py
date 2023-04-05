@@ -34,24 +34,30 @@ def encrypt_handler():
     # create aes key, encrypt it with umbral and send original key, umbral private & public key and also cipher and capsule
     # the caller will encrypt the file with plain aes key and save it to s3 with umbral cipher and  
     data = request.get_json()
-    alice_payload_enc_key = bytes(data['aesKey'],'utf-8')
-    alices_secret_key = SecretKey.random()
-    alices_public_key = alices_secret_key.public_key()
-    capsule, ciphertext = encrypt(alices_public_key, alice_payload_enc_key)
+    requestor_payload_enc_key = bytes(data['aesKey'],'utf-8')
+    requestor_secret_key = SecretKey.random()
+    if('private_key' in data):
+        requestor_secret_key=SecretKey.from_bytes(fromBase64(data['private_key']))
+    requestor_public_key = requestor_secret_key.public_key()
+    if('public_key' in data):
+        requestor_public_key=PublicKey.from_bytes(fromBase64(data['public_key']))
     signing_key = SecretKey.random()
+    if('signing_key' in data):
+        signing_key=SecretKey.from_bytes(fromBase64(data['signing_key']))
+    capsule, ciphertext = encrypt(requestor_public_key, requestor_payload_enc_key)
+    
     dict={
-        'public_key': alices_public_key,
-        'public_key': toBase64(bytes(alices_public_key)),
-        'private_key':toBase64(alices_secret_key.to_secret_bytes()),
+        'public_key': requestor_public_key,
+        'public_key': toBase64(bytes(requestor_public_key)),
+        'private_key':toBase64(requestor_secret_key.to_secret_bytes()),
         'capsule':toBase64(bytes(capsule)), 
         'ciphertext':toBase64(bytes(ciphertext)),
         'signing_key':toBase64(signing_key.to_secret_bytes())
     }
-    capsule_test=fromBase64(dict['capsule'])
+    #capsule_test=fromBase64(dict['capsule'])
     #print(bytes(capsule))
     #print(capsule_test)
     #print(dict['capsule'])
-    #,'public_key': alices_public_key,'private_key':alices_secret_key.to_secret_bytes(),'capsule':str(bytes(capsule)), 'ciphertext':ciphertext
     response = {'status': 'success','data':dict }
     return jsonify(response)
 
