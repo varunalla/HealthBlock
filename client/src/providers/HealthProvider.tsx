@@ -23,6 +23,12 @@ interface HealthAppContextInterface {
     email: string,
     specialization: string,
   ) => Promise<void>;
+  registerHCProviderHealthBlockContract?: (
+    name: string,
+    email: string,
+    address: string,
+    phone: string,
+  ) => Promise<void>;
   fetchPatientContract?: () => Promise<Patient | undefined>;
   fetchPatientInfoContract?: (address: string) => Promise<void>;
   currentAccount?: string;
@@ -126,6 +132,31 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       setError(`Error Loading Health Contract ${err}`);
     }
   };
+
+  const registerHCProviderHealthBlockContract = async (
+    name: string,
+    email: string,
+    address: string,
+    phone: string,
+  ) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      console.log(connection);
+      const provider = new ethers.providers.Web3Provider(connection);
+      console.log(provider);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = await fetchContract(signer);
+
+      console.log(contract);
+      const register = await contract.registerHCProvider(name, email, address, phone);
+      register.wait();
+      console.log(register);
+    } catch (err) {
+      setError('Error Loading Health Contract');
+    }
+  };
+
   return (
     <HealthContext.Provider
       value={{
@@ -137,6 +168,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         fetchPatientContract,
         fetchPatientInfoContract,
         registerDoctorHealthBlockContract,
+        registerHCProviderHealthBlockContract,
       }}
     >
       {children}
