@@ -1,5 +1,6 @@
-const healthBlockAddress=process.env.HEALTHBLOCK_ADDRESS || "0xf701f7f0f2a1536580D2bAB16C25b29CB2874641";
-console.log(healthBlockAddress);
-module.exports={
-    healthBlockAddress
-}
+const healthBlockAddress =
+  process.env.HEALTHBLOCK_ADDRESS ||
+  "0x6Fd2B45F4Eff401654028c5097fdE9c6a8f07298";
+module.exports = {
+  healthBlockAddress,
+};
