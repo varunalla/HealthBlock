@@ -4,6 +4,7 @@ const web3 = require('web3');
 const { fetchUserProfile, getWeb3Obj, fetchDoctorProfile, fetchHCProviderProfile} = require("../web3-utils/user");
 const { encode_jwt, verify_token } = require("../utils/jwt");
 const ethers = require('ethers');
+const { store, get,hasKey } = require("../cache");
 
 module.exports = (app, metaAuth) => {
     app.get('/auth/:MetaAddress', metaAuth, (req, res) => {
@@ -52,6 +53,12 @@ module.exports = (app, metaAuth) => {
             const pk = ethers.utils.recoverPublicKey(ethers.utils.arrayify(ethers.utils.hashMessage(ethers.utils.arrayify(web3.utils.keccak256(challenge)))), req.params.signature);
             const recoveredAddress = ethers.utils.computeAddress(pk);
             if (recoveredAddress.toLowerCase() === client_address) {
+                if(hasKey(`patient_${client_address}`)){
+                    
+                    const user=get(`patient_${client_address}`);
+                    console.log('from cache ',user);
+                    return res.send({ "success": true, user });
+                }
                 fetchUserProfile(client_address, (err, profile) => {
                     if(profile['0']&&profile['1']&&profile['2']){
                         let user = {
@@ -60,6 +67,7 @@ module.exports = (app, metaAuth) => {
                             age: profile[1]
                         }
                         user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        store(`patient_${client_address}`,user,10000);
                         res.send({ "success": true, user });
                     }
                     else{
@@ -83,6 +91,10 @@ module.exports = (app, metaAuth) => {
             const pk = ethers.utils.recoverPublicKey(ethers.utils.arrayify(ethers.utils.hashMessage(ethers.utils.arrayify(web3.utils.keccak256(challenge)))), req.params.signature);
             const recoveredAddress = ethers.utils.computeAddress(pk)
             if (recoveredAddress.toLowerCase() === client_address) {
+                if(hasKey(`doctor_${client_address}`)){
+                    const user=get(`doctor_${client_address}`);
+                    return res.send({ "success": true, user });
+                }
                 fetchDoctorProfile(client_address, (err, profile) => {
                     if(profile['0']&&profile['1']&&profile['2']){
                         let user = {
@@ -91,6 +103,7 @@ module.exports = (app, metaAuth) => {
                             address: profile[1]
                         }
                         user.token = encode_jwt(Object.assign({}, user, { client_address }));
+                        store(`doctor_${client_address}`,user,10000);
                         res.send({ "success": true, user });
                     }
                     else{
@@ -114,8 +127,7 @@ module.exports = (app, metaAuth) => {
             const recoveredAddress = ethers.utils.computeAddress(pk)
             if (recoveredAddress.toLowerCase() === client_address) {
                 fetchHCProviderProfile(client_address, (err, profile) => {
-                    console.log("profile-->", profile)
-                    //if(profile['0']&&profile['1']&&profile['2']&& profile['3']){
+                    if(profile['0']&&profile['1']&&profile['2']&& profile['3']){
                         let user = {
                             name: profile[0],
                             email: profile[1],
@@ -124,10 +136,10 @@ module.exports = (app, metaAuth) => {
                         }
                         user.token = encode_jwt(Object.assign({}, user, { client_address }));
                         res.send({ "success": true, user });
-                    //}
-                    // else{
-                    //     res.status(401).send();
-                    // }
+                    }
+                    else{
+                         res.status(401).send();
+                     }
                 });
             }
             else {
@@ -141,5 +153,8 @@ module.exports = (app, metaAuth) => {
     app.head('/verify_token/', verify_token, (req, res) => {
         res.writeHead(200, { 'success': true });
         res.end();
+    });
+    app.post('/verify_token/',verify_token, (req, res) => {
+        res.json({status:"alive"});
     });
 }

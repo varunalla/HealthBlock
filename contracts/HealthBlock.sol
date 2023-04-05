@@ -28,6 +28,7 @@ contract HealthBlock {
         address id;
     }
 
+
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
     event RequestRejected(address indexed doctor, address indexed provider, uint256 indexed requestId);
@@ -109,11 +110,13 @@ contract HealthBlock {
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+    
     modifier checkRequests(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+
     function getPatientInfo() public view checkPatient(msg.sender) returns(string memory, uint8, string memory) {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);
