@@ -28,6 +28,63 @@ contract HealthBlock {
         address id;
     }
 
+
+    event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
+    event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
+    event RequestRejected(address indexed doctor, address indexed provider, uint256 indexed requestId);
+
+    struct Request {
+        address doctor;
+        string doctorName;
+        string credentialsHash;
+        bool approved;
+    }
+    mapping(address => Request[]) private doctorRequests;
+
+   /*
+    * @dev Set contract deployer as owner
+    */
+    constructor() {
+        owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    function raiseRequest(string memory doctorName, string memory credentialsHash) public {
+        Request memory request = Request({
+            doctor: msg.sender,
+            doctorName: doctorName,
+            credentialsHash: credentialsHash,
+            approved: false
+        });
+        doctorRequests[owner].push(request);
+        emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
+    }
+
+    function getRequests() public view returns(Request[] memory) {
+        require(msg.sender == owner, "Only owner can call this function");
+        return doctorRequests[owner];
+    }
+
+    function approveRequest(uint256 requestId) public {
+        require(msg.sender == owner, "Only owner can call this function");
+        Request storage request = doctorRequests[owner][requestId];
+        require(!request.approved, "Request is already approved");
+        request.approved = true;
+        emit RequestApproved(request.doctor, owner, requestId);
+    }
+
+    function rejectRequest(uint256 requestId) public {
+        require(msg.sender == owner, "Only owner can call this function");
+        Request storage request = doctorRequests[owner][requestId];
+        require(!request.approved, "Request is already rejected");
+        request.approved = false;
+        emit RequestRejected(request.doctor, owner, requestId);
+    }
+
     // event for EVM logging
     event NPatient(address indexed _from, string indexed _name);
     event NDoctor(address indexed _from, string indexed _name);
@@ -47,18 +104,19 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
-
-    /**
-     * @dev Set contract deployer as owner
-     */
-    constructor() {
-        owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
-    }
+    
     modifier checkPatient(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+    
+    modifier checkRequests(address id) {
+        patient storage p = patients[id];
+        require(p.id > address(0x0));//check if patient exist
+        _;
+    }
+
     function getPatientInfo() public view checkPatient(msg.sender) returns(string memory, uint8, string memory) {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);
