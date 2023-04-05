@@ -13,6 +13,12 @@ interface Request {
     approved: boolean;
  }
 
+ export type Patient = {
+    name: string;
+    age: number;
+    email: string;
+  };
+
 interface HealthAppContextInterface {
     checkIfWalletIsConnected?: () => Promise<void>,
     connectWallet?: () => Promise<void>,
@@ -36,7 +42,7 @@ const fetchContract = (signerOrProvider: ethers.Signer | ethers.providers.Provid
 export const HealthContext = React.createContext<HealthAppContextInterface>({});
 
 interface Props {
-    children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
@@ -46,81 +52,94 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     const [doctorName, setDoctorName] = useState("");
     const [file, setFile] = useState<File | null>(null);
 
-    //fetch metamask accounts
-    const checkIfWalletIsConnected = async () => {
-        if (!window.ethereum) return setError("Please Install Metamask");
-        const account = await window.ethereum.request?.({ method: "eth_accounts" });
-        if (account?.length) {
-            setCurrentAccount(account[0]);
-            console.log(account[0]);
-        }
-        else {
-            console.log("error")
-            return setError("Please Install Metamask& connect, reload");
-        }
+  //fetch metamask accounts
+  const checkIfWalletIsConnected = async () => {
+    if (!window.ethereum) return setError('Please Install Metamask');
+    const account = await window.ethereum.request?.({ method: 'eth_accounts' });
+    if (account?.length) {
+      setCurrentAccount(account[0]);
+    } else {
+      return setError('Please Install Metamask& connect, reload');
     }
-    //connect metamask wallet
-    const connectWallet = async () => {
-        if (!window.ethereum) return setError("Please Install Metamask");
-        const account = await window.ethereum.request?.({ method: "eth_requestAccounts" });
-        setCurrentAccount(account[0]);
+  };
+  //connect metamask wallet
+  const connectWallet = async () => {
+    if (!window.ethereum) return setError('Please Install Metamask');
+    const account = await window.ethereum.request?.({ method: 'eth_requestAccounts' });
+    setCurrentAccount(account[0]);
+  };
+  //connect contract
+  const healthBlockContract = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = fetchContract(signer);
+    } catch (err) {
+      setError(`Error Loading Health Contract ${err}`);
     }
-    //connect contract 
-    const healthBlockContract = async () => {
-        try {
-            const web3modal = new Web3Modal();
-            const connection = await web3modal.connect();
-            const provider = new ethers.providers.Web3Provider(connection);
-            const signer = provider.getSigner();
-            const contract = await fetchContract(signer);
-            console.log(contract);
+  };
+  //connect contract
+  const registerHealthBlockContract = async (name: string, age: number, email: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const register = await contract.registerPatient(name, age, email);
+      register.wait();
+    } catch (err: any) {
+      setError(`Error Loading Health Contract ${err}`);
+    }
+  };
 
-        }
-        catch (err) {
-            setError("Error Loading Health Contract")
-        }
+  const registerDoctorHealthBlockContract = async (
+    name: string,
+    age: number,
+    email: string,
+    specialization: string,
+  ) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const register = await contract.registerDoctor(name, age, email, specialization);
+      register.wait();
+    } catch (err) {
+      setError(`Error Loading Health Contract ${err}`);
     }
-    
-    const registerHealthBlockContract = async (name: string, age: number, email: string) => {
-        try {
-            const web3modal = new Web3Modal();
-            const connection = await web3modal.connect();
-            console.log(connection);
-            const provider = new ethers.providers.Web3Provider(connection);
-            console.log(provider);
-            const signer = provider.getSigner();
-            const contract: HealthBlock = await fetchContract(signer);
+  };
 
-            console.log(contract);
-            const register = await contract.registerPatient(name, age, email);
-            register.wait();
-            console.log(register);
-        }
-        catch (err) {
-            console.log(err)
-            setError("Error Loading Health Contract")
-        }
+  const fetchPatientContract = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const [name, age, email] = await contract.getPatientInfo();
+      return { name, age, email } as Patient;
+    } catch (err) {
+      setError(`Error Loading Health Contract ${err}`);
     }
-    const registerDoctorHealthBlockContract = async (name: string, age: number, email: string, specialization: string) => {
-        try {
-            const web3modal = new Web3Modal();
-            const connection = await web3modal.connect();
-            console.log(connection);
-            const provider = new ethers.providers.Web3Provider(connection);
-            console.log(provider);
-            const signer = provider.getSigner();
-            const contract: HealthBlock = await fetchContract(signer);
+  };
 
-            console.log(contract);
-            const register = await contract.registerDoctor(name, age, email, specialization);
-            register.wait();
-            console.log(register);
-        }
-        catch (err) {
-            console.log(err)
-            setError("Error Loading Health Contract")
-        }
+  const fetchPatientInfoContract = async (address: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const [name, age, email] = await contract.getPatientInfoAll(address);
+    } catch (err) {
+      setError(`Error Loading Health Contract ${err}`);
     }
+  }
 
     const registerHCProviderHealthBlockContract = async (name: string, email: string, address: string, phone: string) => {
         try {
@@ -222,44 +241,10 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
             console.error(error);
         }
     };
-    
-    const fetchPatientContract = async () => {
-        try {
-            const web3modal = new Web3Modal();
-            const connection = await web3modal.connect();
-            console.log(connection);
-            const provider = new ethers.providers.Web3Provider(connection);
-            console.log(provider);
-            const signer = provider.getSigner();
-            const contract: HealthBlock = await fetchContract(signer);
-            console.log(contract);
-            const info = await contract.getPatientInfo();
-            console.log(info);
-        }
-        catch (err) {
-            console.log(err);
-            setError("Error Fetching User Information");
-        }
-    }
-    const fetchPatientInfoContract = async (address: string) => {
-        try {
-            const web3modal = new Web3Modal();
-            const connection = await web3modal.connect();
-            console.log(connection);
-            const provider = new ethers.providers.Web3Provider(connection);
-            console.log(provider);
-            const signer = provider.getSigner();
-            const contract: HealthBlock = await fetchContract(signer);
-            console.log(contract);
-            const info = await contract.getPatientInfoAll(address);
-            console.log(info);
-        }
-        catch (err) {
-            console.log(err);
-            setError("Error Fetching User Information");
-        }
-    }
-    return (<HealthContext.Provider value={{ checkIfWalletIsConnected, connectWallet, currentAccount, healthBlockContract, registerHealthBlockContract, fetchPatientContract, fetchPatientInfoContract, 
-        registerDoctorHealthBlockContract, registerHCProviderHealthBlockContract, handleRaiseRequest, handleApproveRequest, 
-        handleRejectRequest, handleVerifyDoctor, verificationRequests, fetchRequests}}>{children}</HealthContext.Provider>)
-}
+
+return (<HealthContext.Provider value={{ checkIfWalletIsConnected, connectWallet, currentAccount, healthBlockContract, registerHealthBlockContract, fetchPatientContract, fetchPatientInfoContract, 
+    registerDoctorHealthBlockContract, registerHCProviderHealthBlockContract, handleRaiseRequest, handleApproveRequest, 
+    handleRejectRequest, handleVerifyDoctor, verificationRequests, fetchRequests}}>{children}</HealthContext.Provider>);
+};
+
+  

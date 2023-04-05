@@ -11,7 +11,6 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         logout?.();
         navigate('/hcproviderlogin');
     }
-
     const approveRequest = async (requestId: number) => {
         try {
             await handleApproveRequest?.(requestId);

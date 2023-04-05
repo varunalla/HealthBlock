@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const HCProviderLogin: FunctionComponent<{}> = () => {
     const { currentAccount } = useContext(HealthContext);
+    const url = 'http://127.0.0.1:8545';
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const loginhandler = async () => {
@@ -14,7 +15,7 @@ const HCProviderLogin: FunctionComponent<{}> = () => {
         let resp = await axios.get('/custom_auth/' + currentAccount);
 
         if (resp && resp.data) {
-            const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
+            const provider = new Web3.providers.HttpProvider(url);
             const web3 = new Web3(provider);
             const account = currentAccount || "";
 

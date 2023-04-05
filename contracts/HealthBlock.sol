@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 //https://ethereum.stackexchange.com/questions/8615/child-contract-vs-struct?newreg=9940955131d740a1a85cef648b771ef3
 contract HealthBlock {
-    address private admin;
+    address private owner;
 
     struct patient {
         string name;
@@ -38,56 +38,50 @@ contract HealthBlock {
         string credentialsHash;
         bool approved;
     }
-    mapping(address => bool) private isDoctorVerified;
     mapping(address => Request[]) private doctorRequests;
 
    /*
     * @dev Set contract deployer as owner
     */
     constructor() {
-        admin = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
+        owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
     }
 
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can call this function");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
         _;
     }
 
-    // function verifyDoctor(address doctor) public onlyAdmin {
-    //     isDoctorVerified[doctor] = true;
-    // }
-
     function raiseRequest(string memory doctorName, string memory credentialsHash) public {
-        //require(isDoctorVerified[msg.sender], "Only verified doctors can raise request");
         Request memory request = Request({
             doctor: msg.sender,
             doctorName: doctorName,
             credentialsHash: credentialsHash,
             approved: false
         });
-        doctorRequests[admin].push(request);
+        doctorRequests[owner].push(request);
         emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
     }
 
     function getRequests() public view returns(Request[] memory) {
-        require(msg.sender == admin, "Only admin can call this function");
-        return doctorRequests[admin];
+        require(msg.sender == owner, "Only owner can call this function");
+        return doctorRequests[owner];
     }
 
     function approveRequest(uint256 requestId) public {
-        require(msg.sender == admin, "Only admin can call this function");
-        Request storage request = doctorRequests[admin][requestId];
+        require(msg.sender == owner, "Only owner can call this function");
+        Request storage request = doctorRequests[owner][requestId];
         require(!request.approved, "Request is already approved");
         request.approved = true;
-        emit RequestApproved(request.doctor, admin, requestId);
+        emit RequestApproved(request.doctor, owner, requestId);
     }
 
     function rejectRequest(uint256 requestId) public {
-        require(msg.sender == admin, "Only admin can call this function");
-        Request storage request = doctorRequests[admin][requestId];
+        require(msg.sender == owner, "Only owner can call this function");
+        Request storage request = doctorRequests[owner][requestId];
         require(!request.approved, "Request is already rejected");
         request.approved = false;
-        emit RequestRejected(request.doctor, admin, requestId);
+        emit RequestRejected(request.doctor, owner, requestId);
     }
 
     // event for EVM logging
@@ -109,7 +103,6 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
-    
     modifier checkPatient(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
@@ -120,6 +113,7 @@ contract HealthBlock {
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+
     function getPatientInfo() public view checkPatient(msg.sender) returns(string memory, uint8, string memory) {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);

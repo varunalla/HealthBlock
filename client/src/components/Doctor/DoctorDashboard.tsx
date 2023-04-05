@@ -67,6 +67,9 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         }
     }
 
+    const appointmentHandler = () => {
+        navigate('/doctorappointments');
+    }
 
     return (
         <div className="flex flex-row justify-center items-center">
