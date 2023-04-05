@@ -1,4 +1,7 @@
 const express = require('express');
+const path=require('path');
+const logger = require('pino')();
+
 const { init_web3 } = require('./web3-utils/user');
 init_web3();
 const morgan = require('morgan');
@@ -13,6 +16,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static('client/build'));
 require('./authentication/auth-routes')(app, metaAuth);
+app.get('*', (req, res) => res.sendFile(path.resolve('client', 'build', 'index.html')));
 app.listen(3001, () => {
-    console.log('server started at ', 3001);
+    logger.info(`Server started at 3001`);
 });

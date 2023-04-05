@@ -32,7 +32,6 @@ function init_web3() {
     web3Obj = new WebObj();
     web3Obj.setProvider();
     web3Obj.loadContract();
-    //console.log(web3Obj);
 }
 
 function getWeb3Obj() {
@@ -41,7 +40,6 @@ function getWeb3Obj() {
 
 const fetchUserProfile = async (userAddress, callback) => {
     try {
-        console.log(userAddress);
         let profile = await getWeb3Obj().getHealthBlock().methods.getPatientInfoAll(userAddress).call();
         callback(null, profile);
     }

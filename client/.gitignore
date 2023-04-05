@@ -47,5 +47,4 @@ yarn-error.log*
 
 *HealthBlock.json
 *DoctorHealthBlock.json
-src/contracts/HealthBlock.json
-src/contracts/DoctorHealthBlock.json
+src/contracts/*.json

@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useContext, useState } from "react";
 import { HealthContext } from "../../providers/HealthProvider";
-
 const DoctorRegister: FunctionComponent<{}> = ({ }) => {
     const { currentAccount, registerDoctorHealthBlockContract } = useContext(HealthContext);
     const [name, setName] = useState<string>("");
