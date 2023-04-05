@@ -5,20 +5,20 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { AuthContext } from "../../providers/AuthProvider";
 interface AppointmentDetails {
   name: string;
   patient_email: string;
   appointment_id: string;
   patient_name: string;
-
   created_at: string;
   appointment_time: string;
   appointment_status: string;
 }
 
 const DoctorAppointments: FunctionComponent<{}> = () => {
+  const { user, role, logout } = useContext(AuthContext);
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>(
     []
   );
@@ -27,7 +27,7 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
     getAppointment();
   }, []);
   const getAppointment = async () => {
-    let resp = await axios.get("/getAppointments/" + "abc@gmail.com");
+    let resp = await axios.get("/getAppointments/" + user?.email);
     if (resp && resp.data) {
       console.log("Resp-->", resp);
       setAppointmentData(resp.data);
