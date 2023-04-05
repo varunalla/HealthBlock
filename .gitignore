@@ -7,3 +7,5 @@ client/src/contracts/*.json
 
 
 .env
+
+__pycache__/
