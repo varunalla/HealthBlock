@@ -5,6 +5,7 @@ const {
   fetchUserProfile,
   getWeb3Obj,
   fetchDoctorProfile,
+  fetchHCProviderProfile,
 } = require("../web3-utils/user");
 const { encode_jwt, verify_token } = require("../utils/jwt");
 const ethers = require("ethers");
@@ -130,6 +131,48 @@ module.exports = (app, metaAuth) => {
               })
             );
             store(`doctor_${client_address}`, user, 10000);
+            res.send({ success: true, user });
+          } else {
+            res.status(401).send();
+          }
+        });
+      } else {
+        res.status(500).send();
+      }
+    } else {
+      res.status(500).send();
+    }
+  });
+
+  app.get("/verify_auth/hcprovider/:signature", (req, res) => {
+    let { client_address } = req.query;
+    let challenge = cache.get(client_address);
+    if (req.params.signature && challenge) {
+      const pk = ethers.utils.recoverPublicKey(
+        ethers.utils.arrayify(
+          ethers.utils.hashMessage(
+            ethers.utils.arrayify(web3.utils.keccak256(challenge))
+          )
+        ),
+        req.params.signature
+      );
+      const recoveredAddress = ethers.utils.computeAddress(pk);
+      if (recoveredAddress.toLowerCase() === client_address) {
+        fetchHCProviderProfile(client_address, (err, profile) => {
+          if (profile["0"] && profile["1"] && profile["2"] && profile["3"]) {
+            let user = {
+              name: profile[0],
+              email: profile[1],
+              address: profile[2],
+              phone: profile[3],
+            };
+            user.token = encode_jwt(
+              Object.assign({}, user, {
+                client_address,
+                type: "hcprovider",
+                grants: roleMappings["hcprovider"],
+              })
+            );
             res.send({ success: true, user });
           } else {
             res.status(401).send();

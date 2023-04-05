@@ -4,6 +4,8 @@ import { AuthContext } from "../../providers/AuthProvider";
 import { Dashboard } from "../Dashboard";
 import DoctorDashboard from "../Doctor/DoctorDashboard";
 import DoctorLanding from "../Doctor/DoctorLanding";
+import HCProviderLanding from "../HealthCareProvider/HCProviderLanding";
+import HCProviderDashboard from "../HealthCareProvider/HCProviderDashboard";
 import PatientDashboard from "../Patient/PatientDashboard";
 import PatientLanding from "../Patient/PatientLanding";
 import TopNav from "../TopNav";
@@ -29,17 +31,16 @@ const RoutesComponent: FunctionComponent<{}> = () => {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/patientlogin" element={<PatientLanding />} />
                 <Route path="/doctorlogin" element={<DoctorLanding />} />
-                <Route path="/providerlogin" element={<Dashboard />} />
+                <Route path="/hcproviderlogin" element={<HCProviderLanding />} />
                 <Route path='/patient' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />} />
                 <Route path='/doctor' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorDashboard />} />} />
-                <Route path="/provider" element={<Dashboard />} />
+                <Route path='/hcprovider' element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCProviderDashboard />} />} />
+
             </Routes>
         </>
 
     )
 }
-/*
-                <Route path="/doctor" element={<DoctorLanding />} />*/
 export default RoutesComponent;
 
 
