@@ -28,6 +28,62 @@ contract HealthBlock {
         address id;
     }
 
+    
+    enum RequestStatus {PENDING, APPROVED, REJECTED}
+
+    struct medicalRecordRequest{
+        address doctorAddress;
+        address patientAddress;
+        RequestStatus status;
+    }
+
+    mapping(address => mapping(address => medicalRecordRequest[])) public recordRequests;
+    event RequestCreated(address indexed doctorAddress, address indexed patientAddress);
+    event RequestApproved(address indexed doctorAddress, address indexed patientAddress);
+    event RequestRejected(address indexed doctorAddress, address indexed patientAddress);
+
+    function requestMedicalRecord(address patientAddress) public {
+        require(patientAddress != address(0), "Invalid patient address");
+
+        medicalRecordRequest storage request = recordRequests[msg.sender][patientAddress];
+
+        require(request.doctorAddress == address(0), "Request already exists");
+        require(request.patientAddress == address(0), "Request already exists");
+
+        request.doctorAddress = msg.sender;
+        request.patientAddress = patientAddress;
+        request.status = RequestStatus.PENDING;
+
+        emit RequestCreated(msg.sender, patientAddress);
+    }
+
+    function approveMedicalRecordsRequest(address doctorAddress) public {
+        require(doctorAddress != address(0), "Invalid doctor address");
+        
+        medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
+
+        require(request.doctorAddress != address(0), "Request does not exist");
+        require(request.patientAddress != address(0), "Request does not exist");
+        require(request.status == RequestStatus.PENDING, "Request is not in pending status");
+
+        request.status = RequestStatus.APPROVED;
+
+        emit RequestApproved(doctorAddress, msg.sender);
+    }
+
+    function rejectMedicalRecordsRequest(address doctorAddress) public {
+        require(doctorAddress != address(0), "Invalid doctor address");
+
+        medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
+
+        require(request.doctorAddress != address(0), "Request does not exist");
+        require(request.patientAddress != address(0), "Request does not exist");
+        require(request.status == RequestStatus.PENDING, "Request is not in pending status");
+
+        request.status = RequestStatus.REJECTED;
+
+        emit RequestRejected(doctorAddress, msg.sender);
+    }
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);

@@ -9,6 +9,7 @@ import HCProviderLanding from '../HealthCareProvider/HCProviderLanding';
 import HCProviderDashboard from '../HealthCareProvider/HCProviderDashboard';
 import PatientDashboard from '../Patient/PatientDashboard';
 import PatientLanding from '../Patient/PatientLanding';
+import ManageMedicalRecords from '../Doctor/ManageMedicalrecords';
 import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
 
@@ -33,6 +34,12 @@ const RoutesComponent: FunctionComponent<{}> = () => {
         <Route path='/patientlogin' element={<PatientLanding />} />
         <Route path='/doctorlogin' element={<DoctorLanding />} />
         <Route path='/hcproviderlogin' element={<HCProviderLanding />} />
+        <Route
+          path='/manageMedicalRecords'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageMedicalRecords />} />
+          }
+        />
         <Route
           path='/patient'
           element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />}

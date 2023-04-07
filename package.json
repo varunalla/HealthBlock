@@ -19,6 +19,7 @@
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
     "pino": "^8.11.0",
+    "react-paginate": "^8.1.5",
     "truffle": "^5.1.22",
     "typechain": "workspace:^8.1.1",
     "typescript": "^4.6",
@@ -31,5 +32,8 @@
     "generate-types": "typechain --target=ethers-v5 'client/src/contracts/*.json' --out-dir client/src/contracts",
     "migrate": "tsc -p ./tsconfig.migrate.json --outDir ./migrations && truffle migrate",
     "typecheck": "truffle compile && pnpm generate-types && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/react-paginate": "^7.1.1"
   }
 }

@@ -46,6 +46,10 @@ export declare namespace HealthBlock {
 export interface HealthBlockInterface extends utils.Interface {
   functions: {
     "patients(address)": FunctionFragment;
+    "recordRequests(address,address)": FunctionFragment;
+    "requestMedicalRecord(address)": FunctionFragment;
+    "approveMedicalRecordsRequest(address)": FunctionFragment;
+    "rejectMedicalRecordsRequest(address)": FunctionFragment;
     "raiseRequest(string,string)": FunctionFragment;
     "getRequests()": FunctionFragment;
     "approveRequest(uint256)": FunctionFragment;
@@ -64,6 +68,10 @@ export interface HealthBlockInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "patients"
+      | "recordRequests"
+      | "requestMedicalRecord"
+      | "approveMedicalRecordsRequest"
+      | "rejectMedicalRecordsRequest"
       | "raiseRequest"
       | "getRequests"
       | "approveRequest"
@@ -81,6 +89,22 @@ export interface HealthBlockInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "patients",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "recordRequests",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestMedicalRecord",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approveMedicalRecordsRequest",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rejectMedicalRecordsRequest",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -152,6 +176,22 @@ export interface HealthBlockInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "patients", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "recordRequests",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestMedicalRecord",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "approveMedicalRecordsRequest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rejectMedicalRecordsRequest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "raiseRequest",
     data: BytesLike
   ): Result;
@@ -209,7 +249,10 @@ export interface HealthBlockInterface extends utils.Interface {
     "NDoctor(address,string)": EventFragment;
     "NHCProvider(address,string)": EventFragment;
     "NPatient(address,string)": EventFragment;
+    "RequestApproved(address,address)": EventFragment;
     "RequestApproved(address,address,uint256)": EventFragment;
+    "RequestCreated(address,address)": EventFragment;
+    "RequestRejected(address,address)": EventFragment;
     "RequestRejected(address,address,uint256)": EventFragment;
   };
 
@@ -217,8 +260,19 @@ export interface HealthBlockInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "NDoctor"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NHCProvider"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NPatient"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RequestApproved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RequestRejected"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "RequestApproved(address,address)"
+  ): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "RequestApproved(address,address,uint256)"
+  ): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RequestCreated"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "RequestRejected(address,address)"
+  ): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "RequestRejected(address,address,uint256)"
+  ): EventFragment;
 }
 
 export interface DoctorRequestRaisedEventObject {
@@ -261,29 +315,66 @@ export type NPatientEvent = TypedEvent<[string, string], NPatientEventObject>;
 
 export type NPatientEventFilter = TypedEventFilter<NPatientEvent>;
 
-export interface RequestApprovedEventObject {
+export interface RequestApproved_address_address_EventObject {
+  doctorAddress: string;
+  patientAddress: string;
+}
+export type RequestApproved_address_address_Event = TypedEvent<
+  [string, string],
+  RequestApproved_address_address_EventObject
+>;
+
+export type RequestApproved_address_address_EventFilter =
+  TypedEventFilter<RequestApproved_address_address_Event>;
+
+export interface RequestApproved_address_address_uint256_EventObject {
   doctor: string;
   provider: string;
   requestId: BigNumber;
 }
-export type RequestApprovedEvent = TypedEvent<
+export type RequestApproved_address_address_uint256_Event = TypedEvent<
   [string, string, BigNumber],
-  RequestApprovedEventObject
+  RequestApproved_address_address_uint256_EventObject
 >;
 
-export type RequestApprovedEventFilter = TypedEventFilter<RequestApprovedEvent>;
+export type RequestApproved_address_address_uint256_EventFilter =
+  TypedEventFilter<RequestApproved_address_address_uint256_Event>;
 
-export interface RequestRejectedEventObject {
+export interface RequestCreatedEventObject {
+  doctorAddress: string;
+  patientAddress: string;
+}
+export type RequestCreatedEvent = TypedEvent<
+  [string, string],
+  RequestCreatedEventObject
+>;
+
+export type RequestCreatedEventFilter = TypedEventFilter<RequestCreatedEvent>;
+
+export interface RequestRejected_address_address_EventObject {
+  doctorAddress: string;
+  patientAddress: string;
+}
+export type RequestRejected_address_address_Event = TypedEvent<
+  [string, string],
+  RequestRejected_address_address_EventObject
+>;
+
+export type RequestRejected_address_address_EventFilter =
+  TypedEventFilter<RequestRejected_address_address_Event>;
+
+export interface RequestRejected_address_address_uint256_EventObject {
   doctor: string;
   provider: string;
   requestId: BigNumber;
 }
-export type RequestRejectedEvent = TypedEvent<
+export type RequestRejected_address_address_uint256_Event = TypedEvent<
   [string, string, BigNumber],
-  RequestRejectedEventObject
+  RequestRejected_address_address_uint256_EventObject
 >;
 
-export type RequestRejectedEventFilter = TypedEventFilter<RequestRejectedEvent>;
+export type RequestRejected_address_address_uint256_EventFilter =
+  TypedEventFilter<RequestRejected_address_address_uint256_Event>;
 
 export interface HealthBlock extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -323,6 +414,33 @@ export interface HealthBlock extends BaseContract {
         id: string;
       }
     >;
+
+    recordRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, number] & {
+        doctorAddress: string;
+        patientAddress: string;
+        status: number;
+      }
+    >;
+
+    requestMedicalRecord(
+      patientAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    approveMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    rejectMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     raiseRequest(
       doctorName: PromiseOrValue<string>,
@@ -407,6 +525,33 @@ export interface HealthBlock extends BaseContract {
     }
   >;
 
+  recordRequests(
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, number] & {
+      doctorAddress: string;
+      patientAddress: string;
+      status: number;
+    }
+  >;
+
+  requestMedicalRecord(
+    patientAddress: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  approveMedicalRecordsRequest(
+    doctorAddress: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  rejectMedicalRecordsRequest(
+    doctorAddress: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   raiseRequest(
     doctorName: PromiseOrValue<string>,
     credentialsHash: PromiseOrValue<string>,
@@ -487,6 +632,33 @@ export interface HealthBlock extends BaseContract {
         id: string;
       }
     >;
+
+    recordRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, number] & {
+        doctorAddress: string;
+        patientAddress: string;
+        status: number;
+      }
+    >;
+
+    requestMedicalRecord(
+      patientAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    approveMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    rejectMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     raiseRequest(
       doctorName: PromiseOrValue<string>,
@@ -598,33 +770,61 @@ export interface HealthBlock extends BaseContract {
       _name?: PromiseOrValue<string> | null
     ): NPatientEventFilter;
 
+    "RequestApproved(address,address)"(
+      doctorAddress?: PromiseOrValue<string> | null,
+      patientAddress?: PromiseOrValue<string> | null
+    ): RequestApproved_address_address_EventFilter;
     "RequestApproved(address,address,uint256)"(
       doctor?: PromiseOrValue<string> | null,
       provider?: PromiseOrValue<string> | null,
       requestId?: PromiseOrValue<BigNumberish> | null
-    ): RequestApprovedEventFilter;
-    RequestApproved(
-      doctor?: PromiseOrValue<string> | null,
-      provider?: PromiseOrValue<string> | null,
-      requestId?: PromiseOrValue<BigNumberish> | null
-    ): RequestApprovedEventFilter;
+    ): RequestApproved_address_address_uint256_EventFilter;
 
+    "RequestCreated(address,address)"(
+      doctorAddress?: PromiseOrValue<string> | null,
+      patientAddress?: PromiseOrValue<string> | null
+    ): RequestCreatedEventFilter;
+    RequestCreated(
+      doctorAddress?: PromiseOrValue<string> | null,
+      patientAddress?: PromiseOrValue<string> | null
+    ): RequestCreatedEventFilter;
+
+    "RequestRejected(address,address)"(
+      doctorAddress?: PromiseOrValue<string> | null,
+      patientAddress?: PromiseOrValue<string> | null
+    ): RequestRejected_address_address_EventFilter;
     "RequestRejected(address,address,uint256)"(
       doctor?: PromiseOrValue<string> | null,
       provider?: PromiseOrValue<string> | null,
       requestId?: PromiseOrValue<BigNumberish> | null
-    ): RequestRejectedEventFilter;
-    RequestRejected(
-      doctor?: PromiseOrValue<string> | null,
-      provider?: PromiseOrValue<string> | null,
-      requestId?: PromiseOrValue<BigNumberish> | null
-    ): RequestRejectedEventFilter;
+    ): RequestRejected_address_address_uint256_EventFilter;
   };
 
   estimateGas: {
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    recordRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    requestMedicalRecord(
+      patientAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    approveMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    rejectMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     raiseRequest(
@@ -694,6 +894,27 @@ export interface HealthBlock extends BaseContract {
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    recordRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    requestMedicalRecord(
+      patientAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    approveMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    rejectMedicalRecordsRequest(
+      doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     raiseRequest(
