@@ -1,6 +1,7 @@
 require("dotenv").config();
-const { dynamodb } = require("../factories/dynamodb");
+const { dynamodb, ses } = require("../factories/dynamodb");
 const { encode_jwt, verify_token } = require("../utils/jwt");
+const { sendEmail } = require("../utils/ses");
 
 module.exports = (app) => {
   app.get("/getAppointments/:doctorEmail", verify_token, (req, res) => {
@@ -69,6 +70,30 @@ module.exports = (app) => {
               res
                 .status(200)
                 .json({ message: "Resource updated successfully" });
+              console.log("data in put--->", data);
+              if (data && data.Attributes) {
+                const {
+                  Attributes: {
+                    patient_email,
+                    patient_name,
+                    appointment_time,
+                    created_at,
+                    doctor_email,
+                  },
+                } = data;
+                let body = "";
+                if (appointmentStatus == "confirmed") {
+                  body = `<h1>Appointment Status Update for ${patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${appointment_time} on ${created_at}</p>`;
+                } else {
+                  body = `<h1>Appointment Status Update for ${patientName}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
+                }
+                sendEmail(
+                  doctor_email,
+                  "shruthisrinivasan97@gmail.com",
+                  "Update on Appointment",
+                  body
+                );
+              }
             }
           });
         }

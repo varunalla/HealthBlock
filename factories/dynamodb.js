@@ -7,7 +7,9 @@ AWS.config.update({
 });
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const ses = new AWS.SES();
 
 module.exports = {
   dynamodb,
+  ses,
 };
