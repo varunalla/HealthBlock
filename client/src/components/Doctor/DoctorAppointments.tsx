@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 
 import { AuthContext } from '../../providers/AuthProvider';
+import { useAuthFetch } from '../../hooks/api';
 interface AppointmentDetails {
   name: string;
   patient_email: string;
@@ -14,13 +15,14 @@ interface AppointmentDetails {
 
 const DoctorAppointments: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
+  const { fetch } = useAuthFetch();
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
 
   useEffect(() => {
     getAppointment();
   }, []);
   const getAppointment = async () => {
-    let resp = await axios.get('/getAppointments/' + user?.email);
+    let resp = await fetch('GET', '/getAppointments/' + user?.email);
     if (resp && resp.data) {
       console.log('Resp-->', resp);
       setAppointmentData(resp.data);
@@ -41,8 +43,8 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
   };
   const updateStatus = async (status: String, appointmentId: String) => {
     console.log('status', status);
-    // /updateAppointmentStatus/:appointmentID/status
-    let resp = await axios.put('/updateAppointmentStatus/' + appointmentId + '/status', {
+
+    let resp = await fetch('PUT', '/updateAppointmentStatus/' + appointmentId + '/status', {
       appointmentStatus: status,
     });
     if (resp && resp.data) {
