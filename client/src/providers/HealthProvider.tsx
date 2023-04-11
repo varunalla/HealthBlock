@@ -140,17 +140,12 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
-      console.log(connection);
       const provider = new ethers.providers.Web3Provider(connection);
-      console.log(provider);
       const signer = provider.getSigner();
       const contract: HealthBlock = await fetchContract(signer);
-      console.log(contract);
       const info = await contract.requestMedicalRecord(patientAddress);
-      console.log(info);
     } catch (err) {
-      console.log(err);
-      setError('Error requesting medical records from patients');
+      setError(`Error requesting medical records from patients ${err}`);
     }
   };
 
@@ -158,17 +153,12 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
-      console.log(connection);
       const provider = new ethers.providers.Web3Provider(connection);
-      console.log(provider);
       const signer = provider.getSigner();
       const contract: HealthBlock = await fetchContract(signer);
-      console.log(contract);
       const info = await contract.approveMedicalRecordsRequest(doctorAddress);
-      console.log(info);
     } catch (err) {
-      console.log(err);
-      setError('Error approving medical records request');
+      setError(`Error approving medical records request ${err}`);
     }
   };
 
@@ -176,17 +166,12 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
-      console.log(connection);
       const provider = new ethers.providers.Web3Provider(connection);
-      console.log(provider);
       const signer = provider.getSigner();
       const contract: HealthBlock = await fetchContract(signer);
-      console.log(contract);
       const info = await contract.rejectMedicalRecordsRequest(doctorAddress);
-      console.log(info);
     } catch (err) {
-      console.log(err);
-      setError('Error rejecting medical records request');
+      setError(`Error rejecting medical records request ${err}`);
     }
   };
 

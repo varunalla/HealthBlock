@@ -43,8 +43,6 @@ contract HealthBlock {
     event RequestRejected(address indexed doctorAddress, address indexed patientAddress);
 
     function requestMedicalRecord(address patientAddress) public {
-        require(patientAddress != address(0), "Invalid patient address");
-
         medicalRecordRequest storage request = recordRequests[msg.sender][patientAddress];
 
         require(request.doctorAddress == address(0), "Request already exists");
@@ -57,9 +55,7 @@ contract HealthBlock {
         emit RequestCreated(msg.sender, patientAddress);
     }
 
-    function approveMedicalRecordsRequest(address doctorAddress) public {
-        require(doctorAddress != address(0), "Invalid doctor address");
-        
+    function approveMedicalRecordsRequest(address doctorAddress) public {        
         medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
 
         require(request.doctorAddress != address(0), "Request does not exist");
@@ -72,10 +68,8 @@ contract HealthBlock {
     }
 
     function rejectMedicalRecordsRequest(address doctorAddress) public {
-        require(doctorAddress != address(0), "Invalid doctor address");
-
         medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
-
+        require(doctorAddress != address(0), "Invalid doctor address");
         require(request.doctorAddress != address(0), "Request does not exist");
         require(request.patientAddress != address(0), "Request does not exist");
         require(request.status == RequestStatus.PENDING, "Request is not in pending status");
