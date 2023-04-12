@@ -30,6 +30,10 @@
   "scripts": {
     "generate-types": "typechain --target=ethers-v5 'client/src/contracts/*.json' --out-dir client/src/contracts",
     "migrate": "tsc -p ./tsconfig.migrate.json --outDir ./migrations && truffle migrate",
-    "typecheck": "truffle compile && pnpm generate-types && tsc --noEmit"
+    "typecheck": "truffle compile && pnpm generate-types && tsc --noEmit",
+    "prettier": "prettier --write '**/*.tsx'"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.7"
   }
 }
