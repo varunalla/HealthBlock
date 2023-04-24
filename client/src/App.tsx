@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import RoutesComponent from './components/Routes/RoutesComponent';
-import { HealthProvider } from './providers/HealthProvider'
+import { HealthProvider } from './providers/HealthProvider';
 import { AuthProvider } from './providers/AuthProvider';
 function App() {
   return (

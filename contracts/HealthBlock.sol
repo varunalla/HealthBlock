@@ -28,7 +28,6 @@ contract HealthBlock {
         address id;
     }
 
-
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
     event RequestRejected(address indexed doctor, address indexed provider, uint256 indexed requestId);
@@ -37,7 +36,7 @@ contract HealthBlock {
         address doctor;
         string doctorName;
         string credentialsHash;
-        bool approved;
+        string status;
     }
     mapping(address => Request[]) private doctorRequests;
 
@@ -58,7 +57,7 @@ contract HealthBlock {
             doctor: msg.sender,
             doctorName: doctorName,
             credentialsHash: credentialsHash,
-            approved: false
+            status: "pending"
         });
         doctorRequests[owner].push(request);
         emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
@@ -69,20 +68,18 @@ contract HealthBlock {
         return doctorRequests[owner];
     }
 
-    function approveRequest(uint256 requestId) public {
-        require(msg.sender == owner, "Only owner can call this function");
-        Request storage request = doctorRequests[owner][requestId];
-        require(!request.approved, "Request is already approved");
-        request.approved = true;
-        emit RequestApproved(request.doctor, owner, requestId);
-    }
-
     function rejectRequest(uint256 requestId) public {
         require(msg.sender == owner, "Only owner can call this function");
         Request storage request = doctorRequests[owner][requestId];
-        require(!request.approved, "Request is already rejected");
-        request.approved = false;
+        request.status = "rejected";
         emit RequestRejected(request.doctor, owner, requestId);
+    }
+
+    function approveRequest(uint256 requestId) public {
+        require(msg.sender == owner, "Only owner can call this function");
+        Request storage request = doctorRequests[owner][requestId];
+        request.status = "approved";
+        emit RequestApproved(request.doctor, owner, requestId);
     }
 
     // event for EVM logging
@@ -94,9 +91,9 @@ contract HealthBlock {
     mapping (address => hcprovider) internal hcproviders;
 
     modifier checkHealthCareProvider(address id) {
-            hcprovider storage h = hcproviders[id];
-            require(h.id > address(0x0));//check if HealthCare Provider exists
-            _;
+        hcprovider storage h = hcproviders[id];
+        require(h.id > address(0x0));//check if HealthCare Provider exists
+        _;
     }
 
     modifier checkDoctor(address id) {
@@ -104,13 +101,11 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
-    
     modifier checkPatient(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
     }
-    
     modifier checkRequests(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
@@ -151,6 +146,7 @@ contract HealthBlock {
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
         emit NPatient(msg.sender, _name);
     } 
+
     function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory) {
             hcprovider storage h = hcproviders[msg.sender];
             return (h.name, h.email, h.providerAddress, h.phone);
