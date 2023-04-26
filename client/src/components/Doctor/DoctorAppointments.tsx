@@ -1,38 +1,56 @@
-import React, { FunctionComponent, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
+
 import { AuthContext } from '../../providers/AuthProvider';
+import { useAuthFetch } from '../../hooks/api';
+interface AppointmentDetails {
+  name: string;
+  patient_email: string;
+  appointment_id: string;
+  patient_name: string;
+  created_at: string;
+  appointment_time: string;
+  appointment_status: string;
+}
 
 const DoctorAppointments: FunctionComponent<{}> = () => {
-  const appointments = [
-    {
-      name: 'Shruthi',
-      email: 'shruthi@gmail.com',
-      date: '03/26/2023',
-      time: '9.00 AM',
-      status: 'Pending',
-      id: '1',
-    },
-    {
-      name: 'Hasini',
-      email: 'hasini@gmail.com',
-      date: '03/27/2023',
-      time: '10.00 AM',
-      status: 'Confirmed',
-      id: '1',
-    },
-  ];
+  const { user, role, logout } = useContext(AuthContext);
+  const { fetch } = useAuthFetch();
+  const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
+
+  useEffect(() => {
+    getAppointment();
+  }, []);
+  const getAppointment = async () => {
+    let resp = await fetch('GET', '/appointments/' + user?.email);
+    if (resp && resp.data && resp.data.result) {
+      setAppointmentData(resp.data.result);
+    } else {
+      setAppointmentData([]);
+    }
+  };
+
   const getStatusColor = (status: String) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-yellow-200';
-      case 'Confirmed':
+      case 'confirmed':
         return 'bg-green-200';
-      case 'Cancelled':
+      case 'reject':
         return 'bg-red-200';
       default:
         return '';
     }
   };
+  const updateStatus = async (status: String, appointmentId: String) => {
+    let resp = await fetch('PUT', '/appointmentStatus/' + appointmentId + '/status', {
+      appointmentStatus: status,
+    });
+
+    if (resp && resp.status == 204) {
+      alert('Appointment status updated');
+      getAppointment();
+    }
+  };
+
   return (
     <div className='flex flex-col  px-4 lg:px-8 '>
       <div className='bg-gray-100 py-4 px-4 flex items-center justify-between'>
@@ -91,28 +109,46 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
+                {appointmentData.map((appointment) => (
+                  <tr key={appointment.appointment_id}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{appointment.name}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{appointment.email}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                      {appointment.date}
+                      {appointment.created_at}
                     </td>
 
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                      {appointment.time}
+                      {appointment.appointment_time}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          appointment.status,
+                          appointment.appointment_status,
                         )}`}
                       >
-                        {appointment.status}
+                        {appointment.appointment_status == 'pending' ? (
+                          <div className='flex justify-between'>
+                            <button
+                              className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded'
+                              onClick={() => updateStatus('reject', appointment.appointment_id)}
+                            >
+                              Reject
+                            </button>
+                            <div className='w-4'></div>
+                            <button
+                              className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded'
+                              onClick={() => updateStatus('confirmed', appointment.appointment_id)}
+                            >
+                              Confirm
+                            </button>
+                          </div>
+                        ) : (
+                          <div>{appointment.appointment_status}</div>
+                        )}
                       </span>
                     </td>
                   </tr>

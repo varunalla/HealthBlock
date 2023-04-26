@@ -4,6 +4,8 @@ const {
   getDoctors,
   getDocAvailability,
   postAppointments,
+  getAppointments,
+  updateAppointmentStatus,
 } = require("../utils/queries");
 const uuid = require("uuid");
 
@@ -51,75 +53,34 @@ module.exports = (app) => {
     }
   });
 
-  app.get("/getAppointments/:doctorEmail", verify_token, (req, res) => {
+  app.get("/appointments/:doctorEmail", verify_token, async (req, res) => {
     let { doctorEmail } = req.params;
+    try {
+      let result = await getAppointments(doctorEmail);
 
-    const params = {
-      TableName: "appointments",
-      KeyConditionExpression: "doctor_email = :doctorEmail",
-      ExpressionAttributeValues: {
-        ":doctorEmail": doctorEmail,
-      },
-    };
-
-    dynamodb.query(params, (err, data) => {
-      if (err) {
-        res.send(err);
-      } else {
-        res.status(200).send(data.Items ? data.Items : data);
-      }
-    });
+      res.send({ success: true, result });
+    } catch (err) {
+      res.status(500).send({ success: false, msg: "Internal server err" });
+    }
   });
 
   app.put(
-    "/updateAppointmentStatus/:appointmentID/status",
+    "/appointmentStatus/:appointmentID/status",
     verify_token,
-    (req, res) => {
+    async (req, res) => {
       const { appointmentID } = req.params;
       const { appointmentStatus } = req.body;
 
-      const params = {
-        TableName: "appointments",
-        FilterExpression: "appointment_id = :appointmentId",
-        ExpressionAttributeValues: {
-          ":appointmentId": appointmentID,
-        },
-      };
+      try {
+        let result = await updateAppointmentStatus(
+          appointmentID,
+          appointmentStatus
+        );
 
-      dynamodb.scan(params, (err, data) => {
-        if (err) {
-          console.error("Error scanning appointment", err);
-        } else {
-          console.log("Scan succeeded:", data);
-        }
-        if (data && data.Items && data.Items.length > 0) {
-          let results = data.Items[0];
-          const updateParams = {
-            TableName: "appointments",
-            Key: {
-              doctor_email: results.doctor_email,
-              created_at: results.created_at,
-            },
-            UpdateExpression: "set appointment_status = :status",
-            ExpressionAttributeValues: {
-              ":status": appointmentStatus,
-            },
-            ReturnValues: "ALL_NEW",
-          };
-
-          dynamodb.update(updateParams, (err, data) => {
-            if (err) {
-              console.error("Error updating appointment status", err);
-              res.status(500).send("Error updating record");
-            } else {
-              console.log("Appointment status updated successfully", data);
-              res
-                .status(200)
-                .json({ message: "Resource updated successfully" });
-            }
-          });
-        }
-      });
+        res.status(204).send({ success: true, msg: "Update succesfull" });
+      } catch (err) {
+        res.status(500).send({ success: false, msg: "Update unsuccessful" });
+      }
     }
   );
 };

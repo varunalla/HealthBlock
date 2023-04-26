@@ -69,4 +69,76 @@ async function postAppointments(body) {
   }
 }
 
-module.exports = { getDoctors, getDocAvailability, postAppointments };
+async function getAppointments(doctor) {
+  console.log("get Appointments");
+  const params = {
+    TableName: "appointments",
+    KeyConditionExpression: "doctor_email = :doctorEmail",
+    ExpressionAttributeValues: {
+      ":doctorEmail": doctor,
+    },
+  };
+  try {
+    let result = await dynamodb.query(params).promise();
+    console.log("resp from getappointments-->", result);
+    if (result.Items && result.Items.length > 0) {
+      return result.Items;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    return new Error("Could not retrieve data");
+  }
+}
+
+async function updateAppointmentStatus(appt_id, appt_status) {
+  console.log("update Appointments");
+  const params = {
+    TableName: "appointments",
+    FilterExpression: "appointment_id = :appointmentId",
+    ExpressionAttributeValues: {
+      ":appointmentId": appt_id,
+    },
+  };
+
+  dynamodb.scan(params, (err, data) => {
+    if (err) {
+      console.error("Error scanning appointment", err);
+      return new Error("Could not retrieve appointment data");
+    } else {
+      console.log("Scan succeeded:", data);
+    }
+    if (data && data.Items && data.Items.length > 0) {
+      let results = data.Items[0];
+      const updateParams = {
+        TableName: "appointments",
+        Key: {
+          doctor_email: results.doctor_email,
+          created_at: results.created_at,
+        },
+        UpdateExpression: "set appointment_status = :status",
+        ExpressionAttributeValues: {
+          ":status": appt_status,
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      dynamodb.update(updateParams, (err, data) => {
+        if (err) {
+          return new Error("Could not update");
+        } else {
+          console.log("Appointment status updated successfully", data);
+          return data.Attributes;
+        }
+      });
+    }
+  });
+}
+
+module.exports = {
+  getDoctors,
+  getDocAvailability,
+  postAppointments,
+  getAppointments,
+  updateAppointmentStatus,
+};
