@@ -198,4 +198,13 @@ module.exports = (app, metaAuth) => {
       res.json({ status: "alive" });
     }
   );
+  //response only if the user has read status grant
+  app.post(
+    "/verify_token/doctor",
+    verify_token,
+    verifyGrant([GRANTS.STATUS_GRANT, GRANTS.DOCTOR_GRANT]),
+    (req, res) => {
+      res.json({ status: "alive" });
+    }
+  );
 };

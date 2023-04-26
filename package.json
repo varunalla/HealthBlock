@@ -19,6 +19,7 @@
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
     "pino": "^8.11.0",
+    "pino-pretty": "^10.0.0",
     "truffle": "^5.1.22",
     "typechain": "workspace:^8.1.1",
     "typescript": "^4.6",
