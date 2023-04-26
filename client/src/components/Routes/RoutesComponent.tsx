@@ -11,6 +11,8 @@ import PatientDashboard from '../Patient/PatientDashboard';
 import PatientLanding from '../Patient/PatientLanding';
 import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
+import PatientAppointment from '../Patient/PatientAppointment';
+import ScheduleAppointment from '../Patient/ScheduleAppointment';
 
 const RoutesComponent: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -52,6 +54,19 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           path='/hcprovider'
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCProviderDashboard />} />
+          }
+        />
+        <Route
+          path='/patientappointments'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientAppointment />} />
+          }
+        />
+
+<Route
+          path='/scheduleappointments'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ScheduleAppointment />} />
           }
         />
       </Routes>
