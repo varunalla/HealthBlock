@@ -24,10 +24,11 @@ module.exports = (app) => {
 
   app.get("/availability/:doctor/:date", verify_token, async (req, res) => {
     let { doctor, date } = req.params;
+
     try {
       let result = await getDocAvailability(doctor, date);
 
-      res.send({ success: true, result });
+      res.status(201).send({ success: true, result });
     } catch (err) {
       res.status(500).send();
     }
@@ -49,6 +50,7 @@ module.exports = (app) => {
 
       res.status(201).json("Appointment created succesfully");
     } catch (err) {
+      console.log("err from post");
       res.status(500).json("Error creating appointment");
     }
   });

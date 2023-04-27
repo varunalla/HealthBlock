@@ -1,7 +1,8 @@
 import React, { FormEvent, FunctionComponent, useContext, useEffect, useState } from 'react';
 import moment from 'moment';
+import { ToastContainer, toast } from 'react-toastify';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 interface Appointment {
@@ -13,10 +14,12 @@ interface Appointment {
 }
 
 const ScheduleAppointment: FunctionComponent<{}> = () => {
+  const { state } = useLocation();
+
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
   const [appt_date, setDate] = useState(moment().format('YYYY-MM-DD'));
-  const [time, setTime] = useState('10 AM');
+  const [time, setTime] = useState('10:00 AM');
   const [reason, setReason] = useState('');
   const [time_slots, setTimeSlots] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState<Appointment>({
@@ -28,10 +31,11 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
   });
 
   useEffect(() => {
-    getDocAvailability('xyz@gmail.com', appt_date);
+    getDocAvailability(state.doctor, appt_date);
   }, []);
   const getDocAvailability = async (doc_email: string, appt_date: string) => {
     let resp = await fetch('GET', '/availability/' + `${doc_email}` + `/${appt_date}`);
+
     if (resp && resp.data && resp.data.result) {
       setTimeSlots(resp.data.result);
     } else {
@@ -42,7 +46,7 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
   const scheduleAppt = async () => {
     const body = {
       patientEmail: user?.email,
-      doctorEmail: 'xyz@gmail.com',
+      doctorEmail: state.doctor,
       patientName: user?.name,
       reason: reason,
       appointmentDate: appt_date,
@@ -50,6 +54,12 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
       status: 'pending',
     };
     let resp = await fetch('POST', '/appointments', body);
+
+    if (resp && resp.status == 201) {
+      alert('Appointment created');
+    } else {
+      alert('Could not schedule an appointment, Please try again!');
+    }
   };
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -66,7 +76,7 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
           <input
             type='text'
             id='doctor-name'
-            value={'Doc_XYZ'}
+            value={state.doctor_name}
             //onChange={(e) =>
             //setDoctorName(e.target.value)
             //}
@@ -80,7 +90,7 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
           <input
             type='email'
             id='doctor-email'
-            value={'xyz@gmail.com'}
+            value={state.doctor}
             //onChange={(e) =>
             // setDoctorEmail(e.target.value)
             // }
@@ -97,7 +107,7 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
             value={appt_date}
             onChange={(e) => {
               setDate(e.target.value);
-              getDocAvailability('xyz@gmail.com', e.target.value);
+              getDocAvailability(state.doctor, e.target.value);
             }}
             className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
           />
