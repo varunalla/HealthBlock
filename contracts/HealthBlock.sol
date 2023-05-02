@@ -35,7 +35,7 @@ contract HealthBlock {
     struct Request {
         address doctor;
         string doctorName;
-        string credentialsHash;
+        string fileName;
         string status;
     }
     mapping(address => Request[]) private doctorRequests;
@@ -52,15 +52,15 @@ contract HealthBlock {
         _;
     }
 
-    function raiseRequest(string memory doctorName, string memory credentialsHash) public {
+    function raiseRequest(string memory doctorName, string memory fileName) public {
         Request memory request = Request({
             doctor: msg.sender,
             doctorName: doctorName,
-            credentialsHash: credentialsHash,
+            fileName: fileName,
             status: "pending"
         });
         doctorRequests[owner].push(request);
-        emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
+        emit DoctorRequestRaised(msg.sender, doctorName, fileName);
     }
 
     function getRequests() public view returns(Request[] memory) {
@@ -89,6 +89,7 @@ contract HealthBlock {
     mapping (address => patient) public patients;
     mapping (address => doctor) internal doctors;
     mapping (address => hcprovider) internal hcproviders;
+    hcprovider[] public providerList;
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -147,6 +148,22 @@ contract HealthBlock {
         emit NPatient(msg.sender, _name);
     } 
 
+    // function getHCProviders() public view returns (hcprovider[] memory) {
+    //     hcprovider[] memory allProviders = new hcprovider[](address(this).balance);
+    //     uint256 count = 0;
+    //     for (uint256 i = 0; i < allProviders.length; i++) {
+    //         if (hcproviders[msg.sender].id > address(0x0)) {
+    //             allProviders[count] = hcproviders[msg.sender];
+    //             count++;
+    //         }
+    //     }
+    //     return allProviders;
+    // }
+
+    function getAllProviders() public view returns (hcprovider[] memory) {
+        return providerList;
+    }
+
     function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory) {
             hcprovider storage h = hcproviders[msg.sender];
             return (h.name, h.email, h.providerAddress, h.phone);
@@ -163,5 +180,6 @@ contract HealthBlock {
             require(keccak256(abi.encodePacked(_phone)) != keccak256(abi.encodePacked("")));
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
+            providerList.push(hcproviders[msg.sender]);
     } 
 }

@@ -2,12 +2,20 @@ import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
+import * as CryptoJS from 'crypto-js';
+const AWS = require('aws-sdk');
 
 const HCProviderDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { user, role, logout } = useContext(AuthContext);
   const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
     useContext(HealthContext);
+  const s3 = new AWS.S3({
+    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+    region: process.env.REACT_APP_AWS_REGION
+  });
+
   const logouthandler = () => {
     logout?.();
     navigate('/hcproviderlogin');
@@ -27,6 +35,49 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       console.log(err);
     }
   };
+
+  const decrypt = (data: Uint8Array, key: string): Uint8Array => {
+    const cipherParams = CryptoJS.lib.CipherParams.create({
+      ciphertext: CryptoJS.lib.WordArray.create(Array.from(data)),
+    });
+    const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    return new Uint8Array(decrypted.words);
+  };
+  
+
+  const downloadFile = async (fileName ?: string) => {
+    if (!fileName) {
+      throw new Error('File name is required');
+    }
+  
+    try {
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_NAME,
+        Key: fileName,
+      };
+      const { Body } = await s3.getObject(params).promise();
+      console.log("File Body ---> ", Body.buffer);
+      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), user!.name);
+      console.log("decryptedFile ----> ", decryptedFile.buffer);
+      const blob = new Blob([decryptedFile], { type: "application/pdf"});
+      console.log("File blob ----> ", blob);
+      const url = window.URL.createObjectURL(blob);
+      console.log("File download url ---->", url); 
+      const link = document.createElement('a');
+      console.log("File download link ---->", link);
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
 
   useEffect(() => {
     (() => {
@@ -53,7 +104,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
           <thead>
             <tr>
               <th className='px-6 py-3 text-center'>Doctor Name</th>
-              <th className='px-6 py-3 text-center'>Credentials Hash</th>
+              <th className='px-6 py-3 text-center'>File Name</th>
               <th className='px-6 py-3 text-center'>Status</th>
               <th className='px-6 py-3 text-center'>Action</th>
             </tr>
@@ -72,7 +123,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                       | React.ReactPortal
                       | null
                       | undefined;
-                    credentialsHash:
+                      fileName:
                       | string
                       | number
                       | boolean
@@ -87,7 +138,16 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                 ) => (
                   <tr key={index}>
                     <td className='px-6 py-4 text-center'>{request.doctorName}</td>
-                    <td className='px-6 py-4 text-center'>{request.credentialsHash}</td>
+                    <button
+                            className='ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                            onClick={() => {
+                              if (typeof request.fileName === 'string') {
+                                downloadFile(request.fileName);
+                              }
+                            }}
+                          >
+                          {request.fileName}
+                        </button>
                     <td className='px-6 py-4 text-center'>
                       {request.status == 'approved'
                         ? 'Approved'
@@ -110,6 +170,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                           >
                             Reject
                           </button>
+                         
                         </>
                       )}
                     </td>
