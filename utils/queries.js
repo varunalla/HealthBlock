@@ -1,4 +1,5 @@
 const { createDynamoDBClient } = require("../factories/aws");
+const { sendEmail } = require("./ses");
 require("dotenv").config();
 const dynamodb = createDynamoDBClient(
   process.env.AWS_ACCESS_KEY_ID,
@@ -127,7 +128,19 @@ async function updateAppointmentStatus(appt_id, appt_status) {
         if (err) {
           return new Error("Could not update");
         } else {
-          console.log("Appointment status updated successfully", data);
+          console.log("Appointment update-->", data.Attributes);
+          let body = "";
+          if (data.Attributes?.appointment_status == "confirmed") {
+            body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${appointment_time} on ${created_at}</p>`;
+          } else {
+            body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
+          }
+          sendEmail(
+            data.Attributes?.patient_email,
+
+            data.Attributes?.doctor_email,
+            body
+          );
           return data.Attributes;
         }
       });

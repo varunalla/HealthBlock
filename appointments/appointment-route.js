@@ -78,6 +78,20 @@ module.exports = (app) => {
           appointmentID,
           appointmentStatus
         );
+        console.log("result", result);
+        // let body = "";
+        // if (appointmentStatus == "confirmed") {
+        //   body = `<h1>Appointment Status Update for ${patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${appointment_time} on ${created_at}</p>`;
+        // } else {
+        //   body = `<h1>Appointment Status Update for ${patientName}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
+        // }
+
+        // sendEmail(
+        //   doctor_email,
+        //   "shruthisrinivasan97@gmail.com",
+        //   "Update on Appointment",
+        //   body
+        // );
 
         res.status(204).send({ success: true, msg: "Update succesfull" });
       } catch (err) {
