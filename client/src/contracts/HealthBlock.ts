@@ -41,28 +41,6 @@ export declare namespace HealthBlock {
     credentialsHash: string;
     status: string;
   };
-
-  export type HcproviderStruct = {
-    name: PromiseOrValue<string>;
-    email: PromiseOrValue<string>;
-    providerAddress: PromiseOrValue<string>;
-    phone: PromiseOrValue<string>;
-    id: PromiseOrValue<string>;
-  };
-
-  export type HcproviderStructOutput = [
-    string,
-    string,
-    string,
-    string,
-    string
-  ] & {
-    name: string;
-    email: string;
-    providerAddress: string;
-    phone: string;
-    id: string;
-  };
 }
 
 export interface HealthBlockInterface extends utils.Interface {
@@ -78,7 +56,6 @@ export interface HealthBlockInterface extends utils.Interface {
     "getDoctorInfo()": FunctionFragment;
     "getDoctorInfoAll(address)": FunctionFragment;
     "registerDoctor(string,uint8,string,string)": FunctionFragment;
-    "getHCProviders()": FunctionFragment;
     "getHCProviderInfo()": FunctionFragment;
     "getHCProviderInfoAll(address)": FunctionFragment;
     "registerHCProvider(string,string,string,string)": FunctionFragment;
@@ -97,7 +74,6 @@ export interface HealthBlockInterface extends utils.Interface {
       | "getDoctorInfo"
       | "getDoctorInfoAll"
       | "registerDoctor"
-      | "getHCProviders"
       | "getHCProviderInfo"
       | "getHCProviderInfoAll"
       | "registerHCProvider"
@@ -157,10 +133,6 @@ export interface HealthBlockInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getHCProviders",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "getHCProviderInfo",
     values?: undefined
   ): string;
@@ -217,10 +189,6 @@ export interface HealthBlockInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "registerDoctor",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getHCProviders",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -409,10 +377,6 @@ export interface HealthBlock extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getHCProviders(
-      overrides?: CallOverrides
-    ): Promise<[HealthBlock.HcproviderStructOutput[]]>;
-
     getHCProviderInfo(
       overrides?: CallOverrides
     ): Promise<[string, string, string, string]>;
@@ -493,10 +457,6 @@ export interface HealthBlock extends BaseContract {
     _specialization: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  getHCProviders(
-    overrides?: CallOverrides
-  ): Promise<HealthBlock.HcproviderStructOutput[]>;
 
   getHCProviderInfo(
     overrides?: CallOverrides
@@ -580,10 +540,6 @@ export interface HealthBlock extends BaseContract {
       _specialization: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    getHCProviders(
-      overrides?: CallOverrides
-    ): Promise<HealthBlock.HcproviderStructOutput[]>;
 
     getHCProviderInfo(
       overrides?: CallOverrides
@@ -718,8 +674,6 @@ export interface HealthBlock extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getHCProviders(overrides?: CallOverrides): Promise<BigNumber>;
-
     getHCProviderInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     getHCProviderInfoAll(
@@ -788,8 +742,6 @@ export interface HealthBlock extends BaseContract {
       _specialization: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    getHCProviders(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getHCProviderInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
