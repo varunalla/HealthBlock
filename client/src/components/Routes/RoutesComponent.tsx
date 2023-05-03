@@ -10,6 +10,7 @@ import HCProviderDashboard from '../HealthCareProvider/HCProviderDashboard';
 import PatientDashboard from '../Patient/PatientDashboard';
 import PatientLanding from '../Patient/PatientLanding';
 import ManageMedicalRecords from '../Doctor/ManageMedicalrecords';
+import PatientManageMedicalRecords from '../Patient/PatientManageMedicalRecords';
 import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
 
@@ -38,6 +39,15 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           path='/manageMedicalRecords'
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageMedicalRecords />} />
+          }
+        />
+        <Route
+          path='/patientManageMedicalRecords'
+          element={
+            <ProtectedRoute
+              {...defaultProtectedRouteProps}
+              outlet={<PatientManageMedicalRecords />}
+            />
           }
         />
         <Route
