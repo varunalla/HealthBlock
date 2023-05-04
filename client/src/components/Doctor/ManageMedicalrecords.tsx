@@ -1,123 +1,28 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useContext, useState, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
 import { HealthContext } from '../../providers/HealthProvider';
 import AWS from 'aws-sdk';
+import axios from 'axios';
+import { AuthContext } from '../../providers/AuthProvider';
+import { useAuthFetch } from '../../hooks/api';
 
-interface patientData {
-  id: number;
-  fullname: string;
-  pubAd: string;
-  date: Date;
-  email: string;
+interface AppointmentDetails {
+  doctor_name: string;
+  doctor_email: string;
+  patient_email: string;
+  appointment_id: string;
+  patient_name: string;
+  doctor_address: string;
+  patient_address: string;
+  created_at: string;
+  appointment_time: string;
+  appointment_status: string;
 }
-const cards: { [key: number]: patientData } = {
-  0: {
-    id: 1,
-    fullname: 'John Doe',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-04-12'),
-    email: 'johndoe@example.com',
-  },
-  1: {
-    id: 2,
-    fullname: 'Jane Doe',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-03-17'),
-    email: 'janedoe@example.com',
-  },
-  2: {
-    id: 3,
-    fullname: 'Bob Smith',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-02-22'),
-    email: 'bobsmith@example.com',
-  },
-  3: {
-    id: 4,
-    fullname: 'Alice Smith',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-03-22'),
-    email: 'dharahasini.gangalapudi@gmail.com',
-  },
-  4: {
-    id: 5,
-    fullname: 'Tom Brown',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-01-22'),
-    email: 'tombrown@example.com',
-  },
-  5: {
-    id: 6,
-    fullname: 'Sara Kim',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-04-21'),
-    email: 'sarakhim@example.com',
-  },
-  6: {
-    id: 7,
-    fullname: 'Mary Lee',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-02-26'),
-    email: 'marylee@example.com',
-  },
-  7: {
-    id: 8,
-    fullname: 'David Kim',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-04-12'),
-    email: 'davidkim@example.com',
-  },
-  8: {
-    id: 9,
-    fullname: 'Rishi',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-03-19'),
-    email: 'hasinireddy765@gmail.com',
-  },
-  9: {
-    id: 10,
-    fullname: 'Mike Johnson',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-03-14'),
-    email: 'mikejohnson@example.com',
-  },
-  10: {
-    id: 11,
-    fullname: 'Lisa Johnson',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-04-06'),
-    email: 'lisajohnson@example.com',
-  },
-  11: {
-    id: 12,
-    fullname: 'Steve Lee',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2022-04-09'),
-    email: 'stevelee@example.com',
-  },
-  12: {
-    id: 13,
-    fullname: 'Kate Lee',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2022-02-12'),
-    email: 'katelee@example.com',
-  },
-  13: {
-    id: 14,
-    fullname: 'Alex Brown',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-02-10'),
-    email: 'alexbrown@example.com',
-  },
-  14: {
-    id: 15,
-    fullname: 'Emily Brown',
-    pubAd: '0xa1b422ca56b4d40800dfab2031ae7c0832d2bd52',
-    date: new Date('2023-02-22'),
-    email: 'emilybrown@example.com',
-  },
-};
+
 const ManageMedicalRecords: FunctionComponent<{}> = () => {
+  const { user, role, logout } = useContext(AuthContext);
+  const { fetch } = useAuthFetch();
+  const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOption, setFilterOption] = useState<string>('all');
   const [showRequestPopup, setShowRequestPopup] = useState(false);
@@ -126,11 +31,42 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const [showUploadPopup, setShowUploadPopup] = useState(false);
   const cardsPerPage = 4;
 
+  useEffect(() => {
+    getAppointment();
+  }, []);
+  const getAppointment = async () => {
+    let resp = await fetch('GET', '/appointments/' + user?.email);
+    if (resp && resp.data && resp.data.result) {
+      setAppointmentData(resp.data.result);
+    } else {
+      setAppointmentData([]);
+    }
+  };
+  const getStatusColor = (status: String) => {
+    switch (status) {
+      case 'confirmed':
+        return 'bg-green-200';
+      case 'reject':
+        return 'bg-red-200';
+      default:
+        return '';
+    }
+  };
+  const updateStatus = async (status: String, appointmentId: String) => {
+    let resp = await fetch('PUT', '/appointmentStatus/' + appointmentId + '/status', {
+      appointmentStatus: status,
+    });
+    if (resp && resp.status == 204) {
+      alert('Appointment status updated');
+      getAppointment();
+    }
+  };
+
   const ses = new AWS.SES({
     apiVersion: '2010-12-01',
     region: 'us-east-1',
-    accessKeyId: process.env['ACCESS_KEY_ID'],
-    secretAccessKey: process.env['SECRET_ACCESS_KEY'],
+    accessKeyId: 'AKIAWKISFSUD75424ZI4',
+    secretAccessKey: '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',
   });
 
   function sendRequestEmail(to: string) {
@@ -237,43 +173,31 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
     setCurrentPage(1); // Reset current page to 1 when filter option is changed
   };
 
-  const filteredCards = Object.values(cards).filter((card: patientData) => {
-    if (filterOption === 'all') {
-      return true;
-    } else if (filterOption === 'upcoming') {
-      return card.date >= new Date();
-    } else if (filterOption === 'past') {
-      return card.date < new Date();
-    }
-    return false;
-  });
+  // const filteredCards = Object.values(cards).filter((card: patientData) => {
+  //   if (filterOption === 'all') {
+  //     return true;
+  //   } else if (filterOption === 'upcoming') {
+  //     return card.date >= new Date();
+  //   } else if (filterOption === 'past') {
+  //     return card.date < new Date();
+  //   }
+  //   return false;
+  // });
 
-  // Calculate index of first and last card for the current page
-  const indexOfFirstCard = (currentPage - 1) * cardsPerPage;
-  const indexOfLastCard = Math.min(indexOfFirstCard + cardsPerPage, filteredCards.length) - 1;
+  // // Calculate index of first and last card for the current page
+  // const indexOfFirstCard = (currentPage - 1) * cardsPerPage;
+  // const indexOfLastCard = Math.min(indexOfFirstCard + cardsPerPage, filteredCards.length) - 1;
 
-  // Get subset of cards for the current page
-  const currentCards = Object.values(filteredCards)
-    .slice(indexOfFirstCard, indexOfLastCard + 1)
-    .map((card: patientData) => ({
-      id: card.id,
-      fullname: card.fullname,
-      pubAd: card.pubAd,
-      date: card.date,
-      email: card.email,
-    }));
-
-  const { currentAccount, requestMedicalRecordHealthBlockContract } = useContext(HealthContext);
-  const [patientAddress, setPatientAddress] = useState<string>(
-    '0x1F31cA592A92271F07adC7725BA9f8A6da5dAfac',
-  );
-  const requestMedicalRecord = async () => {
-    try {
-      await requestMedicalRecordHealthBlockContract?.(patientAddress);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // // Get subset of cards for the current page
+  // const currentCards = Object.values(filteredCards)
+  //   .slice(indexOfFirstCard, indexOfLastCard + 1)
+  //   .map((card: patientData) => ({
+  //     id: card.id,
+  //     fullname: card.fullname,
+  //     pubAd: card.pubAd,
+  //     date: card.date,
+  //     email: card.email,
+  //   }));
 
   return (
     <div>
@@ -341,19 +265,19 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                   </tr>
                 </thead>
 
-                {currentCards.map((card) => (
-                  <tr key={card.id}>
+                {appointmentData.map((appointment) => (
+                  <tr key={appointment.appointment_id}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.fullname}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.pubAd}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_address}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.date.toLocaleDateString()}</div>
+                      <div className='text-sm text-gray-900'>{appointment.created_at}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.email}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900'>
@@ -406,9 +330,8 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       <p className='text-sm leading-5 text-gray-500'>
                                         You are requesting medical records from{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {card.fullname}
+                                          {appointment.patient_name}
                                         </span>
-                                        <p>({card.pubAd})</p>
                                       </p>
                                     </div>
                                   </div>
@@ -423,8 +346,8 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5'
                                       onClick={() => {
                                         toggleRequestPopup();
-                                        requestMedicalRecord();
-                                        handleRequest(card.email);
+                                        // requestMedicalRecord();
+                                        handleRequest(appointment.patient_email);
                                       }}
                                     >
                                       Confirm
@@ -478,9 +401,9 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       <p className='text-sm leading-5 text-gray-500'>
                                         You are uploading medical records for{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {card.fullname}
+                                          {appointment.patient_email}
                                         </span>
-                                        <p>({card.pubAd})</p>
+                                        <p>({appointment.patient_address})</p>
                                       </p>
                                       <div className='mt-2'>
                                         <label htmlFor='file-upload' className='cursor-pointer'>
@@ -542,7 +465,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
               </table>
             </div>
           </div>
-          <div className='flex justify-center items-center'>
+          {/* <div className='flex justify-center items-center'>
             {Object.keys(filteredCards).length > cardsPerPage && (
               <ReactPaginate
                 previousLabel={
@@ -565,9 +488,9 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                   'inline-block border border-blue-500 rounded py-1 px-3 bg-blue-500 text-white'
                 }
                 onPageChange={({ selected }: { selected: number }) => handlePageClick(selected + 1)}
-              />
-            )}
-          </div>
+              /> */}
+          {/* )}
+          </div> */}
         </div>
       </div>
     </div>

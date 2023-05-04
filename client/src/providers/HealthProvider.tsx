@@ -13,6 +13,16 @@ interface Request {
   status: string;
 }
 
+interface MedicalRecordRequest {
+  doctorAddress: string;
+  patientAddress: string;
+  docName: string;
+  docEmail: string;
+  patientName: string;
+  patientEmail: string;
+  reqStatus: string;
+}
+
 export type Patient = {
   name: string;
   age: number;
@@ -36,17 +46,25 @@ interface HealthAppContextInterface {
     address: string,
     phone: string,
   ) => Promise<void>;
-  requestMedicalRecordHealthBlockContract?: (patientAddress: string) => Promise<void>;
-  approveMedicalRecordsRequestHealthBlockContract?: (doctorAddress: string) => Promise<void>;
-  rejectMedicalRecordsRequestHealthBlockContract?: (doctorAddress: string) => Promise<void>;
+  requestMedicalRecordHealthBlockContract?: (
+    patientAddress: string,
+    docName: string,
+    patientName: string,
+    docEmail: string,
+    patientEmail: string,
+  ) => Promise<void>;
+  approveMedicalRecordsRequestHealthBlockContract?: (requestID: number) => Promise<void>;
+  rejectMedicalRecordsRequestHealthBlockContract?: (requestID: number) => Promise<void>;
   handleRaiseRequest?: (doctorName: string, file: File | null) => Promise<void>;
   handleApproveRequest?: (requestId: number) => Promise<void>;
   handleRejectRequest?: (requestId: number) => Promise<void>;
   fetchPatientContract?: () => Promise<Patient | undefined>;
   fetchPatientInfoContract?: (address: string) => Promise<void>;
   fetchRequests?: () => Promise<void>;
+  fetchMedicalRecordRequests?: () => Promise<void>;
   currentAccount?: string;
   verificationRequests?: Request[];
+  medicalRecordRequests?: MedicalRecordRequest[];
 }
 
 const fetchContract = (signerOrProvider: ethers.Signer | ethers.providers.Provider) =>
@@ -62,8 +80,14 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
   const [currentAccount, setCurrentAccount] = useState('');
   const [error, setError] = useState('');
   const [verificationRequests, setVerificationRequests] = useState<Request[]>([]);
+  const [medicalRecordRequests, setMedicalRecordRequests] = useState<MedicalRecordRequest[]>([]);
   const [doctorName, setDoctorName] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [patientAddress, setPatientAddress] = useState('');
+  const [docName, setDocName] = useState('');
+  const [docEmail, setDocEmail] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [patientEmail, setpatientEmail] = useState('');
 
   //fetch metamask accounts
   const checkIfWalletIsConnected = async () => {
@@ -168,42 +192,85 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
-  const requestMedicalRecordHealthBlockContract = async (patientAddress: string) => {
+  const requestMedicalRecordHealthBlockContract = async (
+    patientAddress: string,
+    docName: string,
+    patientName: string,
+    docEmail: string,
+    patientEmail: string,
+  ) => {
     try {
+      setPatientAddress(patientAddress);
+      setDocName(docName);
+      setDocEmail(docEmail);
+      setPatientName(patientName);
+      setpatientEmail(patientEmail);
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract: HealthBlock = await fetchContract(signer);
-      const info = await contract.requestMedicalRecord(patientAddress);
+      const contract = await fetchContract(signer);
+      const info = await contract.requestMedicalRecord(
+        patientAddress,
+        docName,
+        patientName,
+        docEmail,
+        patientEmail,
+      );
+      await info.wait();
     } catch (err) {
       setError(`Error requesting medical records from patients ${err}`);
     }
   };
 
-  const approveMedicalRecordsRequestHealthBlockContract = async (doctorAddress: string) => {
+  const approveMedicalRecordsRequestHealthBlockContract = async (requestID: number) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = await fetchContract(signer);
-      const info = await contract.approveMedicalRecordsRequest(doctorAddress);
+      const info = await contract.approveMedicalRecordsRequest(requestID);
+      await info.wait();
     } catch (err) {
       setError(`Error approving medical records request ${err}`);
     }
   };
 
-  const rejectMedicalRecordsRequestHealthBlockContract = async (doctorAddress: string) => {
+  const rejectMedicalRecordsRequestHealthBlockContract = async (requestID: number) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = await fetchContract(signer);
-      const info = await contract.rejectMedicalRecordsRequest(doctorAddress);
+      const info = await contract.rejectMedicalRecordsRequest(requestID);
+      await info.wait();
     } catch (err) {
       setError(`Error rejecting medical records request ${err}`);
+    }
+  };
+
+  const fetchMedicalRecordRequests = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = await fetchContract(signer);
+      const medicalRecordRequestsStruct = await contract.getMedicalRecordRequests();
+      const recordRequests = medicalRecordRequestsStruct.map((recordRequest) => ({
+        doctorAddress: recordRequest[0],
+        patientAddress: recordRequest[1],
+        docName: recordRequest[2],
+        docEmail: recordRequest[3],
+        patientName: recordRequest[4],
+        patientEmail: recordRequest[5],
+        reqStatus: recordRequest[6],
+      }));
+      setMedicalRecordRequests(recordRequests);
+    } catch (error) {
+      setError('Error fetching Medical Record Requests');
     }
   };
 
@@ -308,7 +375,9 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         handleApproveRequest,
         handleRejectRequest,
         verificationRequests,
+        medicalRecordRequests,
         fetchRequests,
+        fetchMedicalRecordRequests,
       }}
     >
       {children}

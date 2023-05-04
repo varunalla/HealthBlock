@@ -26,57 +26,54 @@ contract HealthBlock {
         string email;
         string specialization;
         address id;
-    }
+    }   
 
-    
-    enum RequestStatus {PENDING, APPROVED, REJECTED}
-
-    struct medicalRecordRequest{
-        address doctorAddress;
+    struct MedicalRecordRequest{
         address patientAddress;
-        RequestStatus status;
+        address doctorAddress;
+        string docName;
+        string docEmail;
+        string patientName;
+        string patientEmail;
+        string reqStatus;
     }
 
-    mapping(address => mapping(address => medicalRecordRequest[])) public recordRequests;
-    event RequestCreated(address indexed doctorAddress, address indexed patientAddress);
-    event RequestApproved(address indexed doctorAddress, address indexed patientAddress);
-    event RequestRejected(address indexed doctorAddress, address indexed patientAddress);
+    mapping(address => MedicalRecordRequest[]) private recordRequests;
+    event MedicalRecordRequestCreated(address indexed doctorAddress, address indexed patientAddress);
+    event MedicalRecordRequestApproved(address indexed doctorAddress, address indexed patientAddress, uint256 requestID);
+    event MedicalRecordRequestDeclined(address indexed doctorAddress, address indexed patientAddress, uint256 requestID);
 
-    function requestMedicalRecord(address patientAddress) public {
-        medicalRecordRequest storage request = recordRequests[msg.sender][patientAddress];
-
-        require(request.doctorAddress == address(0), "Request already exists");
-        require(request.patientAddress == address(0), "Request already exists");
-
-        request.doctorAddress = msg.sender;
-        request.patientAddress = patientAddress;
-        request.status = RequestStatus.PENDING;
-
-        emit RequestCreated(msg.sender, patientAddress);
+    function requestMedicalRecord(string memory docName, string memory docEmail, address patientAddress, string memory patientName, string memory patientEmail) public {
+        MedicalRecordRequest memory request = MedicalRecordRequest({
+           doctorAddress: msg.sender,
+           patientAddress: patientAddress,
+           docName: docName,
+           docEmail: docEmail,
+           patientName: patientName,
+           patientEmail: patientEmail,
+           reqStatus: "pending"
+           });
+        recordRequests[owner].push(request);
+        emit MedicalRecordRequestCreated(msg.sender, patientAddress);
     }
 
-    function approveMedicalRecordsRequest(address doctorAddress) public {        
-        medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
-
-        require(request.doctorAddress != address(0), "Request does not exist");
-        require(request.patientAddress != address(0), "Request does not exist");
-        require(request.status == RequestStatus.PENDING, "Request is not in pending status");
-
-        request.status = RequestStatus.APPROVED;
-
-        emit RequestApproved(doctorAddress, msg.sender);
+    function getMedicalRecordRequests() public view returns(MedicalRecordRequest[] memory){
+        require(msg.sender == owner, "Only owner can call this function");
+        return recordRequests[owner];
     }
 
-    function rejectMedicalRecordsRequest(address doctorAddress) public {
-        medicalRecordRequest storage request = recordRequests[doctorAddress][msg.sender];
-        require(doctorAddress != address(0), "Invalid doctor address");
-        require(request.doctorAddress != address(0), "Request does not exist");
-        require(request.patientAddress != address(0), "Request does not exist");
-        require(request.status == RequestStatus.PENDING, "Request is not in pending status");
+    function approveMedicalRecordsRequest(uint256 requestID) public {  
+        require(msg.sender == owner, "Only owner can call this function");     
+        MedicalRecordRequest storage request = recordRequests[owner][requestID];
+        request.reqStatus= "approved";
+        emit MedicalRecordRequestApproved(request.doctorAddress, owner, requestID);
+    }
 
-        request.status = RequestStatus.REJECTED;
-
-        emit RequestRejected(doctorAddress, msg.sender);
+    function rejectMedicalRecordsRequest(uint256 requestID) public {
+        require(msg.sender == owner, "Only owner can call this function");     
+        MedicalRecordRequest storage request = recordRequests[owner][requestID];
+        request.reqStatus= "declined";
+        emit MedicalRecordRequestDeclined(request.doctorAddress, owner, requestID);
     }
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
