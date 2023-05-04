@@ -13,6 +13,7 @@ import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
 import PatientAppointment from '../Patient/PatientAppointment';
 import ScheduleAppointment from '../Patient/ScheduleAppointment';
+import ManageSchedule from '../Doctor/ManageSchedule';
 
 const RoutesComponent: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -63,11 +64,15 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           }
         />
 
-<Route
+        <Route
           path='/scheduleappointments'
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ScheduleAppointment />} />
           }
+        />
+        <Route
+          path='/manageschedule'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageSchedule />} />}
         />
       </Routes>
     </>
