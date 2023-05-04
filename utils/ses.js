@@ -10,7 +10,7 @@ function sendEmail(patient_email, doctor_email, body) {
   console.log("patient email", patient_email, doctor_email);
   const params = {
     Destination: {
-      ToAddresses: "hasinireddy765@gmail.com",
+      ToAddresses: patient_email,
     },
     Message: {
       Body: {
@@ -24,7 +24,7 @@ function sendEmail(patient_email, doctor_email, body) {
         Data: "Update on Appointment status",
       },
     },
-    Source: "dharahasini.gangalapudi@gmail.com",
+    Source: doctor_email,
   };
   try {
     ses.sendEmail(params);
