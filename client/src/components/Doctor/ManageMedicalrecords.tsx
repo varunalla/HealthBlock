@@ -22,7 +22,10 @@ interface AppointmentDetails {
 const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { fetch } = useAuthFetch();
-  const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
+  const [confirmedAppointmentData, setConfirmedAppointmentData] = useState<AppointmentDetails[]>(
+    [],
+  );
+  const { requestMedicalRecordHealthBlockContract } = useContext(HealthContext);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOption, setFilterOption] = useState<string>('all');
   const [showRequestPopup, setShowRequestPopup] = useState(false);
@@ -32,33 +35,36 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const cardsPerPage = 4;
 
   useEffect(() => {
-    getAppointment();
+    getConfirmedAppointment();
   }, []);
-  const getAppointment = async () => {
-    let resp = await fetch('GET', '/appointments/' + user?.email);
+  const getConfirmedAppointment = async () => {
+    let resp = await fetch('GET', '/confirmedAppointments/' + user?.email);
     if (resp && resp.data && resp.data.result) {
-      setAppointmentData(resp.data.result);
+      setConfirmedAppointmentData(resp.data.result);
     } else {
-      setAppointmentData([]);
+      setConfirmedAppointmentData([]);
     }
   };
-  const getStatusColor = (status: String) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-200';
-      case 'reject':
-        return 'bg-red-200';
-      default:
-        return '';
-    }
-  };
-  const updateStatus = async (status: String, appointmentId: String) => {
-    let resp = await fetch('PUT', '/appointmentStatus/' + appointmentId + '/status', {
-      appointmentStatus: status,
-    });
-    if (resp && resp.status == 204) {
-      alert('Appointment status updated');
-      getAppointment();
+
+  const handleMedicalRecordRequest = async (
+    patientAddress: string,
+    docName: string,
+    patientName: string,
+    docEmail: string,
+    patientEmail: string,
+  ) => {
+    try {
+      await requestMedicalRecordHealthBlockContract?.(
+        patientAddress,
+        docName,
+        docEmail,
+        patientName,
+        patientEmail,
+      );
+      alert('Medical record request sent successfully');
+    } catch (err) {
+      console.log(err);
+      alert('Failed to send medical record request');
     }
   };
 
@@ -162,10 +168,10 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
     setShowRequestPopup(!showRequestPopup);
   };
 
-  // Handle pagination click
-  const handlePageClick = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
+  // // Handle pagination click
+  // const handlePageClick = (pageNumber: number) => {
+  //   setCurrentPage(pageNumber);
+  // };
 
   // Function to handle filter option change
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -265,7 +271,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                   </tr>
                 </thead>
 
-                {appointmentData.map((appointment) => (
+                {confirmedAppointmentData.map((appointment) => (
                   <tr key={appointment.appointment_id}>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
@@ -348,6 +354,13 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                         toggleRequestPopup();
                                         // requestMedicalRecord();
                                         handleRequest(appointment.patient_email);
+                                        handleMedicalRecordRequest(
+                                          appointment.patient_address,
+                                          appointment.doctor_name,
+                                          appointment.patient_name,
+                                          appointment.doctor_email,
+                                          appointment.patient_email,
+                                        );
                                       }}
                                     >
                                       Confirm
@@ -401,7 +414,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       <p className='text-sm leading-5 text-gray-500'>
                                         You are uploading medical records for{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {appointment.patient_email}
+                                          {appointment.patient_name}
                                         </span>
                                         <p>({appointment.patient_address})</p>
                                       </p>

@@ -199,6 +199,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     docEmail: string,
     patientEmail: string,
   ) => {
+    console.log('executing medical record request contract');
     try {
       setPatientAddress(patientAddress);
       setDocName(docName);
@@ -210,6 +211,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
+      console.log(contract);
       const info = await contract.requestMedicalRecord(
         patientAddress,
         docName,
@@ -217,9 +219,12 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         docEmail,
         patientEmail,
       );
+      console.log(info);
       await info.wait();
     } catch (err) {
       setError(`Error requesting medical records from patients ${err}`);
+      console.log('Error from request Health Record contract');
+      console.log(err);
     }
   };
 
