@@ -90,7 +90,7 @@ contract HealthBlock {
     mapping (address => patient) public patients;
     mapping (address => doctor) internal doctors;
     mapping (address => hcprovider) internal hcproviders;
-    doctor[] public doctorList;
+   
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -146,7 +146,7 @@ contract HealthBlock {
         require((_age > 0) && (_age < 100));
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
-        doctorList.push(doctors[msg.sender]);
+       
         emit NPatient(msg.sender, _name);
     } 
 
