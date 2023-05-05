@@ -30,7 +30,7 @@ interface HealthAppContextInterface {
   connectWallet?: () => Promise<void>;
   healthBlockContract?: () => Promise<void>;
   registerHealthBlockContract?: (name: string, age: number, email: string) => Promise<void>;
-  updateProfile?: (doctorAddress: string, hcAddress: string) => Promise<void>;
+  updateProfile?: (hcAddress: string, docAddress: string) => Promise<void>;
   registerDoctorHealthBlockContract?: (
     name: string,
     age: number,
@@ -265,7 +265,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
       const doctors = await contract.getAllDoctorsForProvider(
-        '0xB74357Df49Ed35Ec1AEc5efdA41f5A5D846fAa8e',
+        '0x8eda1014b9177d464306935e8fcf9fd27c20aa08',
       );
 
       console.log('doctors in context', doctors);
@@ -285,17 +285,14 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       setError('Error Loading Health Contract');
     }
   };
-  const updateProfile = async (doctorAddress: string, hcAddress: string) => {
+  const updateProfile = async (hcAddress: string, docAddress: string) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = fetchContract(signer);
-      const update = await contract.mapDoctorToProvider(
-        '0xB74357Df49Ed35Ec1AEc5efdA41f5A5D846fAa8e',
-        '0xa05441fF1F5320ff56001662B70057A9B5CFB762',
-      );
+      const update = await contract.mapDoctorToProvider(hcAddress, docAddress);
 
       update.wait();
     } catch (err: any) {

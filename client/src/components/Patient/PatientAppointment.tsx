@@ -13,30 +13,40 @@ interface AppointmentRequestDetails {
   availability_date: string;
 }
 
+interface Doctor {
+  name: string;
+  email: string;
+  age: Number;
+  specialization: string;
+}
 const PatientAppointment: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors } = useContext(HealthContext);
-  const [doctorDetails, setDoctorDetails] = useState<AppointmentRequestDetails[]>([]);
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
+  const [doctorDetails, setDoctorDetails] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState({});
 
   useEffect(() => {
     // getDoctorDetails();
-    getAllDoctors();
+    //getAllDoctors();
+    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
+    console.log('doctorlist in patient-->', doctorList);
+    setDoctorDetails(doctorDetails);
   }, []);
-  const getAllDoctors = async () => {
-    const hc = 'El Camino';
+  // const getAllDoctors = async () => {
+  //   const hc = 'El Camino';
 
-    let resp = await fetch('GET', '/provider/' + `${hc}` + '/doctors' + '?speciality=all');
+  //   let resp = await fetch('GET', '/provider/' + `${hc}` + '/doctors' + '?speciality=all');
 
-    if (resp && resp.data && resp.data.result) {
-      setDoctorDetails(resp.data.result);
-    } else {
-      setDoctorDetails([]);
-    }
-  };
+  //   if (resp && resp.data && resp.data.result) {
+  //     setDoctorDetails(resp.data.result);
+  //   } else {
+  //     setDoctorDetails([]);
+  //   }
+  // };
 
+  console.log('doctordea', doctorDetails);
   return (
     <div className='flex flex-col  px-4 lg:px-8 '>
       <div className='bg-gray-100 py-4 px-4 flex items-center justify-between'>
@@ -83,17 +93,17 @@ const PatientAppointment: FunctionComponent<{}> = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {doctorDetails.length > 0 &&
-                  doctorDetails.map((details) => (
+                {doctorList &&
+                  doctorList.map((details) => (
                     <tr>
                       <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='text-sm text-gray-900'>{details.doctor_name}</div>
+                        <div className='text-sm text-gray-900'>{details.name}</div>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='text-sm text-gray-900'>{details.doctor_email}</div>
+                        <div className='text-sm text-gray-900'>{details.email}</div>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {details.speciality}
+                        {details.specialization}
                       </td>
                       <td className='px-6 py-2 whitespace-nowrap text-sm text-gray-500'>
                         <button
@@ -102,8 +112,8 @@ const PatientAppointment: FunctionComponent<{}> = () => {
 
                             navigate('/scheduleappointments', {
                               state: {
-                                doctor_name: details.doctor_name,
-                                doctor: details.doctor_email,
+                                doctor_name: details.name,
+                                doctor: details.email,
                               },
                             });
                             //setSelectedDoctor(details)

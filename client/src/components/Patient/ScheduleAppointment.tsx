@@ -33,8 +33,8 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
   });
 
   useEffect(() => {
-    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
-    console.log('doctorlist blockhain--->', doctorList);
+    // fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
+    // console.log('doctorlist blockhain--->', doctorList);
     getDocAvailability(state.doctor, appt_date);
   }, []);
   const getDocAvailability = async (doc_email: string, appt_date: string) => {
