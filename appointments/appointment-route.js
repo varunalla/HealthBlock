@@ -91,7 +91,7 @@ module.exports = (app) => {
 
     for (const [date, time] of Object.entries(req.body)) {
       try {
-        await postAvailability(date, time, "xyz@gmail.com");
+        await postAvailability(date, time, req.params.doctor);
       } catch (err) {
         success = false;
       }

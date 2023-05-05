@@ -47,6 +47,18 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       </div>
     );
   };
+  const _renderManageScheduleSection = () => {
+    return (
+      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+        <button
+          onClick={() => navigate('/manageschedule')}
+          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+        >
+          Manage Schedule
+        </button>
+      </div>
+    );
+  };
   const _renderUpdateProfileSection = () => {
     return (
       <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
@@ -65,6 +77,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       <div className='flex flex-row space-x-6'>
         {_renderAppointmentSection()}
         {_renderUpdateProfileSection()}
+        {_renderManageScheduleSection()}
       </div>
 
       {/* <button
@@ -141,8 +154,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
             </div>
           </form>
         </div>
-
-        <button onClick={() => navigate('/update-profile')}>Update HC</button>
       </div>
     </div>
   );
