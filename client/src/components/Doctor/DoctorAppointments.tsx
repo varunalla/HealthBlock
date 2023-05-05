@@ -3,6 +3,7 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
+import { HealthContext } from '../../providers/HealthProvider';
 interface AppointmentDetails {
   name: string;
   patient_email: string;
@@ -16,11 +17,18 @@ interface AppointmentDetails {
 const DoctorAppointments: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { fetch } = useAuthFetch();
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
 
   useEffect(() => {
-    getAppointment();
+    fetchDoctors();
+
+    //getAppointment();
   }, []);
+  const fetchDoctors = async () => {
+    await fetchAllDoctors?.('0xB74357Df49Ed35Ec1AEc5efdA41f5A5D846fAa8e');
+    console.log('doctorlist-->', doctorList);
+  };
   const getAppointment = async () => {
     let resp = await fetch('GET', '/appointments/' + user?.email);
     if (resp && resp.data && resp.data.result) {

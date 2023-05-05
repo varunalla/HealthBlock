@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
@@ -8,6 +8,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { handleRaiseRequest } = useContext(HealthContext);
   const [hcProvider, setHCProvider] = useState<string>('');
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
 
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -21,6 +22,15 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     const selectedFile = event.target.files ? event.target.files[0] : null;
     setFile(selectedFile);
   };
+  useEffect(() => {
+    fetchDoctors();
+
+    //getAppointment();
+  }, []);
+  const fetchDoctors = async () => {
+    await fetchAllDoctors?.('0xB74357Df49Ed35Ec1AEc5efdA41f5A5D846fAa8e');
+    console.log('doctorlist-->', doctorList);
+  };
 
   const handleVerificationRequest = async () => {
     try {
@@ -33,6 +43,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const appointmentHandler = () => {
     navigate('/doctorappointments');
   };
+  console.log('user-->', user);
 
   return (
     <div className='flex flex-col justify-center items-center h-screen'>
@@ -110,6 +121,8 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
             </div>
           </form>
         </div>
+
+        <button onClick={() => navigate('/update-profile')}>Update HC</button>
       </div>
     </div>
   );

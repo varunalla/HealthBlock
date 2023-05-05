@@ -3,6 +3,7 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
+import { HealthContext } from '../../providers/HealthProvider';
 
 interface AppointmentRequestDetails {
   doctor_name: string;
@@ -16,6 +17,7 @@ const PatientAppointment: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
+  const { fetchAllDoctors } = useContext(HealthContext);
   const [doctorDetails, setDoctorDetails] = useState<AppointmentRequestDetails[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState({});
 
