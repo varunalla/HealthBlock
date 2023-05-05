@@ -1,4 +1,5 @@
 const { createDynamoDBClient } = require("../factories/aws");
+const { sendEmail } = require("./ses");
 require("dotenv").config();
 const dynamodb = createDynamoDBClient(
   process.env.AWS_ACCESS_KEY_ID,
@@ -70,7 +71,6 @@ async function postAppointments(body) {
 }
 
 async function getAppointments(doctor) {
-  console.log("get Appointments");
   const params = {
     TableName: "appointments",
     KeyConditionExpression: "doctor_email = :doctorEmail",
@@ -80,7 +80,7 @@ async function getAppointments(doctor) {
   };
   try {
     let result = await dynamodb.query(params).promise();
-    console.log("resp from getappointments-->", result);
+
     if (result.Items && result.Items.length > 0) {
       return result.Items;
     } else {
@@ -127,10 +127,93 @@ async function updateAppointmentStatus(appt_id, appt_status) {
         if (err) {
           return new Error("Could not update");
         } else {
-          console.log("Appointment status updated successfully", data);
+          console.log("Appointment update-->", data.Attributes);
+          let body = "";
+          // if (data.Attributes?.appointment_status == "confirmed") {
+          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${data.Attributes?.appointment_time} on ${created_at}</p>`;
+          // } else {
+          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
+          // }
+          // sendEmail(
+          //   data.Attributes?.patient_email,
+
+          //   data.Attributes?.doctor_email,
+          //   body
+          // );
+          console.log(
+            "data.Attributes?.appointment_time",
+            data.Attributes?.appointment_time
+          );
+          updateDoctorAvailability(
+            data.Attributes?.doctor_email,
+            data.Attributes?.created_at,
+            data.Attributes?.appointment_time
+          );
           return data.Attributes;
         }
       });
+    }
+  });
+}
+
+async function updateDoctorAvailability(doctor, appt_date, timeslot) {
+  console.log(
+    "update doc avail--> with idex of updated set",
+    doctor,
+    appt_date
+  );
+  let res = await getDocAvailability(doctor, appt_date);
+  console.log("res-->", res);
+  let updatedTimeSlot = res.filter((ele) => {
+    return ele != timeslot;
+  });
+  console.log("updatedtimeslot-->", updatedTimeSlot);
+
+  const params = {
+    TableName: "availability",
+    Key: {
+      doctor_email: doctor,
+      availability_date: appt_date,
+    },
+    UpdateExpression: "SET availability_time = :updatedAvailabilityTime",
+    ExpressionAttributeValues: {
+      ":updatedAvailabilityTime": updatedTimeSlot,
+    },
+
+    //ConditionExpression: "contains(availability_time, :val)",
+  };
+
+  dynamodb.update(params, (err, data) => {
+    if (err) {
+      console.error(
+        "Unable to update doctor availability. Error JSON:",
+        JSON.stringify(err, null, 2)
+      );
+    } else {
+      console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+    }
+  });
+}
+
+async function postAvailability(avail_date, time, doctor) {
+  const attributeValues = time.map((time) => {
+    return { S: time };
+  });
+  const params = {
+    TableName: "availability",
+    Item: {
+      doctor_email: doctor,
+      availability_date: avail_date,
+      availability_time: time,
+    },
+  };
+  dynamodb.put(params, function (err, data) {
+    if (err) {
+      console.log("Error inserting new item: ", err);
+      throw new Error(err);
+    } else {
+      console.log("New item inserted successfully: ", data);
+      return true;
     }
   });
 }
@@ -141,4 +224,5 @@ module.exports = {
   postAppointments,
   getAppointments,
   updateAppointmentStatus,
+  postAvailability,
 };

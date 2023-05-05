@@ -15,6 +15,7 @@ interface Appointment {
 
 const ScheduleAppointment: FunctionComponent<{}> = () => {
   const { state } = useLocation();
+  const navigate = useNavigate();
 
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
@@ -161,7 +162,13 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
           >
             Schedule
           </button>
-          <button className='bg-red-500 text-white font-bold py-2 px-4 rounded'>Close</button>
+
+          <button
+            onClick={() => navigate('/patientappointments')}
+            className='bg-red-500 text-white font-bold py-2 px-4 rounded'
+          >
+            Close
+          </button>
         </div>
       </form>
     </div>
