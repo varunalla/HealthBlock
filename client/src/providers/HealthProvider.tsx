@@ -268,7 +268,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         '0x8eda1014b9177d464306935e8fcf9fd27c20aa08',
       );
 
-      console.log('doctors in context', doctors);
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
         let obj = {
@@ -279,7 +278,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         };
         docArr.push(obj);
       }
-      console.log('docArr-->', docArr);
+
       setDoctorList(docArr);
     } catch (error) {
       setError('Error Loading Health Contract');

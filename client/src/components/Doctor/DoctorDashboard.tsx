@@ -34,7 +34,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const appointmentHandler = () => {
     navigate('/doctorappointments');
   };
-  console.log('user-->', user);
 
   const _renderAppointmentSection = () => {
     return (
