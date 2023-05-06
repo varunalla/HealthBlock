@@ -13,6 +13,7 @@ import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
 import PatientAppointment from '../Patient/PatientAppointment';
 import ScheduleAppointment from '../Patient/ScheduleAppointment';
+import UpdateProfile from '../Doctor/UpdateProfile';
 import ManageSchedule from '../Doctor/ManageSchedule';
 import AppointmentHistory from '../Patient/AppointmentHistory';
 
@@ -70,6 +71,10 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ScheduleAppointment />} />
           }
+        />
+        <Route
+          path='/update-profile'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<UpdateProfile />} />}
         />
         <Route
           path='/manageschedule'

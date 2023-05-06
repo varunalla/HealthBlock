@@ -130,25 +130,7 @@ const AppointmentHistory: FunctionComponent<{}> = () => {
                           appointment.appointment_status,
                         )}`}
                       >
-                        {appointment.appointment_status == 'pending' ? (
-                          <div className='flex justify-between'>
-                            <button
-                              className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded'
-                              onClick={() => updateStatus('reject', appointment.appointment_id)}
-                            >
-                              Reject
-                            </button>
-                            <div className='w-4'></div>
-                            <button
-                              className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded'
-                              onClick={() => updateStatus('confirmed', appointment.appointment_id)}
-                            >
-                              Confirm
-                            </button>
-                          </div>
-                        ) : (
-                          <div>{appointment.appointment_status}</div>
-                        )}
+                        {appointment.appointment_status}
                       </span>
                     </td>
                   </tr>

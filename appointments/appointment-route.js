@@ -53,15 +53,16 @@ module.exports = (app) => {
 
       res.status(201).json("Appointment created succesfully");
     } catch (err) {
-      console.log("err from post");
       res.status(500).json("Error creating appointment");
     }
   });
 
   app.get("/appointments/:doctorEmail", verify_token, async (req, res) => {
     let { doctorEmail } = req.params;
+    let { created_at } = req.query;
+
     try {
-      let result = await getAppointments(doctorEmail);
+      let result = await getAppointments(doctorEmail, created_at);
 
       res.send({ success: true, result });
     } catch (err) {
@@ -76,14 +77,13 @@ module.exports = (app) => {
       let { patientEmail } = req.params;
       console.log("patient appointment history", patientEmail);
 
-      let result = getAppointmentsForPatient(patientEmail)
-        .then((res) => {
-          console.log("Result api-->", result);
-          res.send({ success: true, result });
-        })
-        .catch((err) => {
-          res.status(500).send({ success: false, msg: "Internal server err" });
-        });
+      try {
+        let result = await getAppointmentsForPatient(patientEmail);
+
+        res.send({ success: true, result });
+      } catch (err) {
+        res.status(500).send({ success: false, msg: "Internal server err" });
+      }
     }
   );
 
@@ -107,14 +107,12 @@ module.exports = (app) => {
     }
   );
   app.post("/availability/:doctor", verify_token, async (req, res) => {
-    console.log("post availa", req.body);
     let success = true;
 
     for (const [date, time] of Object.entries(req.body)) {
       try {
-        await postAvailability(date, time, "xyz@gmail.com");
+        await postAvailability(date, time, req.params.doctor);
       } catch (err) {
-        console.log(`Could not add time for ${date}`, err);
         success = false;
       }
       if (success) {
