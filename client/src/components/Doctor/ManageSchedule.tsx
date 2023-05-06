@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import moment from 'moment';
 import { useAuthFetch } from '../../hooks/api';
+import { AuthContext } from '../../providers/AuthProvider';
 
 type Schedule = {
   [day: string]: { startTime: string; endTime: string };
@@ -12,7 +13,18 @@ type Schedule1 = {
 
 const ManageSchedule: FunctionComponent<{}> = () => {
   const [daysOfTheweek, setDaysOfWeek] = useState<String[]>([]);
-  let opt = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  const { user } = useContext(AuthContext);
+  let opt = [
+    '9:00 AM',
+    '10:00 AM',
+    '11:00 AM',
+    '12:00 PM',
+    '1:00 PM',
+    '2:00 PM',
+    '3:00 PM',
+    '4:00 PM',
+    '5:00 PM',
+  ];
   const [schedule, setSchedule] = useState<Schedule>({});
   const [schedule1, setSchedule1] = useState<Schedule1>({});
   const { fetch } = useAuthFetch();
@@ -63,7 +75,7 @@ const ManageSchedule: FunctionComponent<{}> = () => {
       // assign the time slots array to the date in the schedule object
       schedule1[dateStr] = timeSlots;
     }
-    let resp = await fetch('POST', '/availability/' + 'xyz@gmail.com', schedule1);
+    let resp = await fetch('POST', '/availability/' + user?.email, schedule1);
     if (resp && resp.status == 204) {
       alert('Schedule created');
     } else {

@@ -39,6 +39,7 @@ contract HealthBlock {
         string status;
     }
     mapping(address => Request[]) private doctorRequests;
+    mapping(address => doctor[]) public providerToDoctors;
 
    /*
     * @dev Set contract deployer as owner
@@ -89,6 +90,7 @@ contract HealthBlock {
     mapping (address => patient) public patients;
     mapping (address => doctor) internal doctors;
     mapping (address => hcprovider) internal hcproviders;
+   
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -144,6 +146,7 @@ contract HealthBlock {
         require((_age > 0) && (_age < 100));
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
+       
         emit NPatient(msg.sender, _name);
     } 
 
@@ -164,4 +167,18 @@ contract HealthBlock {
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
     } 
+    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+    return providerToDoctors[providerAddress];
+}
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+       providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+
+    }
+
+   
+   
+
+
+    
 }

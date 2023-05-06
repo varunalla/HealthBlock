@@ -52,7 +52,6 @@ module.exports = (app) => {
 
       res.status(201).json("Appointment created succesfully");
     } catch (err) {
-      console.log("err from post");
       res.status(500).json("Error creating appointment");
     }
   });
@@ -88,14 +87,12 @@ module.exports = (app) => {
     }
   );
   app.post("/availability/:doctor", verify_token, async (req, res) => {
-    console.log("post availa", req.body);
     let success = true;
 
     for (const [date, time] of Object.entries(req.body)) {
       try {
-        await postAvailability(date, time, "xyz@gmail.com");
+        await postAvailability(date, time, req.params.doctor);
       } catch (err) {
-        console.log(`Could not add time for ${date}`, err);
         success = false;
       }
       if (success) {

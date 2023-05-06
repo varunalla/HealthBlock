@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
+import { HealthContext } from '../../providers/HealthProvider';
 interface Appointment {
   doctor_name: string;
   doctor_email: string;
@@ -19,6 +20,7 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
 
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
+  const { fetchAllDoctors, doctorList, handleRaiseRequest } = useContext(HealthContext);
   const [appt_date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [time, setTime] = useState('10:00 AM');
   const [reason, setReason] = useState('');
