@@ -23,13 +23,10 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
 
   useEffect(() => {
-    //fetchDoctors();
-
     getAppointment();
   }, []);
 
   const getAppointment = async () => {
-    console.log('filterdate-->', filterDate);
     let resp = await fetch('GET', '/appointments/' + user?.email + `?created_at= ${filterDate}`);
     if (resp && resp.data && resp.data.result) {
       setAppointmentData(resp.data.result);
