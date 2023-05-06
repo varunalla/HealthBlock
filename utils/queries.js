@@ -218,6 +218,38 @@ async function postAvailability(avail_date, time, doctor) {
   });
 }
 
+async function getAppointmentsForPatient(patient) {
+  console.log("get appt for patient", patient);
+  const params = {
+    TableName: "appointments",
+    FilterExpression: "patient_email = :patientEmail",
+    ExpressionAttributeValues: {
+      ":patientEmail": patient,
+    },
+  };
+  try {
+    const result = await dynamodb.scan(params).promise();
+
+    if (result.Items) {
+      return result.Items;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    return err;
+  }
+
+  // dynamodb.scan(params, (err, data) => {
+  //   if (err) {
+  //     console.log("Error scanning DynamoDB table:", err);
+  //     throw new Error(err);
+  //   } else {
+  //     console.log("Patients associated with doctor email", data.Items);
+  //     return data.Items;
+  //   }
+  // });
+}
+
 module.exports = {
   getDoctors,
   getDocAvailability,
@@ -225,4 +257,5 @@ module.exports = {
   getAppointments,
   updateAppointmentStatus,
   postAvailability,
+  getAppointmentsForPatient,
 };

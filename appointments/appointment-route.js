@@ -8,6 +8,7 @@ const {
   updateAppointmentStatus,
   updateDoctorAvailability,
   postAvailability,
+  getAppointmentsForPatient,
 } = require("../utils/queries");
 const uuid = require("uuid");
 
@@ -67,6 +68,24 @@ module.exports = (app) => {
       res.status(500).send({ success: false, msg: "Internal server err" });
     }
   });
+
+  app.get(
+    "/patientappointments/:patientEmail",
+    verify_token,
+    async (req, res) => {
+      let { patientEmail } = req.params;
+      console.log("patient appointment history", patientEmail);
+
+      let result = getAppointmentsForPatient(patientEmail)
+        .then((res) => {
+          console.log("Result api-->", result);
+          res.send({ success: true, result });
+        })
+        .catch((err) => {
+          res.status(500).send({ success: false, msg: "Internal server err" });
+        });
+    }
+  );
 
   app.put(
     "/appointmentStatus/:appointmentID/status",
