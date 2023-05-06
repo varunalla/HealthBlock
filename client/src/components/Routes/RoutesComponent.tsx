@@ -11,6 +11,10 @@ import PatientDashboard from '../Patient/PatientDashboard';
 import PatientLanding from '../Patient/PatientLanding';
 import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
+import PatientAppointment from '../Patient/PatientAppointment';
+import ScheduleAppointment from '../Patient/ScheduleAppointment';
+import UpdateProfile from '../Doctor/UpdateProfile';
+import ManageSchedule from '../Doctor/ManageSchedule';
 
 const RoutesComponent: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -53,6 +57,27 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCProviderDashboard />} />
           }
+        />
+        <Route
+          path='/patientappointments'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientAppointment />} />
+          }
+        />
+
+        <Route
+          path='/scheduleappointments'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<ScheduleAppointment />} />
+          }
+        />
+        <Route
+          path='/update-profile'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<UpdateProfile />} />}
+        />
+        <Route
+          path='/manageschedule'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageSchedule />} />}
         />
       </Routes>
     </>
