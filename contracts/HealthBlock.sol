@@ -52,14 +52,14 @@ contract HealthBlock {
         _;
     }
 
-    function raiseRequest(string memory doctorName, string memory fileName) public {
+    function raiseRequest(string memory doctorName, string memory fileName, address hcpAddress) public {
         Request memory request = Request({
             doctor: msg.sender,
             doctorName: doctorName,
             fileName: fileName,
             status: "pending"
         });
-        doctorRequests[owner].push(request);
+        doctorRequests[hcpAddress].push(request);
         emit DoctorRequestRaised(msg.sender, doctorName, fileName);
     }
 
@@ -102,11 +102,13 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
+
     modifier checkPatient(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+
     modifier checkRequests(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
@@ -117,10 +119,12 @@ contract HealthBlock {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);
     }  
+
     function getPatientInfoAll(address _address) public view returns(string memory, uint8, string memory) {
         patient storage p = patients[_address];
         return (p.name, p.age, p.email);
     }
+
     function registerPatient(string memory _name, uint8 _age,string memory _email) public {
         //patient storage p = patients[msg.sender];
         require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
@@ -129,14 +133,17 @@ contract HealthBlock {
         patients[msg.sender] = patient({name:_name,age:_age,id:msg.sender,email:_email});
         emit NPatient(msg.sender, _name);
     }
+
     function getDoctorInfo() public view checkDoctor(msg.sender) returns(string memory, uint8,string memory, string memory) {
         doctor storage d = doctors[msg.sender];
         return (d.name, d.age, d.email, d.specialization);
     }
+
     function getDoctorInfoAll(address _address) public view returns(string memory, uint8,string memory, string memory) {
         doctor storage d = doctors[_address];
         return (d.name, d.age, d.email, d.specialization);
     }
+
     function registerDoctor(string memory _name, uint8 _age,string memory _email, string memory _specialization) public {
         doctor storage d = doctors[msg.sender];
         require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
@@ -148,18 +155,6 @@ contract HealthBlock {
         emit NPatient(msg.sender, _name);
     } 
 
-    // function getHCProviders() public view returns (hcprovider[] memory) {
-    //     hcprovider[] memory allProviders = new hcprovider[](address(this).balance);
-    //     uint256 count = 0;
-    //     for (uint256 i = 0; i < allProviders.length; i++) {
-    //         if (hcproviders[msg.sender].id > address(0x0)) {
-    //             allProviders[count] = hcproviders[msg.sender];
-    //             count++;
-    //         }
-    //     }
-    //     return allProviders;
-    // }
-
     function getAllProviders() public view returns (hcprovider[] memory) {
         return providerList;
     }
@@ -168,10 +163,12 @@ contract HealthBlock {
             hcprovider storage h = hcproviders[msg.sender];
             return (h.name, h.email, h.providerAddress, h.phone);
     }
+
     function getHCProviderInfoAll(address _address) public view returns(string memory, string memory, string memory, string memory) {
         hcprovider storage h = hcproviders[_address];
         return (h.name, h.email, h.providerAddress, h.phone);
     }
+
     function registerHCProvider(string memory _name, string memory _email, string memory _address, string memory _phone) public {
             hcprovider storage h = hcproviders[msg.sender];
             require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));

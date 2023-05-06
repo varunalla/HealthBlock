@@ -64,15 +64,10 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         Key: fileName+'-'+doctorName,
       };
       const { Body } = await s3.getObject(params).promise();
-      console.log("File Body ---> ", Body.buffer);
       const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), fileName+'-'+doctorName);
-      console.log("decryptedFile ----> ", decryptedFile.buffer);
       const blob = new Blob([decryptedFile], { type: "application/pdf"});
-      console.log("File blob ----> ", blob);
       const url = window.URL.createObjectURL(blob);
-      console.log("File download url ---->", url); 
       const link = document.createElement('a');
-      console.log("File download link ---->", link);
       link.href = url;
       link.download = fileName;
       document.body.appendChild(link);
@@ -82,7 +77,6 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       console.log(err);
     }
   };
-  
 
   useEffect(() => {
     (() => {
@@ -174,8 +168,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                             onClick={() => rejectRequest(index)}
                           >
                             Reject
-                          </button>
-                         
+                          </button>      
                         </>
                       )}
                     </td>

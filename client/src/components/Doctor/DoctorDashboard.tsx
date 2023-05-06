@@ -8,14 +8,14 @@ import * as CryptoJS from 'crypto-js';
 
 const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
-  const {fetchHealthCareProviders, providers, handleRaiseRequest } = useContext(HealthContext);
+  const {fetchHealthCareProviders, providers, handleRaiseRequest} = useContext(HealthContext);
   const [hcProvider, setHCProvider] = useState<any>('');
+  const [providerId, setProviderId] = useState<any>('');
   const s3 = new AWS.S3({
     accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
     region: process.env.REACT_APP_AWS_REGION
   });
-  console.log("s3", s3);
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>();
 
@@ -31,8 +31,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.Pkcs7,
     }).ciphertext;
-    //const encryptedString = CryptoJS.enc.Hex.stringify(encrypted);
-    //return Buffer.from(encryptedString, 'hex');
     return new Uint8Array(encrypted.words);
   };
   
@@ -43,20 +41,17 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 
   const handleVerificationRequest = async () => {
     try {
-      await handleRaiseRequest?.(user!.name, file!.name);
+      await handleRaiseRequest?.(user!.name, file!.name, providerId);
       if (file) {
         const arrayBuffer = await file.arrayBuffer();
         const encryptedFile = encrypt(new Uint8Array(arrayBuffer), file.name+'-'+user?.name);
-        console.log("file --->", file)
         setFile(new File([encryptedFile], file.name, { type: file.type }));
-        console.log("encryptedFile --->", encryptedFile)
         const params = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
           Key: file.name+"-"+user?.name,
           Body: encryptedFile.buffer,
           ACL: 'public-read'
         };
-        //return s3.upload(params).promise().then((data: { Location: any; }) => data.Location);
         s3.upload(params, (err: any, data: any) => {
           if (err) {
             console.error(err);
@@ -73,7 +68,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   useEffect(() => {
     (() => {
       fetchHealthCareProviders?.();
-    console.log(providers);
     })();
   }, []);
 
@@ -113,7 +107,13 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
                   className='bg-gray-200 appearance-none border border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500'
                   id='health-care-provider'
                   value={hcProvider}
-                  onChange={(e) => setHCProvider(e.target.value)}
+                  onChange={(e) => {
+                    const selectedProviderName = e.target.value;
+                    const selectedProvider = providers && providers.find(provider => provider.name === selectedProviderName);
+                    const hcpId = selectedProvider ? selectedProvider.id : '';
+                    setHCProvider(e.target.value);
+                    setProviderId(hcpId);
+                  }}
                 >
                   <option value=''>Select a provider</option>
                   {providers && providers.map(provider => (

@@ -5,6 +5,7 @@ import { healthBlockABI, healthBlockAddress } from '../config/constants';
 import Web3Modal from 'web3modal';
 import { HealthBlock__factory } from '../contracts/factories/HealthBlock__factory';
 import { HealthBlock } from '../contracts/HealthBlock';
+import { Address } from 'cluster';
 
 interface Request {
   doctor: string;
@@ -44,7 +45,7 @@ interface HealthAppContextInterface {
     address: string,
     phone: string,
   ) => Promise<void>;
-  handleRaiseRequest?: (doctorName: string, file: string | null) => Promise<void>;
+  handleRaiseRequest?: (doctorName: string, file: string | null, hcpAddress: string) => Promise<void>;
   handleApproveRequest?: (requestId: number) => Promise<void>;
   handleRejectRequest?: (requestId: number) => Promise<void>;
   fetchPatientContract?: () => Promise<Patient | undefined>;
@@ -182,7 +183,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
-  const handleRaiseRequest = async (doctorName: string, file: string | null) => {
+  const handleRaiseRequest = async (doctorName: string, file: string | null, hcpId: string | null) => {
     if (!file) return;
     const credentialsHash: string = '567898765432456789876543';
     //const credentialsHash: Promise<string>  = getFileHash(file);
@@ -192,10 +193,10 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
     const contract = await fetchContract(signer);
-    const tx = await contract.raiseRequest(doctorName, file);
-
-
-    await tx.wait();
+    if (hcpId !== null) {
+      const tx = await contract.raiseRequest(doctorName, file, hcpId);
+      await tx.wait();
+    }
     setDoctorName('');
     setFile(null);
     fetchRequests();

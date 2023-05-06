@@ -69,7 +69,7 @@ export interface HealthBlockInterface extends utils.Interface {
   functions: {
     "patients(address)": FunctionFragment;
     "providerList(uint256)": FunctionFragment;
-    "raiseRequest(string,string)": FunctionFragment;
+    "raiseRequest(string,string,address)": FunctionFragment;
     "getRequests()": FunctionFragment;
     "rejectRequest(uint256)": FunctionFragment;
     "approveRequest(uint256)": FunctionFragment;
@@ -115,7 +115,11 @@ export interface HealthBlockInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "raiseRequest",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getRequests",
@@ -382,6 +386,7 @@ export interface HealthBlock extends BaseContract {
     raiseRequest(
       doctorName: PromiseOrValue<string>,
       fileName: PromiseOrValue<string>,
+      hcpAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -482,6 +487,7 @@ export interface HealthBlock extends BaseContract {
   raiseRequest(
     doctorName: PromiseOrValue<string>,
     fileName: PromiseOrValue<string>,
+    hcpAddress: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -580,6 +586,7 @@ export interface HealthBlock extends BaseContract {
     raiseRequest(
       doctorName: PromiseOrValue<string>,
       fileName: PromiseOrValue<string>,
+      hcpAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -728,6 +735,7 @@ export interface HealthBlock extends BaseContract {
     raiseRequest(
       doctorName: PromiseOrValue<string>,
       fileName: PromiseOrValue<string>,
+      hcpAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -804,6 +812,7 @@ export interface HealthBlock extends BaseContract {
     raiseRequest(
       doctorName: PromiseOrValue<string>,
       fileName: PromiseOrValue<string>,
+      hcpAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
