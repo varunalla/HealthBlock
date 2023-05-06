@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 import * as CryptoJS from 'crypto-js';
+import { StringifyOptions } from 'querystring';
 const AWS = require('aws-sdk');
 
 const HCProviderDashboard: FunctionComponent<{}> = () => {
@@ -48,19 +49,23 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   };
   
 
-  const downloadFile = async (fileName ?: string) => {
+  const downloadFile = async (fileName ?: string, doctorName ?: string) => {
     if (!fileName) {
       throw new Error('File name is required');
+    }
+
+    if(!doctorName) {
+      throw new Error('Doctor name is required')
     }
   
     try {
       const params = {
         Bucket: process.env.REACT_APP_BUCKET_NAME,
-        Key: fileName,
+        Key: fileName+'-'+doctorName,
       };
       const { Body } = await s3.getObject(params).promise();
       console.log("File Body ---> ", Body.buffer);
-      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), user!.name);
+      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), fileName+'-'+doctorName);
       console.log("decryptedFile ----> ", decryptedFile.buffer);
       const blob = new Blob([decryptedFile], { type: "application/pdf"});
       console.log("File blob ----> ", blob);
@@ -141,8 +146,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                     <button
                             className='ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
                             onClick={() => {
-                              if (typeof request.fileName === 'string') {
-                                downloadFile(request.fileName);
+                              if (typeof request.fileName === 'string' && typeof request.doctorName === 'string') {
+                                downloadFile(request.fileName, request.doctorName);
                               }
                             }}
                           >

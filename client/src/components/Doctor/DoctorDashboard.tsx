@@ -46,13 +46,13 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       await handleRaiseRequest?.(user!.name, file!.name);
       if (file) {
         const arrayBuffer = await file.arrayBuffer();
-        const encryptedFile = encrypt(new Uint8Array(arrayBuffer), user!.name);
+        const encryptedFile = encrypt(new Uint8Array(arrayBuffer), file.name+'-'+user?.name);
         console.log("file --->", file)
         setFile(new File([encryptedFile], file.name, { type: file.type }));
         console.log("encryptedFile --->", encryptedFile)
         const params = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
-          Key: file.name,
+          Key: file.name+"-"+user?.name,
           Body: encryptedFile.buffer,
           ACL: 'public-read'
         };
