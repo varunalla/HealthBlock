@@ -28,25 +28,11 @@ const PatientAppointment: FunctionComponent<{}> = () => {
   const [selectedDoctor, setSelectedDoctor] = useState({});
 
   useEffect(() => {
-    // getDoctorDetails();
-    //getAllDoctors();
     fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
-    console.log('doctorlist in patient-->', doctorList);
+
     setDoctorDetails(doctorDetails);
   }, []);
-  // const getAllDoctors = async () => {
-  //   const hc = 'El Camino';
 
-  //   let resp = await fetch('GET', '/provider/' + `${hc}` + '/doctors' + '?speciality=all');
-
-  //   if (resp && resp.data && resp.data.result) {
-  //     setDoctorDetails(resp.data.result);
-  //   } else {
-  //     setDoctorDetails([]);
-  //   }
-  // };
-
-  console.log('doctordea', doctorDetails);
   return (
     <div className='flex flex-col  px-4 lg:px-8 '>
       <div className='bg-gray-100 py-4 px-4 flex items-center justify-between'>

@@ -19,7 +19,6 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       console.log(err);
     }
   };
-  console.log('user-->', user);
 
   const rejectRequest = async (requestId: number) => {
     try {

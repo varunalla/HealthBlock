@@ -22,12 +22,9 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   };
   useEffect(() => {
     fetchDoctors();
-
-    //getAppointment();
   }, []);
   const fetchDoctors = async () => {
     await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
-    console.log('doctorlist-->', doctorList);
   };
 
   return (
