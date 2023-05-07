@@ -61,7 +61,7 @@ export declare namespace HealthBlock {
     email: string;
     providerAddress: string;
     phone: string;
-    status: string;
+    id: string;
   };
 
   export type DoctorStruct = {
@@ -85,8 +85,8 @@ export interface HealthBlockInterface extends utils.Interface {
   functions: {
     "patients(address)": FunctionFragment;
     "providerList(uint256)": FunctionFragment;
-    "raiseRequest(string,string,address)": FunctionFragment;
     "providerToDoctors(address,uint256)": FunctionFragment;
+    "raiseRequest(string,string,address)": FunctionFragment;
     "getRequests()": FunctionFragment;
     "rejectRequest(uint256)": FunctionFragment;
     "approveRequest(uint256)": FunctionFragment;
@@ -134,6 +134,8 @@ export interface HealthBlockInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "providerList",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "providerToDoctors",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -223,6 +225,9 @@ export interface HealthBlockInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "patients", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "providerList",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "providerToDoctors",
     data: BytesLike
   ): Result;
@@ -411,7 +416,7 @@ export interface HealthBlock extends BaseContract {
       }
     >;
 
-  providerList(
+    providerList(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
@@ -537,19 +542,19 @@ export interface HealthBlock extends BaseContract {
     }
   >;
 
-providerList(
-  arg0: PromiseOrValue<BigNumberish>,
-  overrides?: CallOverrides
-): Promise<
-  [string, string, string, string, string] & {
-    name: string;
-    email: string;
-    providerAddress: string;
-    phone: string;
-    id: string;
-  }
->;
-    
+  providerList(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, string, string] & {
+      name: string;
+      email: string;
+      providerAddress: string;
+      phone: string;
+      id: string;
+    }
+  >;
+
   providerToDoctors(
     arg0: PromiseOrValue<string>,
     arg1: PromiseOrValue<BigNumberish>,
@@ -660,7 +665,7 @@ providerList(
         id: string;
       }
     >;
-    
+
     providerList(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -673,7 +678,7 @@ providerList(
         id: string;
       }
     >;
-    
+
     providerToDoctors(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
@@ -842,15 +847,18 @@ providerList(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
     providerList(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
     providerToDoctors(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
     raiseRequest(
       doctorName: PromiseOrValue<string>,
       fileName: PromiseOrValue<string>,
@@ -933,10 +941,12 @@ providerList(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
     providerList(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<PopulatedTransaction>;
+
     providerToDoctors(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,

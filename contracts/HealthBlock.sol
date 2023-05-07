@@ -36,7 +36,6 @@ contract HealthBlock {
         address doctor;
         string doctorName;
         string fileName;
-
         string status;
     }
     mapping(address => Request[]) private doctorRequests;

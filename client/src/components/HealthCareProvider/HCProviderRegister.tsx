@@ -1,14 +1,41 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { HealthContext } from '../../providers/HealthProvider';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const HCProviderRegister: FunctionComponent<{}> = ({}) => {
-  const { currentAccount, registerHCProviderHealthBlockContract } = useContext(HealthContext);
+  const { currentAccount, 
+          healthBlockContract,
+          fetchHealthCareProviderContract,
+          registerHCProviderHealthBlockContract } = useContext(HealthContext);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
 
   const registerHCProvider = async () => {
+    try {
+      const user = await fetchHealthCareProviderContract?.();
+      if (!user?.email) {
+        toast('HealthCare Provider Registration Initiated!');
+        await registerHCProviderHealthBlockContract?.(name, email, address, phone);
+        toast('HealthCare Provider Created');
+      } else {
+        toast.error('User already present', {
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+        });
+      }
+    } catch (err) {
+      toast.error('Error Registering HealthCare Provider, please try after sometime!');
+      console.log('Register Error', err);
+    }
     try {
       await registerHCProviderHealthBlockContract?.(name, email, address, phone);
     } catch (err) {

@@ -25,7 +25,7 @@ interface hcProvider {
 interface Request {
   doctor: string;
   doctorName: string;
-  credentialsHash: string;
+  fileName: string;
   status: string;
 }
 
@@ -62,10 +62,13 @@ interface HealthAppContextInterface {
   handleRaiseRequest?: (doctorName: string, file: string | null, hcpAddress: string) => Promise<void>;
   handleApproveRequest?: (requestId: number) => Promise<void>;
   handleRejectRequest?: (requestId: number) => Promise<void>;
+  fetchDoctorContract?: () => Promise<Doctor | undefined>;
   fetchPatientContract?: () => Promise<Patient | undefined>;
+  fetchHealthCareProviderContract?: () => Promise<hcProvider | undefined>;
   fetchPatientInfoContract?: (address: string) => Promise<void>;
   fetchRequests?: () => Promise<void>;
   fetchHealthCareProviders?: () => Promise<void>;
+  fetchAllDoctors?: (provider: string) => Promise<void>;
   currentAccount?: string;
   verificationRequests?: Request[];
   providers?: hcProvider[];
@@ -166,6 +169,34 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
+  const fetchDoctorContract = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const [name, age, email, specialization] = await contract.getDoctorInfo();
+      return { name, age, email, specialization } as Doctor;
+    } catch (err) {
+      throw(`Error Loading Health Contract ${err}`);
+    }
+  };
+  
+  const fetchHealthCareProviderContract = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const [name,  email, providerAddress, phone] = await contract.getHCProviderInfo();
+      return { name, email, providerAddress, phone } as hcProvider;
+    } catch (err) {
+      throw(`Error Loading Health Contract ${err}`);
+    }
+  };
+
   const fetchPatientInfoContract = async (address: string) => {
     try {
       const web3modal = new Web3Modal();
@@ -195,7 +226,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const register = await contract.registerHCProvider(name, email, address, phone);
       register.wait();
     } catch (err) {
-      setError('Error Loading Health Contract');
+      throw('Error Loading Health Contract');
     }
   };
 
@@ -228,7 +259,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       await tx.wait();
       fetchRequests();
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw('Error Loading Health Contract');
     }
   };
 
@@ -243,7 +274,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       await tx.wait();
       fetchRequests();
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw('Error Loading Health Contract');
     }
   };
 
@@ -264,7 +295,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       }));
       setVerificationRequests(requests);
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw('Error Loading Health Contract');
     }
   };
 
@@ -278,7 +309,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const hcProviders = await contract.getAllProviders();
       setProviders(hcProviders);
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw('Error Loading Health Contract');
     }
   };
   
@@ -340,6 +371,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         healthBlockContract,
         registerHealthBlockContract,
         fetchPatientContract,
+        fetchDoctorContract,
+        fetchHealthCareProviderContract,
         fetchPatientInfoContract,
         registerDoctorHealthBlockContract,
         registerHCProviderHealthBlockContract,
@@ -349,7 +382,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         verificationRequests,
         fetchRequests,
         providers,
-        fetchHealthCareProviders
+        fetchHealthCareProviders,
         fetchAllDoctors,
         doctorList,
         updateProfile,

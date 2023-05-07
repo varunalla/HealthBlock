@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 import * as CryptoJS from 'crypto-js';
+const s3 = require('./s3Client');
 import { StringifyOptions } from 'querystring';
 const AWS = require('aws-sdk');
 
@@ -11,11 +12,6 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
     useContext(HealthContext);
-  const s3 = new AWS.S3({
-    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-    region: process.env.REACT_APP_AWS_REGION
-  });
 
   const logouthandler = () => {
     logout?.();

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 const AWS = require('aws-sdk');
+const s3 = require('./s3Client');
 import * as CryptoJS from 'crypto-js';
 
 const DoctorDashboard: React.FunctionComponent<{}> = () => {
@@ -11,12 +12,8 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const {fetchHealthCareProviders, providers, handleRaiseRequest} = useContext(HealthContext);
   const [hcProvider, setHCProvider] = useState<any>('');
   const [providerId, setProviderId] = useState<any>('');
+  const [providerEmail, setProviderEmail] = useState<any>('');
   const { fetchAllDoctors, doctorList } = useContext(HealthContext);
-  const s3 = new AWS.S3({
-    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-    region: process.env.REACT_APP_AWS_REGION
-  });
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>();
 
@@ -60,6 +57,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
             console.log('File uploaded successfully.'+ data.Location);
           }
         });
+        sendRequestEmail(providerEmail);
       }
     } catch (err) {
       console.log(err);
@@ -113,6 +111,90 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     );
   };
 
+  const ses = new AWS.SES({
+    apiVersion: '2010-12-01',
+    region: 'us-east-1',
+    accessKeyId: 'AKIAWKISFSUD75424ZI4',
+    secretAccessKey: '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',
+  });
+
+  function sendRequestEmail(to: string) {
+    const subject = 'Credentials Verification Request';
+    const body = 'Credentials Verification Request has been raised by Dr.'+user?.name;
+    sendEmail(to, subject, body);
+  }
+
+  function sendEmail(to: string, subject: string, body: string) {
+    const params = {
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: body,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: subject,
+        },
+      },
+      Source: 'aishwarya.ravi@sjsu.edu',
+    };
+
+    ses.getIdentityVerificationAttributes({ Identities: [to] }, (err: any, data: { VerificationAttributes: { [x: string]: any; }; }) => {
+      if (err) {
+        console.log(err);
+      } else {
+        const verificationAttributes = data.VerificationAttributes[to];
+        if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
+          // Email identity is verified, send the email
+          ses.sendEmail(params, (err: any, data: any) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Email sent:', data);
+            }
+          });
+        } else {
+          // Email identity is not verified, verify the email identity
+          ses.verifyEmailIdentity({ EmailAddress: to }, (err: any, data: any) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log(`Email identity verification initiated for ${to}.`);
+              // Wait for the email identity to be verified before sending the email
+              const intervalId = setInterval(() => {
+                ses.getIdentityVerificationAttributes({ Identities: [to] }, (err: any, data: { VerificationAttributes: { [x: string]: any; }; }) => {
+                  if (err) {
+                    console.log(err);
+                  } else {
+                    const verificationAttributes = data.VerificationAttributes[to];
+                    if (
+                      verificationAttributes &&
+                      verificationAttributes.VerificationStatus === 'Success'
+                    ) {
+                      clearInterval(intervalId);
+                      ses.sendEmail(params, (err: any, data: any) => {
+                        if (err) {
+                          console.log(err);
+                        } else {
+                          console.log('Email sent:', data);
+                        }
+                      });
+                    }
+                  }
+                });
+              }, 5000);
+            }
+          });
+        }
+      }
+    });
+  }
+
   return (
     <div className='flex flex-col justify-center h-screen'>
       <div className='flex flex-row space-x-6'>
@@ -161,8 +243,10 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
                     const selectedProviderName = e.target.value;
                     const selectedProvider = providers && providers.find(provider => provider.name === selectedProviderName);
                     const hcpId = selectedProvider ? selectedProvider.id : '';
+                    const hcpEmail = selectedProvider ? selectedProvider.email : '';
                     setHCProvider(e.target.value);
                     setProviderId(hcpId);
+                    setProviderEmail(hcpEmail);
                   }}
                 >
                   <option value=''>Select a provider</option>

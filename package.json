@@ -47,6 +47,5 @@
     "@types/crypto-js": "^4.1.1",
     "prettier": "^2.8.7",
     "typechain": "^8.1.1"
-    "prettier": "^2.8.7"
   }
 }
