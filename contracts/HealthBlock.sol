@@ -38,8 +38,16 @@ contract HealthBlock {
         string credentialsHash;
         string status;
     }
+
+struct JoinRequest{
+    address doctor;
+    string doctorName;
+    string status;
+}
+
     mapping(address => Request[]) private doctorRequests;
     mapping(address => doctor[]) public providerToDoctors;
+    mapping(address => JoinRequest[]) public hcproviderToDoctorRequests;
 
    /*
     * @dev Set contract deployer as owner
@@ -172,9 +180,63 @@ contract HealthBlock {
 }
      function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
         doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i<  hcproviderToDoctorRequests[_providerAddress].length;i++){
+            if(hcproviderToDoctorRequests[_providerAddress][i].doctor == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+
+
+            }
+        }
+           require(found == true,'Doctor not found');
+           hcproviderToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+        
+        
        providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
 
     }
+
+     function rejectDoctorRequest(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i<  hcproviderToDoctorRequests[_providerAddress].length;i++){
+            if(hcproviderToDoctorRequests[_providerAddress][i].doctor == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+
+
+            }
+        }
+           require(found == true,'Doctor not found');
+           hcproviderToDoctorRequests[_providerAddress][idx].status = 'reject';
+        
+        
+      
+
+    }
+
+    function raiseJoinNetworkRequest(address _providerAddress, address _doctorAddress, string memory docName) public{
+        hcprovider storage d = hcproviders[_providerAddress];
+         JoinRequest memory request = JoinRequest({
+             doctor: _doctorAddress,
+             doctorName:docName,
+            status:"pending"
+        });
+        hcproviderToDoctorRequests[_providerAddress].push(request);
+
+    }
+
+    function getDoctorRequestsForHC(address _providerAddress) public view returns (JoinRequest[] memory){
+        return hcproviderToDoctorRequests[_providerAddress];
+
+    }
+
+   
 
    
    

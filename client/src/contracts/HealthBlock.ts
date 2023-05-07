@@ -57,10 +57,23 @@ export declare namespace HealthBlock {
     specialization: string;
     id: string;
   };
+
+  export type JoinRequestStruct = {
+    doctor: PromiseOrValue<string>;
+    doctorName: PromiseOrValue<string>;
+    status: PromiseOrValue<string>;
+  };
+
+  export type JoinRequestStructOutput = [string, string, string] & {
+    doctor: string;
+    doctorName: string;
+    status: string;
+  };
 }
 
 export interface HealthBlockInterface extends utils.Interface {
   functions: {
+    "hcproviderToDoctorRequests(address,uint256)": FunctionFragment;
     "patients(address)": FunctionFragment;
     "providerToDoctors(address,uint256)": FunctionFragment;
     "raiseRequest(string,string)": FunctionFragment;
@@ -78,10 +91,14 @@ export interface HealthBlockInterface extends utils.Interface {
     "registerHCProvider(string,string,string,string)": FunctionFragment;
     "getAllDoctorsForProvider(address)": FunctionFragment;
     "mapDoctorToProvider(address,address)": FunctionFragment;
+    "rejectDoctorRequest(address,address)": FunctionFragment;
+    "raiseJoinNetworkRequest(address,address,string)": FunctionFragment;
+    "getDoctorRequestsForHC(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "hcproviderToDoctorRequests"
       | "patients"
       | "providerToDoctors"
       | "raiseRequest"
@@ -99,8 +116,15 @@ export interface HealthBlockInterface extends utils.Interface {
       | "registerHCProvider"
       | "getAllDoctorsForProvider"
       | "mapDoctorToProvider"
+      | "rejectDoctorRequest"
+      | "raiseJoinNetworkRequest"
+      | "getDoctorRequestsForHC"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "hcproviderToDoctorRequests",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "patients",
     values: [PromiseOrValue<string>]
@@ -183,7 +207,27 @@ export interface HealthBlockInterface extends utils.Interface {
     functionFragment: "mapDoctorToProvider",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "rejectDoctorRequest",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "raiseJoinNetworkRequest",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getDoctorRequestsForHC",
+    values: [PromiseOrValue<string>]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "hcproviderToDoctorRequests",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "patients", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "providerToDoctors",
@@ -247,6 +291,18 @@ export interface HealthBlockInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "mapDoctorToProvider",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rejectDoctorRequest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "raiseJoinNetworkRequest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getDoctorRequestsForHC",
     data: BytesLike
   ): Result;
 
@@ -358,6 +414,18 @@ export interface HealthBlock extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    hcproviderToDoctorRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        doctor: string;
+        doctorName: string;
+        status: string;
+      }
+    >;
+
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -464,7 +532,37 @@ export interface HealthBlock extends BaseContract {
       _doctorAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    rejectDoctorRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    raiseJoinNetworkRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      docName: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getDoctorRequestsForHC(
+      _providerAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[HealthBlock.JoinRequestStructOutput[]]>;
   };
+
+  hcproviderToDoctorRequests(
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string] & {
+      doctor: string;
+      doctorName: string;
+      status: string;
+    }
+  >;
 
   patients(
     arg0: PromiseOrValue<string>,
@@ -571,7 +669,37 @@ export interface HealthBlock extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  rejectDoctorRequest(
+    _providerAddress: PromiseOrValue<string>,
+    _doctorAddress: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  raiseJoinNetworkRequest(
+    _providerAddress: PromiseOrValue<string>,
+    _doctorAddress: PromiseOrValue<string>,
+    docName: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getDoctorRequestsForHC(
+    _providerAddress: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<HealthBlock.JoinRequestStructOutput[]>;
+
   callStatic: {
+    hcproviderToDoctorRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        doctor: string;
+        doctorName: string;
+        status: string;
+      }
+    >;
+
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -678,6 +806,24 @@ export interface HealthBlock extends BaseContract {
       _doctorAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    rejectDoctorRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    raiseJoinNetworkRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      docName: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getDoctorRequestsForHC(
+      _providerAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<HealthBlock.JoinRequestStructOutput[]>;
   };
 
   filters: {
@@ -743,6 +889,12 @@ export interface HealthBlock extends BaseContract {
   };
 
   estimateGas: {
+    hcproviderToDoctorRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -826,9 +978,33 @@ export interface HealthBlock extends BaseContract {
       _doctorAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    rejectDoctorRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    raiseJoinNetworkRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      docName: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getDoctorRequestsForHC(
+      _providerAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    hcproviderToDoctorRequests(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     patients(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -911,6 +1087,24 @@ export interface HealthBlock extends BaseContract {
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    rejectDoctorRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    raiseJoinNetworkRequest(
+      _providerAddress: PromiseOrValue<string>,
+      _doctorAddress: PromiseOrValue<string>,
+      docName: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getDoctorRequestsForHC(
+      _providerAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }
