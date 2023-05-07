@@ -17,7 +17,8 @@ interface AppointmentDetails {
 const UpdateProfile: FunctionComponent<{}> = () => {
   const [address, setAddress] = useState('');
   const [hc, setHc] = useState('');
-  const { updateProfile, currentAccount } = useContext(HealthContext);
+  const { user } = useContext(AuthContext);
+  const { updateProfile, currentAccount, handleDocToHCRaiseRequest } = useContext(HealthContext);
   const account = currentAccount || '';
 
   let providers = [
@@ -27,7 +28,7 @@ const UpdateProfile: FunctionComponent<{}> = () => {
     },
     {
       name: 'Sutter Health Care',
-      address: '0xEE619586e0826CA2F00772701eADc2065E5D5A47',
+      address: '0xb3cc507e752dcc3da1cef955b58e97ae77160103',
     },
     {
       name: 'El Camino',
@@ -64,7 +65,17 @@ const UpdateProfile: FunctionComponent<{}> = () => {
             </select>
           </div>
           <button
-            onClick={() => updateProfile?.(hc, account)}
+            onClick={() => {
+              if (user?.name) {
+                handleDocToHCRaiseRequest?.(
+                  user?.name,
+                  account,
+                  '0xb3cc507e752dcc3da1cef955b58e97ae77160103',
+                );
+
+                updateProfile?.(hc, account, 'confirm');
+              }
+            }}
             className='flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded'
             type='button'
           >

@@ -3,8 +3,6 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
-import { HealthContext } from '../../providers/HealthProvider';
-import moment from 'moment';
 interface AppointmentDetails {
   name: string;
   patient_email: string;
@@ -15,19 +13,16 @@ interface AppointmentDetails {
   appointment_status: string;
 }
 
-const DoctorAppointments: FunctionComponent<{}> = () => {
+const AppointmentHistory: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { fetch } = useAuthFetch();
-  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
-  const [filterDate, setFilterDate] = useState('all');
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails[]>([]);
 
   useEffect(() => {
     getAppointment();
   }, []);
-
   const getAppointment = async () => {
-    let resp = await fetch('GET', '/appointments/' + user?.email + `?created_at= ${filterDate}`);
+    let resp = await fetch('GET', '/patientappointments/' + user?.email);
     if (resp && resp.data && resp.data.result) {
       setAppointmentData(resp.data.result);
     } else {
@@ -68,19 +63,9 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
             type='date'
             id='date'
             name='date'
-            value={filterDate}
-            onChange={(e) => {
-              let date = moment(e.target.value).format('YYYY-MM-DD');
-              setFilterDate(date);
-            }}
             className='border border-gray-300 rounded-md px-4 py-2'
           />
-          <button
-            onClick={() => {
-              getAppointment();
-            }}
-            className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'
-          >
+          <button className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'>
             Filter
           </button>
         </div>
@@ -124,53 +109,32 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {appointmentData.length > 0 &&
-                  appointmentData.map((appointment) => (
-                    <tr key={appointment.appointment_id}>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {appointment.created_at}
-                      </td>
+                {appointmentData.map((appointment) => (
+                  <tr key={appointment.appointment_id}>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {appointment.created_at}
+                    </td>
 
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {appointment.appointment_time}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                            appointment.appointment_status,
-                          )}`}
-                        >
-                          {appointment.appointment_status == 'pending' ? (
-                            <div className='flex justify-between'>
-                              <button
-                                className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded'
-                                onClick={() => updateStatus('reject', appointment.appointment_id)}
-                              >
-                                Reject
-                              </button>
-                              <div className='w-4'></div>
-                              <button
-                                className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded'
-                                onClick={() =>
-                                  updateStatus('confirmed', appointment.appointment_id)
-                                }
-                              >
-                                Confirm
-                              </button>
-                            </div>
-                          ) : (
-                            <div>{appointment.appointment_status}</div>
-                          )}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {appointment.appointment_time}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                          appointment.appointment_status,
+                        )}`}
+                      >
+                        {appointment.appointment_status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -180,4 +144,4 @@ const DoctorAppointments: FunctionComponent<{}> = () => {
   );
 };
 
-export default DoctorAppointments;
+export default AppointmentHistory;

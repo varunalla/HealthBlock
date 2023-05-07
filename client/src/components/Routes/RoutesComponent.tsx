@@ -15,6 +15,8 @@ import PatientAppointment from '../Patient/PatientAppointment';
 import ScheduleAppointment from '../Patient/ScheduleAppointment';
 import UpdateProfile from '../Doctor/UpdateProfile';
 import ManageSchedule from '../Doctor/ManageSchedule';
+import AppointmentHistory from '../Patient/AppointmentHistory';
+import HCDoctorRequest from '../HealthCareProvider/HCDoctorsRequest';
 
 const RoutesComponent: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -78,6 +80,16 @@ const RoutesComponent: FunctionComponent<{}> = () => {
         <Route
           path='/manageschedule'
           element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageSchedule />} />}
+        />
+        <Route
+          path='/appointment-history'
+          element={
+            <ProtectedRoute {...defaultProtectedRouteProps} outlet={<AppointmentHistory />} />
+          }
+        />
+        <Route
+          path='/manage-doctor-requests'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCDoctorRequest />} />}
         />
       </Routes>
     </>

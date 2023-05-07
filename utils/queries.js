@@ -70,14 +70,30 @@ async function postAppointments(body) {
   }
 }
 
-async function getAppointments(doctor) {
-  const params = {
-    TableName: "appointments",
-    KeyConditionExpression: "doctor_email = :doctorEmail",
-    ExpressionAttributeValues: {
-      ":doctorEmail": doctor,
-    },
-  };
+async function getAppointments(doctor, appt_date) {
+  let params = {};
+
+  if (appt_date != "all") {
+    params = {
+      TableName: "appointments",
+      KeyConditionExpression:
+        "doctor_email = :doctorEmail and created_at = :createdAt",
+      ExpressionAttributeValues: {
+        ":doctorEmail": doctor,
+        ":createdAt": appt_date,
+      },
+    };
+  } else {
+    console.log("else-->");
+    params = {
+      TableName: "appointments",
+      KeyConditionExpression: "doctor_email = :doctorEmail",
+      ExpressionAttributeValues: {
+        ":doctorEmail": doctor,
+      },
+    };
+  }
+
   try {
     let result = await dynamodb.query(params).promise();
 
@@ -87,12 +103,12 @@ async function getAppointments(doctor) {
       return null;
     }
   } catch (err) {
+    console.log("Err->", err);
     return new Error("Could not retrieve data");
   }
 }
 
 async function updateAppointmentStatus(appt_id, appt_status) {
-  console.log("update Appointments");
   const params = {
     TableName: "appointments",
     FilterExpression: "appointment_id = :appointmentId",
@@ -127,23 +143,6 @@ async function updateAppointmentStatus(appt_id, appt_status) {
         if (err) {
           return new Error("Could not update");
         } else {
-          console.log("Appointment update-->", data.Attributes);
-          let body = "";
-          // if (data.Attributes?.appointment_status == "confirmed") {
-          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${data.Attributes?.appointment_time} on ${created_at}</p>`;
-          // } else {
-          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
-          // }
-          // sendEmail(
-          //   data.Attributes?.patient_email,
-
-          //   data.Attributes?.doctor_email,
-          //   body
-          // );
-          console.log(
-            "data.Attributes?.appointment_time",
-            data.Attributes?.appointment_time
-          );
           updateDoctorAvailability(
             data.Attributes?.doctor_email,
             data.Attributes?.created_at,
@@ -157,17 +156,11 @@ async function updateAppointmentStatus(appt_id, appt_status) {
 }
 
 async function updateDoctorAvailability(doctor, appt_date, timeslot) {
-  console.log(
-    "update doc avail--> with idex of updated set",
-    doctor,
-    appt_date
-  );
   let res = await getDocAvailability(doctor, appt_date);
   console.log("res-->", res);
   let updatedTimeSlot = res.filter((ele) => {
     return ele != timeslot;
   });
-  console.log("updatedtimeslot-->", updatedTimeSlot);
 
   const params = {
     TableName: "availability",
@@ -218,6 +211,27 @@ async function postAvailability(avail_date, time, doctor) {
   });
 }
 
+async function getAppointmentsForPatient(patient) {
+  const params = {
+    TableName: "appointments",
+    FilterExpression: "patient_email = :patientEmail",
+    ExpressionAttributeValues: {
+      ":patientEmail": patient,
+    },
+  };
+  try {
+    const result = await dynamodb.scan(params).promise();
+
+    if (result.Items) {
+      return result.Items;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    return err;
+  }
+}
+
 module.exports = {
   getDoctors,
   getDocAvailability,
@@ -225,4 +239,5 @@ module.exports = {
   getAppointments,
   updateAppointmentStatus,
   postAvailability,
+  getAppointmentsForPatient,
 };
