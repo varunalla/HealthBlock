@@ -33,9 +33,23 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       fetchRequests?.();
     })();
   }, []);
+  const _renderManageDoctorsSection = () => {
+    return (
+      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+        <button
+          onClick={() => navigate('/manage-doctors-request')}
+          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+        >
+          Appointments
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className='flex flex-col justify-center items-center'>
+      {_renderManageDoctorsSection()}
+
       <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 flex flex-col items-center mt-0'>
         <h5 className='mt-4 mb-1 text-xl font-medium text-gray-900 dark:text-white'>
           {user?.name}

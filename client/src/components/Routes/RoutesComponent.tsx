@@ -15,6 +15,7 @@ import PatientAppointment from '../Patient/PatientAppointment';
 import ScheduleAppointment from '../Patient/ScheduleAppointment';
 import UpdateProfile from '../Doctor/UpdateProfile';
 import ManageSchedule from '../Doctor/ManageSchedule';
+import HCManageDoctors from '../HealthCareProvider/HCManageDoctors';
 
 const RoutesComponent: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -78,6 +79,10 @@ const RoutesComponent: FunctionComponent<{}> = () => {
         <Route
           path='/manageschedule'
           element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<ManageSchedule />} />}
+        />
+        <Route
+          path='/manage-doctors-request'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCManageDoctors />} />}
         />
       </Routes>
     </>
