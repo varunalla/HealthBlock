@@ -266,16 +266,14 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
-  const fetchAllDoctors = async (provider: string) => {
+  const fetchAllDoctors = async (hcprovider: string) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
-      const doctors = await contract.getAllDoctorsForProvider(
-        '0x29954F7DceDC3c5d7A44A3a69Abd101Acb62b98B',
-      );
+      const doctors = await contract.getAllDoctorsForProvider(hcprovider);
 
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
@@ -320,9 +318,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = fetchContract(signer);
-      const doctors = await contract.getAllDoctorToProviderRequests(
-        '0x29954F7DceDC3c5d7A44A3a69Abd101Acb62b98B',
-      );
+      const doctors = await contract.getAllDoctorToProviderRequests(hcAddress);
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
         let obj = {
