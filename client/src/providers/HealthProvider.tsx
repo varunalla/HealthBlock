@@ -295,7 +295,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDoctorList(docArr);
     } catch (error) {
-      throw new Error(error);
+      throw error;
       // setError('Error Loading Health Contract');
     }
   };
@@ -320,7 +320,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       update.wait();
     } catch (err: any) {
-      throw new Error(err);
+      throw err;
       //setError(`Error Loading Health Contract ${err}`);
     }
   };
@@ -348,7 +348,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDocToProviderList(docArr);
     } catch (err: any) {
-      throw new Error(err);
+      throw err;
       //setError(`Error Loading Health Contract ${err}`);
     }
   };
@@ -367,7 +367,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const update = await contract.raiseDoctorToProviderRequest(hcAddress, docAddress, doctorName);
     } catch (err: any) {
       //setError(`Error Loading Health Contract ${err}`);
-      throw new Error(err);
+      throw err;
     }
   };
 
