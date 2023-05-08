@@ -42,6 +42,13 @@ interface HealthAppContextInterface {
   fetchPatientContract?: () => Promise<Patient | undefined>;
   fetchPatientInfoContract?: (address: string) => Promise<void>;
   fetchRequests?: () => Promise<void>;
+  registerWithProvider?: (providerAddress: string) => Promise<void>;
+  fetchPatientProviderRequests?: () => Promise<string[] | undefined>;
+  fetchProviderPatientRequests?: () => Promise<string[] | undefined>;
+  fetchPatients?: () => Promise<string[] | undefined>;
+  fetchProviders?: () => Promise<string[] | undefined>;
+  approveProviderPatientRequest?: (address: string) => Promise<void>;
+  rejectProviderPatientRequest?: (address: string) => Promise<void>;
   currentAccount?: string;
   verificationRequests?: Request[];
 }
@@ -246,7 +253,102 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       setError('Error Loading Health Contract');
     }
   };
-
+  const fetchPatientProviderRequests = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = fetchContract(signer);
+      const requests = await contract.getPatientRequests();
+      return requests;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const fetchProviderPatientRequests = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = fetchContract(signer);
+      const requests = await contract.getProviderRequests();
+      return requests;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const fetchPatients = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = fetchContract(signer);
+      const requests = await contract.getProviderPatients();
+      return requests;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const fetchProviders = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = fetchContract(signer);
+      const requests = await contract.getPatientProviders();
+      return requests;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const approveProviderPatientRequest = async (patientAddress: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = await fetchContract(signer);
+      const tx = await contract.approvePatientProviderRequest(patientAddress);
+      await tx.wait();
+    } catch (error) {
+      throw error;
+    }
+  };
+  const rejectProviderPatientRequest = async (patientAddress: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = await fetchContract(signer);
+      const tx = await contract.rejectPatientProviderRequest(patientAddress);
+      await tx.wait();
+    } catch (error) {
+      throw error;
+    }
+  };
+  //connect contract
+  const registerWithProvider = async (providerAddress: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const register = await contract.requestProvider(providerAddress);
+      register.wait();
+    } catch (err: any) {
+      throw err;
+    }
+  };
   return (
     <HealthContext.Provider
       value={{
@@ -264,6 +366,13 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         handleRejectRequest,
         verificationRequests,
         fetchRequests,
+        fetchPatientProviderRequests,
+        fetchProviderPatientRequests,
+        registerWithProvider,
+        fetchPatients,
+        fetchProviders,
+        approveProviderPatientRequest,
+        rejectProviderPatientRequest,
       }}
     >
       {children}
