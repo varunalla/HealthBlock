@@ -27,6 +27,11 @@ contract HealthBlock {
         string specialization;
         address id;
     }
+    struct DoctorToProviderRequest {
+        string doctorName;
+        address doctorAddr;
+        string status;
+    }
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
@@ -39,6 +44,8 @@ contract HealthBlock {
         string status;
     }
     mapping(address => Request[]) private doctorRequests;
+    mapping(address => doctor[]) public providerToDoctors;
+    mapping(address => DoctorToProviderRequest[]) public providerToDoctorRequests;
 
    /*
     * @dev Set contract deployer as owner
@@ -89,6 +96,7 @@ contract HealthBlock {
     mapping (address => patient) public patients;
     mapping (address => doctor) internal doctors;
     mapping (address => hcprovider) internal hcproviders;
+   
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -144,6 +152,7 @@ contract HealthBlock {
         require((_age > 0) && (_age < 100));
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
+       
         emit NPatient(msg.sender, _name);
     } 
 
@@ -243,5 +252,67 @@ contract HealthBlock {
         require(providerPatients[msg.sender].exists, "You do not have any patients");
         return providerPatients[msg.sender].patients;
     }
+    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+    return providerToDoctors[providerAddress];
+}
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+ }
+        }
+           
+          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+  
+    }
+
+ function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+ }
+        }
+           
+          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
+
+  
+    }
+
+
+
+    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
+  
+   DoctorToProviderRequest memory request = DoctorToProviderRequest({
+            doctorName: doctorName,
+         doctorAddr: _doctorAddress,
+        status:'pending'
+        });
+  
+  providerToDoctorRequests[_providerAddress].push(request);
+    
+    }
+
+    function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
+
+   return providerToDoctorRequests[_hcaddress];
+    }
+
+    
+
+   
+   
+
+
     
 }
