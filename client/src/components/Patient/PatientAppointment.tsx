@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 import { HealthContext } from '../../providers/HealthProvider';
+import { hc_address } from '../../config/hc_constants';
 
 interface AppointmentRequestDetails {
   doctor_name: string;
@@ -28,7 +29,7 @@ const PatientAppointment: FunctionComponent<{}> = () => {
   const [selectedDoctor, setSelectedDoctor] = useState({});
 
   useEffect(() => {
-    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
+    fetchAllDoctors?.(hc_address);
 
     setDoctorDetails(doctorDetails);
   }, []);

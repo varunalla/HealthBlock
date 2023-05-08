@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hc_address } from '../../config/hc_constants';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 
@@ -20,7 +21,7 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
     currentAccount,
   } = useContext(HealthContext);
   useEffect(() => {
-    fetchAllDoctorToProviderRequests?.('0xb3cc507e752dcc3da1cef955b58e97ae77160103');
+    fetchAllDoctorToProviderRequests?.(hc_address);
   }, []);
 
   const getStatusColor = (status: String) => {

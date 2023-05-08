@@ -274,6 +274,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
       const doctors = await contract.getAllDoctorsForProvider(hcprovider);
+      console.log('doctors-->', doctors);
 
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
@@ -285,6 +286,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         };
         docArr.push(obj);
       }
+      console.log('doctorArr', docArr);
 
       setDoctorList(docArr);
     } catch (error) {
