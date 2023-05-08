@@ -253,66 +253,45 @@ contract HealthBlock {
         return providerPatients[msg.sender].patients;
     }
     function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
-    return providerToDoctors[providerAddress];
-}
-     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
+        return providerToDoctors[providerAddress];
+    }
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public {
         doctor storage d = doctors[_doctorAddress];
         uint8 idx =0;
-        bool found = false;
         for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) {
                 idx = i;
                 break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
-         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
-  
+            }
+        }   
+        providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+        providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
     }
 
- function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
-        doctor storage d = doctors[_doctorAddress];
+    function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+        
         uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++) {
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) { 
                 idx = i;
                 break;
-                found = true;
- }
+                
+            }
         }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
-
-  
+        providerToDoctorRequests[_providerAddress][idx].status = 'rejected';  
     }
-
-
-
     function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
+            DoctorToProviderRequest memory request = DoctorToProviderRequest({
+                doctorName: doctorName,
+                doctorAddr: _doctorAddress,
+                status:'pending'
+            });
   
-   DoctorToProviderRequest memory request = DoctorToProviderRequest({
-            doctorName: doctorName,
-         doctorAddr: _doctorAddress,
-        status:'pending'
-        });
-  
-  providerToDoctorRequests[_providerAddress].push(request);
-    
+            providerToDoctorRequests[_providerAddress].push(request);
     }
 
     function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
-
-   return providerToDoctorRequests[_hcaddress];
+            return providerToDoctorRequests[_hcaddress];
     }
 
-    
-
-   
-   
-
-
-    
 }
