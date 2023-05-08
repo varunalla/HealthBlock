@@ -274,7 +274,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
       const doctors = await contract.getAllDoctorsForProvider(
-        '0xB3CC507e752Dcc3DA1cEf955B58e97Ae77160103',
+        '0x29954F7DceDC3c5d7A44A3a69Abd101Acb62b98B',
       );
 
       let docArr = [];
@@ -290,7 +290,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDoctorList(docArr);
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw error;
     }
   };
   const updateProfile = async (hcAddress: string, docAddress: string, status: string) => {
@@ -309,7 +309,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       update.wait();
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      throw err;
     }
   };
 
@@ -321,7 +321,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const signer = provider.getSigner();
       const contract: HealthBlock = fetchContract(signer);
       const doctors = await contract.getAllDoctorToProviderRequests(
-        '0xb3cc507e752dcc3da1cef955b58e97ae77160103',
+        '0x29954F7DceDC3c5d7A44A3a69Abd101Acb62b98B',
       );
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
@@ -335,7 +335,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDocToProviderList(docArr);
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      throw err;
     }
   };
 
@@ -352,7 +352,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const contract: HealthBlock = fetchContract(signer);
       const update = await contract.raiseDoctorToProviderRequest(hcAddress, docAddress, doctorName);
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      throw err;
     }
   };
 

@@ -28,7 +28,7 @@ const UpdateProfile: FunctionComponent<{}> = () => {
     },
     {
       name: 'Sutter Health Care',
-      address: '0xB3CC507e752Dcc3DA1cEf955B58e97Ae77160103',
+      address: '0x29954F7DceDC3c5d7A44A3a69Abd101Acb62b98B',
     },
     {
       name: 'El Camino',

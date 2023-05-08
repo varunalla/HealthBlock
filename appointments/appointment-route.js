@@ -46,6 +46,8 @@ module.exports = (app) => {
       created_at: req.body.appointmentDate,
       appointment_time: req.body.appointmentTime,
       appointment_status: req.body.status,
+      doctor_address: req.body.doctorAddress,
+      patient_address: req.body.patientAddress,
     };
     try {
       let result = await postAppointments(appointment);
@@ -86,20 +88,29 @@ module.exports = (app) => {
       }
     }
   );
-  app.post("/availability/:doctor", verify_token, async (req, res) => {
-    let success = true;
+  app.post(
+    "/availability/:doctor/:doctorAddress",
+    verify_token,
+    async (req, res) => {
+      let success = true;
 
-    for (const [date, time] of Object.entries(req.body)) {
-      try {
-        await postAvailability(date, time, req.params.doctor);
-      } catch (err) {
-        success = false;
-      }
-      if (success) {
-        res.status(204).send({ success: true, msg: "Insert successful" });
-      } else {
-        res.status(500).send({ success: false, msg: "Insert unsuccessful" });
+      for (const [date, time] of Object.entries(req.body)) {
+        try {
+          await postAvailability(
+            date,
+            time,
+            req.params.doctor,
+            req.params.doctorAddress
+          );
+        } catch (err) {
+          success = false;
+        }
+        if (success) {
+          res.status(204).send({ success: true, msg: "Insert successful" });
+        } else {
+          res.status(500).send({ success: false, msg: "Insert unsuccessful" });
+        }
       }
     }
-  });
+  );
 };

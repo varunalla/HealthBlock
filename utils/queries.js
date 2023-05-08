@@ -41,13 +41,14 @@ async function getDocAvailability(doc_email, availability_date) {
       ":email": doc_email,
       ":avail_date": availability_date,
     },
+    ProjectionExpression: "availability_time, doctor_address",
   };
 
   try {
     const result = await dynamodb.query(params).promise();
 
     if (result.Items && result.Items.length > 0) {
-      return result.Items[0].availability_time;
+      return result.Items[0];
     } else {
       return null;
     }
@@ -195,7 +196,7 @@ async function updateDoctorAvailability(doctor, appt_date, timeslot) {
   });
 }
 
-async function postAvailability(avail_date, time, doctor) {
+async function postAvailability(avail_date, time, doctor, doctorAddress) {
   const attributeValues = time.map((time) => {
     return { S: time };
   });
@@ -205,6 +206,7 @@ async function postAvailability(avail_date, time, doctor) {
       doctor_email: doctor,
       availability_date: avail_date,
       availability_time: time,
+      doctor_address: doctorAddress,
     },
   };
   dynamodb.put(params, function (err, data) {
