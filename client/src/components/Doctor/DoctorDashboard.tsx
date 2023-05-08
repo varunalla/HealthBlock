@@ -23,7 +23,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     logout?.();
     navigate('/doctorlogin');
   };
-
+  
   const encrypt = (data: Uint8Array, key: string): Uint8Array => {
     const encrypted = CryptoJS.AES.encrypt(
       CryptoJS.enc.Utf8.parse(new TextDecoder().decode(data)),
@@ -35,6 +35,45 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     //return Buffer.from(encryptedString, 'hex');
     return new Uint8Array(encrypted.words);
   };
+
+const checkDoctorKeys = async (name: string) => {
+  try {
+    const params = {
+      Bucket: process.env.REACT_APP_BUCKET_KEYS!,
+      Key: `doctor_${name}`,
+    };
+    const data = await s3.getObject(params).promise();
+    const Buffer = require('buffer').Buffer;
+    const keys = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+    return keys;
+  } catch (err: any) {
+    if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+    } else {
+      throw err;
+    }
+  }
+};
+const checkHCProviderKeys = async (name: string) => {
+  try {
+    const params = {
+      Bucket: process.env.REACT_APP_BUCKET_KEYS,
+      Key: `hcprovider_${name}`,
+    };
+    const data = await s3.getObject(params).promise();
+    const Buffer = require('buffer').Buffer;
+    const keys = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+    return keys;
+  } catch (err: any) {
+    if (err.code === 'NotFound') {
+      console.log("No keys found")
+      return null;
+    } else {
+      throw err;
+    }
+  }
+};
   
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files ? event.target.files[0] : null;
@@ -50,20 +89,97 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         console.log("file --->", file)
         setFile(new File([encryptedFile], file.name, { type: file.type }));
         console.log("encryptedFile --->", encryptedFile)
-        const params = {
+        const keys = await checkDoctorKeys(user!.name);
+        console.log("Doctor keys:")
+        console.log(keys)
+      console.log(JSON.stringify({
+        aesKey: user!.name,
+        private_key: keys.data.private_key,
+        public_key: keys.data.public_key,
+        signing_key: keys.data.signing_key
+      }))
+      const response_encrypt = await fetch('/proxy-reencryption/encrypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          aesKey: user!.name,
+          private_key: keys.data.private_key,
+          public_key: keys.data.public_key,
+          signing_key: keys.data.signing_key
+        })
+      });
+      const encryptedData = await response_encrypt.json();
+      console.log("/Encrypt response data")
+      console.log(encryptedData);
+      const hcProviderKeys = await checkHCProviderKeys(hcProvider);
+      console.log("HCProvider keys")
+      console.log(hcProviderKeys)
+      const req_public_key = hcProviderKeys.data.public_key;
+
+      const response_reencrypt = await fetch('/proxy-reencryption/reencrypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          capsule: encryptedData.data.capsule,
+          private_key: keys.data.private_key,
+          public_key: hcProviderKeys.data.public_key,
+          signing_key: keys.data.signing_key,
+        })
+      });
+
+      const cfrags = await response_reencrypt.json();
+      console.log("/Reencrypt response data")
+      console.log(cfrags);
+      const Buffer = require('buffer').Buffer;
+      const encryptedDataBuffer = Buffer.from(JSON.stringify(encryptedData), 'utf-8');
+      const cfragsBuffer = Buffer.from(JSON.stringify(cfrags), 'utf-8');
+
+        const params_file = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
           Key: file.name,
           Body: encryptedFile.buffer,
-          ACL: 'public-read'
         };
-        //return s3.upload(params).promise().then((data: { Location: any; }) => data.Location);
-        s3.upload(params, (err: any, data: any) => {
+        const params_encrypt = {
+          Bucket: process.env.REACT_APP_BUCKET_ENCRYPT,
+          Key: `doctor_${user!.name}`,
+          Body: encryptedDataBuffer,
+        };
+        const params_reencrypt = {
+          Bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+          Key: `hcprovider_${hcProvider}`,
+          Body: cfragsBuffer,
+        };
+
+        s3.upload(params_file, (err: any, data: any) => {
           if (err) {
+            console.log("Encrypted AES file upload is unsuccessful")
             console.error(err);
           } else {
-            console.log('File uploaded successfully.'+ data.Location);
+            console.log('File uploaded successfully.Location:'+ data.Location);
           }
         });
+        
+        s3.upload(params_encrypt, (err: any, data: any) => {
+          if (err) {
+            console.log("Encrypt response is not getting stored in s3")
+            console.error(err);
+          } else {
+            console.log('Encrypt response file uploaded successfully. Location:', data.Location);
+          }
+        });
+        s3.upload(params_reencrypt, (err: any, data: any) => {
+          if (err) {
+            console.log('Error uploading cfraggs:', err);
+          } else {
+            console.log('cfraggs uploaded successfully. Location:', data.Location);
+          }
+        });
+
+
       }
     } catch (err) {
       console.log(err);

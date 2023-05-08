@@ -1,7 +1,8 @@
-import React, { FunctionComponent, useContext, useEffect } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
+import axios from 'axios';
 import * as CryptoJS from 'crypto-js';
 const AWS = require('aws-sdk');
 
@@ -10,11 +11,95 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
     useContext(HealthContext);
+  console.log("Verification Requests:",verificationRequests)
+  const[docName,setDocName]=useState<string>('');
+  
   const s3 = new AWS.S3({
     accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
     region: process.env.REACT_APP_AWS_REGION
   });
+
+  const checkDoctorKeys = async (name: string) => {
+    try {
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        Key: `doctor_${name}`,
+      };
+      const data = await s3.getObject(params).promise();
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+          console.log("Keys not found")
+          return null
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkHCProviderKeys = async (name: string) => {
+    try {
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_KEYS,
+        Key: `hcprovider_${name}`,
+      };
+      const data = await s3.getObject(params).promise();
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkEncryptRes = async (name: string) => {
+    try {
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_ENCRYPT,
+        Key: `doctor_${name}`,
+      };
+      const data = await s3.getObject(params).promise();
+      const Buffer = require('buffer').Buffer;
+      const encryptedData = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+      return encryptedData;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkReencryptRes = async (name: string) => {
+    try {
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+        Key: `hcprovider_${name}`,
+      };
+      const data = await s3.getObject(params).promise();
+      const Buffer = require('buffer').Buffer;
+      const cfrags = JSON.parse(Buffer.from(data.Body).toString('utf-8'));
+      return cfrags;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+  
 
   const logouthandler = () => {
     logout?.();
@@ -58,10 +143,49 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         Bucket: process.env.REACT_APP_BUCKET_NAME,
         Key: fileName,
       };
+      console.log("going to generatekeys() function")
+      
+      console.log(docName)
+      const docKeys = await checkDoctorKeys("doc3");
+      console.log("Doctor keys:")
+      console.log(docKeys)
+
+      const hcProviderKeys = await checkHCProviderKeys(user!.name);
+      console.log("HCProvider keys")
+      console.log(hcProviderKeys)
+      
+      const encryptedData =await checkEncryptRes("doc3");
+      console.log("Encrypt Response Data")
+      console.log(encryptedData)
+      
+      const reencryptedData=await checkReencryptRes(user!.name);
+      console.log("Reencrypt Response Data")
+      console.log(reencryptedData)
+
+      console.log("decryptReencrypt :",hcProviderKeys.data.private_key,docKeys.data.public_key,encryptedData.data.capsule,encryptedData.data.ciphertext,reencryptedData.data.cfrags)
+      const response_decryptReencrypt = await fetch('/proxy-reencryption/decryptReencrypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          private_key: hcProviderKeys.data.private_key,
+          public_key: docKeys.data.public_key,
+          capsule: encryptedData.data.capsule,
+          ciphertext: encryptedData.data.ciphertext,
+          cfrags: reencryptedData.data.cfrags
+        })
+      });
+      
+      const cleartext = await response_decryptReencrypt.json();
+      console.log("cleartext:",cleartext)
+      console.log("cleartext.data:",cleartext.data)
       const { Body } = await s3.getObject(params).promise();
       console.log("File Body ---> ", Body.buffer);
-      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), user!.name);
+      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), cleartext.data);
       console.log("decryptedFile ----> ", decryptedFile.buffer);
+
+
       const blob = new Blob([decryptedFile], { type: "application/pdf"});
       console.log("File blob ----> ", blob);
       const url = window.URL.createObjectURL(blob);
@@ -141,7 +265,9 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                     <button
                             className='ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
                             onClick={() => {
-                              if (typeof request.fileName === 'string') {
+                              if (typeof request.fileName === 'string' && typeof request.doctorName === 'string') {
+                                console.log("DocName:",request.doctorName)
+                                setDocName(request.doctorName)
                                 downloadFile(request.fileName);
                               }
                             }}

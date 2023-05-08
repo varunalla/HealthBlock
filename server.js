@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const logger = require("pino")();
 
+
 const { init_web3 } = require("./web3-utils/user");
 init_web3();
 const morgan = require("morgan");
@@ -18,9 +19,12 @@ app.use(
 );
 app.use(express.static("client/build"));
 require("./authentication/auth-routes")(app, metaAuth);
+//require("./proxy-reencryption/proxyReencryption-routes")(app)
+app.use('/proxy-reencryption', require("./proxy-reencryption/proxyReencryption-routes"));
 app.get("*", (req, res) =>
   res.sendFile(path.resolve("client", "build", "index.html"))
 );
+
 app.listen(3001, () => {
   logger.info(`Server started at 3001`);
 });

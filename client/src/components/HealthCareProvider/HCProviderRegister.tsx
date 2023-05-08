@@ -1,12 +1,55 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { HealthContext } from '../../providers/HealthProvider';
-
+import AWS from 'aws-sdk';
+import axios from 'axios';
 const HCProviderRegister: FunctionComponent<{}> = ({}) => {
   const { currentAccount, registerHCProviderHealthBlockContract } = useContext(HealthContext);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
+
+  const generateKeys = async () => {
+    try {
+      const response = await axios.get('/proxy-reencryption/keys', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = response.data;
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };  
+  const uploadDoctorKeysToS3 = async (Keys: any, Name: string) => {
+    try {
+      AWS.config.update({
+        accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+        region: process.env.REACT_APP_AWS_REGION,
+      });
+      const s3 = new AWS.S3();
+      const Buffer = require('buffer').Buffer;
+      const KeysString = JSON.stringify(Keys);
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        Key: `hcprovider_${Name}`,
+        Body: Buffer.from(KeysString),
+      };
+      console.log(params);
+      s3.upload(params, (err: any, data:any) => {
+        if (err) {
+          console.error('Error uploading HC provider Keys to S3:', err);
+        } else {
+          console.log('HC provider keys uploaded successfully. Location:', data.Location);
+        }
+      });
+    } catch (err) {
+      console.log('Error uploading HC provider Keys:', err);
+    }
+  };
 
   const registerHCProvider = async () => {
     try {
@@ -15,6 +58,7 @@ const HCProviderRegister: FunctionComponent<{}> = ({}) => {
       console.log(err);
     }
   };
+
   return (
     <form className='w-full max-w-sm' onSubmit={(e) => e.preventDefault()}>
       <div className='md:flex md:items-center mb-6'>
@@ -84,7 +128,11 @@ const HCProviderRegister: FunctionComponent<{}> = ({}) => {
       <div className='md:flex md:items-center mb-6'>
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-          onClick={() => registerHCProvider()}
+          onClick={async () => {
+            const Keys = await generateKeys();
+            registerHCProvider();
+            await uploadDoctorKeysToS3(Keys, name);
+          }}
         >
           Register HealthCare Provider
         </button>
