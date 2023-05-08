@@ -176,39 +176,20 @@ contract HealthBlock {
     function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
     return providerToDoctors[providerAddress];
 }
-     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress, uint256 idx) public{
         doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
-         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+       DoctorToProviderRequest storage request = providerToDoctorRequests[_providerAddress][idx];
+       request.status="confirmed";
+    providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
   
     }
 
- function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+ function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress,uint256 idx) public{
         doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
+         DoctorToProviderRequest storage request = providerToDoctorRequests[_providerAddress][idx];
+        request.status ="rejected";
            
-          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
-
-  
-    }
+        }
 
 
 

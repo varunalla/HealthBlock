@@ -35,7 +35,12 @@ interface HealthAppContextInterface {
   connectWallet?: () => Promise<void>;
   healthBlockContract?: () => Promise<void>;
   registerHealthBlockContract?: (name: string, age: number, email: string) => Promise<void>;
-  updateProfile?: (hcAddress: string, docAddress: string, status: string) => Promise<void>;
+  updateProfile?: (
+    hcAddress: string,
+    docAddress: string,
+    status: string,
+    idx: number,
+  ) => Promise<void>;
   registerDoctorHealthBlockContract?: (
     name: string,
     age: number,
@@ -290,10 +295,16 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDoctorList(docArr);
     } catch (error) {
-      setError('Error Loading Health Contract');
+      throw error;
+      // setError('Error Loading Health Contract');
     }
   };
-  const updateProfile = async (hcAddress: string, docAddress: string, status: string) => {
+  const updateProfile = async (
+    hcAddress: string,
+    docAddress: string,
+    status: string,
+    idx: number,
+  ) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
@@ -302,14 +313,15 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const contract: HealthBlock = fetchContract(signer);
       let update;
       if (status == 'confirmed') {
-        update = await contract.mapDoctorToProvider(hcAddress, docAddress);
+        update = await contract.mapDoctorToProvider(hcAddress, docAddress, idx);
       } else {
-        update = await contract.declineDoctorToProviderRequest(hcAddress, docAddress);
+        update = await contract.declineDoctorToProviderRequest(hcAddress, docAddress, idx);
       }
 
       update.wait();
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      throw err;
+      //setError(`Error Loading Health Contract ${err}`);
     }
   };
 
@@ -323,6 +335,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const doctors = await contract.getAllDoctorToProviderRequests(
         '0xb3cc507e752dcc3da1cef955b58e97ae77160103',
       );
+
       let docArr = [];
       for (let i = 0; i < doctors.length; i++) {
         let obj = {
@@ -335,7 +348,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       setDocToProviderList(docArr);
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      throw err;
+      //setError(`Error Loading Health Contract ${err}`);
     }
   };
 
@@ -352,7 +366,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const contract: HealthBlock = fetchContract(signer);
       const update = await contract.raiseDoctorToProviderRequest(hcAddress, docAddress, doctorName);
     } catch (err: any) {
-      setError(`Error Loading Health Contract ${err}`);
+      //setError(`Error Loading Health Contract ${err}`);
+      throw err;
     }
   };
 

@@ -64,8 +64,8 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
               <tbody className='bg-white divide-y divide-gray-200'>
                 {doctorToProviderReqList &&
                   doctorToProviderReqList.length > 0 &&
-                  doctorToProviderReqList.map((req) => (
-                    <tr>
+                  doctorToProviderReqList.map((req, idx) => (
+                    <tr key={idx}>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='text-sm text-gray-900'>{req.name}</div>
                       </td>
@@ -85,7 +85,7 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
                                 className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded'
                                 onClick={() => {
                                   if (currentAccount) {
-                                    updateProfile?.(currentAccount, req.address, 'rejected');
+                                    updateProfile?.(currentAccount, req.address, 'rejected', idx);
                                   }
                                 }}
                               >
@@ -96,7 +96,7 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
                                 className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded'
                                 onClick={() => {
                                   if (currentAccount) {
-                                    updateProfile?.(currentAccount, req.address, 'confirmed');
+                                    updateProfile?.(currentAccount, req.address, 'confirmed', idx);
                                   }
                                 }}
                                 //updateStatus('confirmed', appointment.appointment_id)

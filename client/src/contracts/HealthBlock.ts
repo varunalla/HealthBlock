@@ -90,8 +90,8 @@ export interface HealthBlockInterface extends utils.Interface {
     "getHCProviderInfoAll(address)": FunctionFragment;
     "registerHCProvider(string,string,string,string)": FunctionFragment;
     "getAllDoctorsForProvider(address)": FunctionFragment;
-    "mapDoctorToProvider(address,address)": FunctionFragment;
-    "declineDoctorToProviderRequest(address,address)": FunctionFragment;
+    "mapDoctorToProvider(address,address,uint256)": FunctionFragment;
+    "declineDoctorToProviderRequest(address,address,uint256)": FunctionFragment;
     "raiseDoctorToProviderRequest(address,address,string)": FunctionFragment;
     "getAllDoctorToProviderRequests(address)": FunctionFragment;
   };
@@ -205,11 +205,19 @@ export interface HealthBlockInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mapDoctorToProvider",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "declineDoctorToProviderRequest",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "raiseDoctorToProviderRequest",
@@ -530,12 +538,14 @@ export interface HealthBlock extends BaseContract {
     mapDoctorToProvider(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     declineDoctorToProviderRequest(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -666,12 +676,14 @@ export interface HealthBlock extends BaseContract {
   mapDoctorToProvider(
     _providerAddress: PromiseOrValue<string>,
     _doctorAddress: PromiseOrValue<string>,
+    idx: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   declineDoctorToProviderRequest(
     _providerAddress: PromiseOrValue<string>,
     _doctorAddress: PromiseOrValue<string>,
+    idx: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -804,12 +816,14 @@ export interface HealthBlock extends BaseContract {
     mapDoctorToProvider(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     declineDoctorToProviderRequest(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -976,12 +990,14 @@ export interface HealthBlock extends BaseContract {
     mapDoctorToProvider(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     declineDoctorToProviderRequest(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1086,12 +1102,14 @@ export interface HealthBlock extends BaseContract {
     mapDoctorToProvider(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     declineDoctorToProviderRequest(
       _providerAddress: PromiseOrValue<string>,
       _doctorAddress: PromiseOrValue<string>,
+      idx: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
