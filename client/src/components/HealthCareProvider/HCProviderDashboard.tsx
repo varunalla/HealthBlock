@@ -5,7 +5,6 @@ import { HealthContext } from '../../providers/HealthProvider';
 
 const HCProviderDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
-  const { fetchProviderPatientRequests } = useContext(HealthContext);
   const { user, role, logout } = useContext(AuthContext);
   const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
     useContext(HealthContext);
@@ -32,12 +31,6 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
 
   useEffect(() => {
     (async () => {
-      try {
-        const result = await fetchProviderPatientRequests?.();
-        console.log(result);
-      } catch (err) {
-        console.log('fetching requests', err);
-      }
       fetchRequests?.();
     })();
   }, []);
