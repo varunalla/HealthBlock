@@ -201,6 +201,7 @@ contract HealthBlock {
         }
         providerToDoctorRequests[_providerAddress][idx].status = 'rejected';  
     }
+    
     function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
             DoctorToProviderRequest memory request = DoctorToProviderRequest({
                 doctorName: doctorName,
@@ -218,7 +219,8 @@ contract HealthBlock {
     function getAllProviders() public view returns (hcprovider[] memory) {
         return providerList;
     }
-function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+
+    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
     return providerToDoctors[providerAddress];
 }
 }

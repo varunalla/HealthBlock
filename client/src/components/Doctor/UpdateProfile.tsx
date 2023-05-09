@@ -18,6 +18,7 @@ const UpdateProfile: FunctionComponent<{}> = () => {
   const [address, setAddress] = useState('');
   const [hc, setHc] = useState('');
   const { user } = useContext(AuthContext);
+  const [hcProviderList, setHCProviderList] = useState<any>([]);
   const { updateProfile, currentAccount, raiseDoctorToHCRequest, fetchHCProviders, hcProviderArr } =
     useContext(HealthContext);
 
@@ -25,7 +26,9 @@ const UpdateProfile: FunctionComponent<{}> = () => {
 
   useEffect(() => {
     (async () => {
-      await fetchHCProviders?.();
+      let resp = await fetchHCProviders?.();
+
+      setHCProviderList(resp);
     })();
   }, []);
 
@@ -51,9 +54,9 @@ const UpdateProfile: FunctionComponent<{}> = () => {
               }}
             >
               <option value=''>Select a provider</option>
-              {hcProviderArr &&
-                hcProviderArr.length > 0 &&
-                hcProviderArr.map((ele: any) => <option value={ele.address}>{ele.name}</option>)}
+              {hcProviderList &&
+                hcProviderList.length > 0 &&
+                hcProviderList.map((ele: any) => <option value={ele.address}>{ele.name}</option>)}
             </select>
           </div>
           <button

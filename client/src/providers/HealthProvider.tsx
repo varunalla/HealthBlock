@@ -62,10 +62,12 @@ interface HealthAppContextInterface {
   fetchProviders?: () => Promise<string[] | undefined>;
   approveProviderPatientRequest?: (address: string) => Promise<void>;
   rejectProviderPatientRequest?: (address: string) => Promise<void>;
-  fetchAllDoctors?: (provider: string[]) => Promise<void>;
+  fetchAllDoctors?: (
+    provider: string[],
+  ) => Promise<Array<{ name: string; email: string; specialization: string }> | undefined>;
   fetchAllDoctorToProviderRequests?: (provider: string) => Promise<void>;
   raiseDoctorToHCRequest?: (provider: string, doctor: string, name: string) => Promise<void>;
-  fetchHCProviders?: () => Promise<void>;
+  fetchHCProviders?: () => Promise<Array<any> | undefined>;
   currentAccount?: string;
   verificationRequests?: Request[];
   doctorList?: Doctor[];
@@ -189,7 +191,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
           };
           hcArr.push(obj);
         }
-        setHCProviderArr(hcArr);
+        return hcArr;
       }
 
       //return { name, age, email } as Patient;
@@ -409,8 +411,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         }
       }
 
-      setDoctorList(doctorForProviderList);
-      //return doctorForProviderList;
+      return doctorForProviderList;
     } catch (error) {
       setError('Error Loading Health Contract');
     }
