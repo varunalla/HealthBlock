@@ -26,18 +26,32 @@ const HCProviderLogin: FunctionComponent<{}> = () => {
       console.log(signed);
       if (signed) {
         web3.eth.sign(signed, account, async (err, signature) => {
-          let auth_resp = await axios.get(
-            '/verify_auth/hcprovider/' + signature + '?client_address=' + account,
-          );
+          try {
+            let auth_resp = await axios.get(
+              '/verify_auth/hcprovider/' + signature + '?client_address=' + account,
+            );
 
-          if (auth_resp.data && auth_resp.data.success) {
-            console.log('login success ', auth_resp.data);
-            login?.(auth_resp.data.user, auth_resp.data.user.token, 'hcprovider');
-            toast('Login Successfull');
-            navigate('/hcprovider');
-          } else {
-            console.error('login failed');
-            toast.error('Invalid user Please Register', {
+            if (auth_resp.data && auth_resp.data.success) {
+              console.log('login success ', auth_resp.data);
+              login?.(auth_resp.data.user, auth_resp.data.user.token, 'hcprovider');
+              toast('Login Successfull');
+              navigate('/hcprovider');
+            } else {
+              console.error('login failed');
+              toast.error('Invalid user. Please Register', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'colored',
+              });
+            }
+          } catch (err) {
+            console.error('login failed', err);
+            toast.error('Invalid user. Please Register', {
               position: 'top-right',
               autoClose: 5000,
               hideProgressBar: false,

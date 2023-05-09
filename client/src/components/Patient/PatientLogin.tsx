@@ -21,16 +21,30 @@ const PatientLogin: FunctionComponent<{}> = () => {
       const signed = web3.utils.keccak256(resp.data.challenge);
       if (signed) {
         web3.eth.sign(signed, account, async (err, signature) => {
-          let auth_resp = await axios.get(
-            '/verify_auth/' + signature + '?client_address=' + account,
-          );
-          if (auth_resp.data && auth_resp.data.success) {
-            login?.(auth_resp.data.user, auth_resp.data.user.token, 'patient');
-            toast('Login Successfull');
-            navigate('/patient');
-          } else {
-            console.error('login failed');
-            toast.error('Invalid user Please Register', {
+          try {
+            let auth_resp = await axios.get(
+              '/verify_auth/' + signature + '?client_address=' + account,
+            );
+            if (auth_resp.data && auth_resp.data.success) {
+              login?.(auth_resp.data.user, auth_resp.data.user.token, 'patient');
+              toast('Login Successfull');
+              navigate('/patient');
+            } else {
+              console.error('login failed');
+              toast.error('Invalid user. Please Register', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'colored',
+              });
+            }
+          } catch (err) {
+            console.error('login failed', err);
+            toast.error('Invalid user. Please Register', {
               position: 'top-right',
               autoClose: 5000,
               hideProgressBar: false,
