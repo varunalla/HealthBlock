@@ -55,7 +55,7 @@ contract HealthBlock {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
+        require(msg.sender == owner, "Not Owner");
         _;
     }
 
@@ -173,67 +173,44 @@ contract HealthBlock {
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
     } 
-    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
-    return providerToDoctors[providerAddress];
-}
-     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
-        doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
-         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
-  
-    }
-
- function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
-        doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
-
-  
-    }
-
-
-
-    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
-  
-   DoctorToProviderRequest memory request = DoctorToProviderRequest({
-            doctorName: doctorName,
-         doctorAddr: _doctorAddress,
-        status:'pending'
-        });
-  
-  providerToDoctorRequests[_providerAddress].push(request);
     
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public {
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) {
+                idx = i;
+                break;
+            }
+        }   
+        providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+        providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+    }
+
+    function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+        
+        uint8 idx =0;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++) {
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) { 
+                idx = i;
+                break;
+                
+            }
+        }
+        providerToDoctorRequests[_providerAddress][idx].status = 'rejected';  
+    }
+    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
+            DoctorToProviderRequest memory request = DoctorToProviderRequest({
+                doctorName: doctorName,
+                doctorAddr: _doctorAddress,
+                status:'pending'
+            });
+  
+            providerToDoctorRequests[_providerAddress].push(request);
     }
 
     function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
-
-   return providerToDoctorRequests[_hcaddress];
+            return providerToDoctorRequests[_hcaddress];
     }
 
-    
-
-   
-   
-
-
-    
 }
