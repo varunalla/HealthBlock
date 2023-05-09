@@ -16,34 +16,21 @@ interface AppointmentRequestDetails {
 interface Doctor {
   name: string;
   email: string;
-
+  age: Number;
   specialization: string;
 }
 const PatientAppointment: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, fetchProviders } = useContext(HealthContext);
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
   const [doctorDetails, setDoctorDetails] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState({});
-  const [doctorList, setDoctorList] = useState<Doctor[]>([]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await fetchProviders?.();
+    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
 
-        if (result && result.length > 0) {
-          let res = await fetchAllDoctors?.(result);
-
-          setDoctorList(res ?? []);
-        }
-      } catch (err) {
-        console.log('fetching requests', err);
-      }
-    })();
-
-    //fetchDoctors();
+    setDoctorDetails(doctorDetails);
   }, []);
 
   return (
@@ -93,7 +80,6 @@ const PatientAppointment: FunctionComponent<{}> = () => {
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
                 {doctorList &&
-                  doctorList.length > 0 &&
                   doctorList.map((details) => (
                     <tr>
                       <td className='px-6 py-4 whitespace-nowrap'>
