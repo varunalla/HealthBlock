@@ -1,7 +1,8 @@
 const Web3 = require("web3");
 const fs = require("fs");
 const { healthBlockAddress } = require("../config/constants");
-const providerUrl = "http://127.0.0.1:8545";
+const providerUrl = require("./shared").providerUrl;
+
 class WebObj {
   constructor() {
     this.contract = {};

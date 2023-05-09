@@ -21,7 +21,13 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
     currentAccount,
   } = useContext(HealthContext);
   useEffect(() => {
+<<<<<<< HEAD
     fetchAllDoctorToProviderRequests?.(hc_address);
+=======
+    if (currentAccount) {
+      fetchAllDoctorToProviderRequests?.(currentAccount);
+    }
+>>>>>>> bbd25f28fa77298e5ddaaec8f0df7a0b08768766
   }, []);
 
   const getStatusColor = (status: String) => {
