@@ -61,8 +61,8 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   };
 
   useEffect(() => {
-    (() => {
-      fetchHealthCareProviders?.();
+    (async () => {
+      await fetchHealthCareProviders?.();
     })();
   }, []);
 
