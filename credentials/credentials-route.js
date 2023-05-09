@@ -48,26 +48,28 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
       // Access the uploaded file details
       encryptor.encryptFile(req.file.path, filenameWithoutExtension+'-'+userName+'.dat', filenameWithoutExtension, function(err) {
+        const encryptedFile = fs.readFileSync('./'+filenameWithoutExtension+'-'+userName+'.dat');
+        const params = {
+          Bucket: process.env.REACT_APP_BUCKET_NAME,
+          Key: filenameWithoutExtension+userName,
+          Body: encryptedFile,
+          ACL: 'public-read',
+        };
+    
+        s3.upload(params, (err, data) => {
+          if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to upload file to S3.' });
+          } else {
+            console.log('File uploaded successfully. ' + data.Location);
+            sendRequestEmail(req.body.providerEmail, userName);
+            res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
+          }
+        });
       });
-      const encryptedFile = fs.readFileSync('./'+filenameWithoutExtension+'-'+userName+'.dat');
+      
 
-      const params = {
-        Bucket: process.env.REACT_APP_BUCKET_NAME,
-        Key: filenameWithoutExtension+userName,
-        Body: encryptedFile,
-        ACL: 'public-read',
-      };
-  
-      s3.upload(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: 'Failed to upload file to S3.' });
-        } else {
-          console.log('File uploaded successfully. ' + data.Location);
-          sendRequestEmail(req.body.providerEmail, userName);
-          res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
-        }
-      });
+      
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'An error occurred.' });
@@ -98,14 +100,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
       const localFilePath = `uploads/${fileName}`;
       fs.writeFileSync(localFilePath, Body);
       encryptor.decryptFile(localFilePath, fileName, filenameWithoutExtension, function(err) {
+        const decryptedFile = fs.readFileSync(fileName);
+        const decryptedBuffer = Buffer.from(decryptedFile);
         
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.send(decryptedBuffer);
       });
-      const decryptedFile = fs.readFileSync(fileName);
-      const decryptedBuffer = Buffer.from(decryptedFile);
-      
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.send(decryptedBuffer);
+     
       
     } catch (err) {
       console.log(err);
