@@ -8,7 +8,7 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
+  const { fetchAllDoctors, doctorList, fetchProviders } = useContext(HealthContext);
   const logouthandler = async () => {
     logout?.();
     navigate('/patientlogin');
@@ -21,11 +21,23 @@ const PatientDashboard: FunctionComponent<{}> = () => {
     navigate('/patientappointments');
   };
   useEffect(() => {
-    fetchDoctors();
+    (async () => {
+      try {
+        const result = await fetchProviders?.();
+
+        if (result && result.length > 0) {
+          let res = await fetchAllDoctors?.(result);
+        }
+      } catch (err) {
+        console.log('fetching requests', err);
+      }
+    })();
+
+    //fetchDoctors();
   }, []);
-  const fetchDoctors = async () => {
-    await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
-  };
+  // const fetchDoctors = async () => {
+  //   await fetchAllDoctors?.(['0x8eda1014b9177d464306935e8fcf9fd27c20aa08']);
+  // };
 
   return (
     <div className='flex flex-row min-h-screen justify-center items-center'>

@@ -27,11 +27,7 @@ const PatientAppointment: FunctionComponent<{}> = () => {
   const [doctorDetails, setDoctorDetails] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState({});
 
-  useEffect(() => {
-    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
-
-    setDoctorDetails(doctorDetails);
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <div className='flex flex-col  px-4 lg:px-8 '>
