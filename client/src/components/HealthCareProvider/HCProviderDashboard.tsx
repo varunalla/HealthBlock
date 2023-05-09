@@ -8,6 +8,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
   const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
     useContext(HealthContext);
+
   const logouthandler = () => {
     logout?.();
     navigate('/hcproviderlogin');
@@ -29,7 +30,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   };
 
   useEffect(() => {
-    (() => {
+    (async () => {
       fetchRequests?.();
     })();
   }, []);

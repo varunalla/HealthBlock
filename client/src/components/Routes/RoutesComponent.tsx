@@ -13,6 +13,9 @@ import ManageMedicalRecords from '../Doctor/ManageMedicalrecords';
 import PatientManageMedicalRecords from '../Patient/PatientManageMedicalRecords';
 import TopNav from '../TopNav';
 import ProtectedRoute, { ProtectedRouteProps } from './ProtectedRoute';
+import PatientProvider from '../Patient/PatientProvider';
+import PatientRequests from '../HealthCareProvider/Patients/PatientRequest';
+import ProvierPatients from '../HealthCareProvider/Patients/ProvierPatients';
 import PatientAppointment from '../Patient/PatientAppointment';
 import ScheduleAppointment from '../Patient/ScheduleAppointment';
 import UpdateProfile from '../Doctor/UpdateProfile';
@@ -60,6 +63,10 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientDashboard />} />}
         />
         <Route
+          path='/patient/provider'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<PatientProvider />} />}
+        />
+        <Route
           path='/doctor'
           element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<DoctorDashboard />} />}
         />
@@ -75,6 +82,10 @@ const RoutesComponent: FunctionComponent<{}> = () => {
           element={
             <ProtectedRoute {...defaultProtectedRouteProps} outlet={<HCProviderDashboard />} />
           }
+        />
+        <Route
+          path='/hcprovider/patients'
+          element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<ProvierPatients />} />}
         />
         <Route
           path='/patientappointments'

@@ -8,7 +8,7 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
+  const { fetchAllDoctors, doctorList, fetchProviders } = useContext(HealthContext);
   const logouthandler = async () => {
     logout?.();
     navigate('/patientlogin');
@@ -19,12 +19,6 @@ const PatientDashboard: FunctionComponent<{}> = () => {
 
   const appointmentHandler = () => {
     navigate('/patientappointments');
-  };
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-  const fetchDoctors = async () => {
-    await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
   };
 
   return (

@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export { HealthBlock__factory } from "./HealthBlock__factory";
+export { PatientProvider__factory } from "./PatientProvider__factory";

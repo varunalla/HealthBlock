@@ -4,10 +4,13 @@ import axios from 'axios';
 import Web3 from 'web3';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useNavigate } from 'react-router-dom';
+import { blockChainAddress } from '../../config/constants';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const HCProviderLogin: FunctionComponent<{}> = () => {
   const { currentAccount } = useContext(HealthContext);
-  const url = 'http://127.0.0.1:8545';
+  const url = blockChainAddress;
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const loginhandler = async () => {
@@ -23,30 +26,69 @@ const HCProviderLogin: FunctionComponent<{}> = () => {
       console.log(signed);
       if (signed) {
         web3.eth.sign(signed, account, async (err, signature) => {
-          let auth_resp = await axios.get(
-            '/verify_auth/hcprovider/' + signature + '?client_address=' + account,
-          );
+          try {
+            let auth_resp = await axios.get(
+              '/verify_auth/hcprovider/' + signature + '?client_address=' + account,
+            );
 
-          if (auth_resp.data && auth_resp.data.success) {
-            console.log('login success ', auth_resp.data);
-            login?.(auth_resp.data.user, auth_resp.data.user.token, 'hcprovider');
-            navigate('/hcprovider');
-          } else {
-            console.error('login failed');
+            if (auth_resp.data && auth_resp.data.success) {
+              console.log('login success ', auth_resp.data);
+              login?.(auth_resp.data.user, auth_resp.data.user.token, 'hcprovider');
+              toast('Login Successfull');
+              navigate('/hcprovider');
+            } else {
+              console.error('login failed');
+              toast.error('Invalid user. Please Register', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'colored',
+              });
+            }
+          } catch (err) {
+            console.error('login failed', err);
+            toast.error('Invalid user. Please Register', {
+              position: 'top-right',
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: 'colored',
+            });
           }
         });
       }
     }
   };
   return (
-    <div>
-      <button
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-        onClick={() => loginhandler()}
-      >
-        Login
-      </button>
-    </div>
+    <>
+      <ToastContainer
+        position='top-right'
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='colored'
+      />
+      <div>
+        <button
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
+          onClick={() => loginhandler()}
+        >
+          Login
+        </button>
+      </div>
+    </>
   );
 };
 
