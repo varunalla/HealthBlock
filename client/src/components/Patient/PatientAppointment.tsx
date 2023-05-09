@@ -30,9 +30,6 @@ const PatientAppointment: FunctionComponent<{}> = () => {
   const [doctorList, setDoctorList] = useState<Doctor[]>([]);
 
   useEffect(() => {
-<<<<<<< HEAD
-    fetchAllDoctors?.(hc_address);
-=======
     (async () => {
       try {
         const result = await fetchProviders?.();
@@ -46,7 +43,6 @@ const PatientAppointment: FunctionComponent<{}> = () => {
         console.log('fetching requests', err);
       }
     })();
->>>>>>> bbd25f28fa77298e5ddaaec8f0df7a0b08768766
 
     //fetchDoctors();
   }, []);

@@ -180,19 +180,20 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = fetchContract(signer);
-      let resp = await contract.getAllProviders();
-      console.log('Resp from get providers-->', resp);
-      let hcArr = [];
-      if (resp && resp.length > 0) {
-        for (let i = 0; i < resp.length; i++) {
-          let obj = {
-            name: resp[i][0],
-            address: resp[i][4],
-          };
-          hcArr.push(obj);
-        }
-        return hcArr;
-      }
+      return [];
+      // let resp = await contract.getAllProviders()
+      // console.log('Resp from get providers-->', resp);
+      // let hcArr = [];
+      // if (resp && resp.length > 0) {
+      //   for (let i = 0; i < resp.length; i++) {
+      //     let obj = {
+      //       name: resp[i][0],
+      //       address: resp[i][4],
+      //     };
+      //     hcArr.push(obj);
+      //   }
+      //   return hcArr;
+      // }
 
       //return { name, age, email } as Patient;
     } catch (err) {

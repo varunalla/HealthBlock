@@ -21,15 +21,6 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   const appointmentHandler = () => {
     navigate('/patientappointments');
   };
-<<<<<<< HEAD
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-  const fetchDoctors = async () => {
-    await fetchAllDoctors?.(hc_address);
-  };
-=======
->>>>>>> bbd25f28fa77298e5ddaaec8f0df7a0b08768766
 
   return (
     <div className='flex flex-row min-h-screen justify-center items-center'>
