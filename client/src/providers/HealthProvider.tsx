@@ -14,13 +14,14 @@ interface Request {
 }
 
 interface MedicalRecordRequest {
+  requestId:string;
   doctorAddress: string;
   patientAddress: string;
   docName: string;
   docEmail: string;
   patientName: string;
   patientEmail: string;
-  reqStatus: string;
+  status: string;
 }
 
 export type Patient = {
@@ -28,12 +29,24 @@ export type Patient = {
   age: number;
   email: string;
 };
+interface Doctor {
+  name: string;
+  age: number;
+  email: string;
+  specialization: string;
+}
+interface DoctorToProviderRequest {
+  name: string;
+  address: string;
+  status: string;
+}
 
 interface HealthAppContextInterface {
   checkIfWalletIsConnected?: () => Promise<void>;
   connectWallet?: () => Promise<void>;
   healthBlockContract?: () => Promise<void>;
   registerHealthBlockContract?: (name: string, age: number, email: string) => Promise<void>;
+  updateProfile?: (hcAddress: string, docAddress: string, status: string) => Promise<void>;
   registerDoctorHealthBlockContract?: (
     name: string,
     age: number,
@@ -53,18 +66,23 @@ interface HealthAppContextInterface {
     docEmail: string,
     patientEmail: string,
   ) => Promise<void>;
-  approveMedicalRecordsRequestHealthBlockContract?: (requestID: number) => Promise<void>;
-  rejectMedicalRecordsRequestHealthBlockContract?: (requestID: number) => Promise<void>;
+  approveMedicalRecordsRequestHealthBlockContract?: (doctorAddress:string) => Promise<void>;
+  rejectMedicalRecordsRequestHealthBlockContract?: (doctorAddress:string) => Promise<void>;
+  getAllRequestsForPatient?: (patientAddress:string) => Promise<void>;
   handleRaiseRequest?: (doctorName: string, file: File | null) => Promise<void>;
   handleApproveRequest?: (requestId: number) => Promise<void>;
   handleRejectRequest?: (requestId: number) => Promise<void>;
   fetchPatientContract?: () => Promise<Patient | undefined>;
   fetchPatientInfoContract?: (address: string) => Promise<void>;
   fetchRequests?: () => Promise<void>;
-  fetchMedicalRecordRequests?: () => Promise<void>;
+  fetchAllDoctors?: (provider: string) => Promise<void>;
+  fetchAllDoctorToProviderRequests?: (provider: string) => Promise<void>;
+  raiseDoctorToHCRequest?: (provider: string, doctor: string, name: string) => Promise<void>;
   currentAccount?: string;
   verificationRequests?: Request[];
   medicalRecordRequests?: MedicalRecordRequest[];
+  doctorList?: Doctor[];
+  doctorToProviderReqList?: DoctorToProviderRequest[];
 }
 
 const fetchContract = (signerOrProvider: ethers.Signer | ethers.providers.Provider) =>
@@ -83,6 +101,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
   const [medicalRecordRequests, setMedicalRecordRequests] = useState<MedicalRecordRequest[]>([]);
   const [doctorName, setDoctorName] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [doctorList, setDoctorList] = useState<Doctor[]>([]);
+  const [doctorToProviderReqList, setDocToProviderList] = useState<DoctorToProviderRequest[]>([]);
   const [patientAddress, setPatientAddress] = useState('');
   const [docName, setDocName] = useState('');
   const [docEmail, setDocEmail] = useState('');
@@ -199,83 +219,83 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     docEmail: string,
     patientEmail: string,
   ) => {
-    console.log('executing medical record request contract');
+      try {
+        console.log("patientAddress",patientAddress);
+        console.log("docName",docName);
+        console.log("patientName",patientName);
+        console.log("docEmail",docEmail);
+        console.log("patientEmail",patientEmail);
+        const web3modal = new Web3Modal();
+        const connection = await web3modal.connect();
+        const provider = new ethers.providers.Web3Provider(connection);
+        const signer = provider.getSigner();
+        const contract = fetchContract(signer);
+        const tx = await contract.requestMedicalRecord(docName, docEmail, patientAddress, patientName, patientEmail);
+        await tx.wait();
+      } catch (err) {
+        console.log(err)
+        setError(`Error requesting medical record: ${err}`);
+      }
+  };
+
+  const approveMedicalRecordsRequestHealthBlockContract = async (requestId: string) => {
     try {
-      setPatientAddress(patientAddress);
-      setDocName(docName);
-      setDocEmail(docEmail);
-      setPatientName(patientName);
-      setpatientEmail(patientEmail);
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = await fetchContract(signer);
-      console.log(contract);
-      const info = await contract.requestMedicalRecord(
-        patientAddress,
-        docName,
-        patientName,
-        docEmail,
-        patientEmail,
-      );
+      const contract = fetchContract(signer);
+      const info = await contract.approveMedicalRecordsRequest(requestId);
+      await info.wait();
+    } catch (err) {
+      console.log(err)
+      setError(`Error approving medical record request: ${err}`);
+    }
+  };
+
+  const rejectMedicalRecordsRequestHealthBlockContract = async (requestId:string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = await fetchContract(signer);
+      const info = await contract.rejectMedicalRecordsRequest(requestId);
       console.log(info);
       await info.wait();
     } catch (err) {
-      setError(`Error requesting medical records from patients ${err}`);
-      console.log('Error from request Health Record contract');
       console.log(err);
-    }
-  };
-
-  const approveMedicalRecordsRequestHealthBlockContract = async (requestID: number) => {
-    try {
-      const web3modal = new Web3Modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.providers.Web3Provider(connection);
-      const signer = provider.getSigner();
-      const contract: HealthBlock = await fetchContract(signer);
-      const info = await contract.approveMedicalRecordsRequest(requestID);
-      await info.wait();
-    } catch (err) {
-      setError(`Error approving medical records request ${err}`);
-    }
-  };
-
-  const rejectMedicalRecordsRequestHealthBlockContract = async (requestID: number) => {
-    try {
-      const web3modal = new Web3Modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.providers.Web3Provider(connection);
-      const signer = provider.getSigner();
-      const contract: HealthBlock = await fetchContract(signer);
-      const info = await contract.rejectMedicalRecordsRequest(requestID);
-      await info.wait();
-    } catch (err) {
+      setError('Error rejecting medical records request');
       setError(`Error rejecting medical records request ${err}`);
     }
   };
 
-  const fetchMedicalRecordRequests = async () => {
+  const getAllRequestsForPatient = async (patientAddress: string) => {
     try {
       const web3modal = new Web3Modal();
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = await fetchContract(signer);
-      const medicalRecordRequestsStruct = await contract.getMedicalRecordRequests();
-      const recordRequests = medicalRecordRequestsStruct.map((recordRequest) => ({
-        doctorAddress: recordRequest[0],
-        patientAddress: recordRequest[1],
-        docName: recordRequest[2],
-        docEmail: recordRequest[3],
-        patientName: recordRequest[4],
-        patientEmail: recordRequest[5],
-        reqStatus: recordRequest[6],
-      }));
-      setMedicalRecordRequests(recordRequests);
-    } catch (error) {
-      setError('Error fetching Medical Record Requests');
+      const contract = fetchContract(signer);
+      const requests = await contract.getPatientRequests(patientAddress);
+      console.log("Medical Record Requests:",requests)
+      let requestsArr = [];
+      for (let i = 0; i < requests.length; i++) {
+        let obj = {
+          requestId: requests[i][0],
+          doctorAddress: requests[i][1],
+          patientAddress: requests[i][2],
+          docName: requests[i][3],
+          docEmail: requests[i][4],
+          patientName: requests[i][5],
+          patientEmail: requests[i][6],
+          status: requests[i][7],
+        };
+        requestsArr.push(obj);
+      }
+      setMedicalRecordRequests(requestsArr);
+    } catch (err) {
+      setError(`Error getting requests for patient: ${err}`);
     }
   };
 
@@ -361,12 +381,103 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
+  const fetchAllDoctors = async (provider: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract = await fetchContract(signer);
+      const doctors = await contract.getAllDoctorsForProvider(
+        '0xB3CC507e752Dcc3DA1cEf955B58e97Ae77160103',
+      );
+
+      let docArr = [];
+      for (let i = 0; i < doctors.length; i++) {
+        let obj = {
+          name: doctors[i][0],
+          specialization: doctors[i][3],
+          email: doctors[i][2],
+          age: doctors[i][1],
+        };
+        docArr.push(obj);
+      }
+
+      setDoctorList(docArr);
+    } catch (error) {
+      setError('Error Loading Health Contract');
+    }
+  };
+  const updateProfile = async (hcAddress: string, docAddress: string, status: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      let update;
+      if (status == 'confirmed') {
+        update = await contract.mapDoctorToProvider(hcAddress, docAddress);
+      } else {
+        update = await contract.declineDoctorToProviderRequest(hcAddress, docAddress);
+      }
+
+      update.wait();
+    } catch (err: any) {
+      setError(`Error Loading Health Contract ${err}`);
+    }
+  };
+
+  const fetchAllDoctorToProviderRequests = async (hcAddress: string) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const doctors = await contract.getAllDoctorToProviderRequests(
+        '0xb3cc507e752dcc3da1cef955b58e97ae77160103',
+      );
+      let docArr = [];
+      for (let i = 0; i < doctors.length; i++) {
+        let obj = {
+          name: doctors[i][0],
+          address: doctors[i][1],
+          status: doctors[i][2],
+        };
+        docArr.push(obj);
+      }
+
+      setDocToProviderList(docArr);
+    } catch (err: any) {
+      setError(`Error Loading Health Contract ${err}`);
+    }
+  };
+
+  const raiseDoctorToHCRequest = async (
+    hcAddress: string,
+    docAddress: string,
+    doctorName: string,
+  ) => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const update = await contract.raiseDoctorToProviderRequest(hcAddress, docAddress, doctorName);
+    } catch (err: any) {
+      setError(`Error Loading Health Contract ${err}`);
+    }
+  };
+
   return (
     <HealthContext.Provider
       value={{
         checkIfWalletIsConnected,
         connectWallet,
         currentAccount,
+        getAllRequestsForPatient,
         healthBlockContract,
         registerHealthBlockContract,
         fetchPatientContract,
@@ -382,7 +493,12 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         verificationRequests,
         medicalRecordRequests,
         fetchRequests,
-        fetchMedicalRecordRequests,
+        fetchAllDoctors,
+        doctorList,
+        updateProfile,
+        fetchAllDoctorToProviderRequests,
+        raiseDoctorToHCRequest,
+        doctorToProviderReqList
       }}
     >
       {children}

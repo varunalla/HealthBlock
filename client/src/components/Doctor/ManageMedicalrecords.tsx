@@ -64,97 +64,89 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
       alert('Medical record request sent successfully');
     } catch (err) {
       console.log(err);
-      alert('Failed to send medical record request');
     }
   };
 
-  const ses = new AWS.SES({
-    apiVersion: '2010-12-01',
-    region: 'us-east-1',
-    accessKeyId: 'AKIAWKISFSUD75424ZI4',
-    secretAccessKey: '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',
-  });
+  // function sendRequestEmail(to: string) {
+  //   const subject = 'Medical Record Request';
+  //   const body = 'Your medical records have been requested by your doctor.';
+  //   sendEmail(to, subject, body);
+  // }
 
-  function sendRequestEmail(to: string) {
-    const subject = 'Medical Record Request';
-    const body = 'Your medical records have been requested by your doctor.';
-    sendEmail(to, subject, body);
-  }
+  // function sendEmail(to: string, subject: string, body: string) {
+  //   const params = {
+  //     Destination: {
+  //       ToAddresses: [to],
+  //     },
+  //     Message: {
+  //       Body: {
+  //         Html: {
+  //           Charset: 'UTF-8',
+  //           Data: body,
+  //         },
+  //       },
+  //       Subject: {
+  //         Charset: 'UTF-8',
+  //         Data: subject,
+  //       },
+  //     },
+  //     Source: 'dharahasini.gangalapudi@sjsu.edu',
+  //   };
 
-  function sendEmail(to: string, subject: string, body: string) {
-    const params = {
-      Destination: {
-        ToAddresses: [to],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: body,
-          },
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: subject,
-        },
-      },
-      Source: 'dharahasini.gangalapudi@sjsu.edu',
-    };
+  //   ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       const verificationAttributes = data.VerificationAttributes[to];
+  //       if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
+  //         // Email identity is verified, send the email
+  //         ses.sendEmail(params, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //           } else {
+  //             console.log('Email sent:', data);
+  //           }
+  //         });
+  //       } else {
+  //         // Email identity is not verified, verify the email identity
+  //         ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //           } else {
+  //             console.log(`Email identity verification initiated for ${to}.`);
+  //             // Wait for the email identity to be verified before sending the email
+  //             const intervalId = setInterval(() => {
+  //               ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+  //                 if (err) {
+  //                   console.log(err);
+  //                 } else {
+  //                   const verificationAttributes = data.VerificationAttributes[to];
+  //                   if (
+  //                     verificationAttributes &&
+  //                     verificationAttributes.VerificationStatus === 'Success'
+  //                   ) {
+  //                     clearInterval(intervalId);
+  //                     ses.sendEmail(params, (err, data) => {
+  //                       if (err) {
+  //                         console.log(err);
+  //                       } else {
+  //                         console.log('Email sent:', data);
+  //                       }
+  //                     });
+  //                   }
+  //                 }
+  //               });
+  //             }, 5000);
+  //           }
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
 
-    ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const verificationAttributes = data.VerificationAttributes[to];
-        if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
-          // Email identity is verified, send the email
-          ses.sendEmail(params, (err, data) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log('Email sent:', data);
-            }
-          });
-        } else {
-          // Email identity is not verified, verify the email identity
-          ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log(`Email identity verification initiated for ${to}.`);
-              // Wait for the email identity to be verified before sending the email
-              const intervalId = setInterval(() => {
-                ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-                  if (err) {
-                    console.log(err);
-                  } else {
-                    const verificationAttributes = data.VerificationAttributes[to];
-                    if (
-                      verificationAttributes &&
-                      verificationAttributes.VerificationStatus === 'Success'
-                    ) {
-                      clearInterval(intervalId);
-                      ses.sendEmail(params, (err, data) => {
-                        if (err) {
-                          console.log(err);
-                        } else {
-                          console.log('Email sent:', data);
-                        }
-                      });
-                    }
-                  }
-                });
-              }, 5000);
-            }
-          });
-        }
-      }
-    });
-  }
-
-  const handleRequest = (email: string) => {
-    sendRequestEmail(email);
-  };
+  // const handleRequest = (email: string) => {
+  //   sendRequestEmail(email);
+  // };
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files !== null) {
       setSelectedFile(event.target.files[0]);
@@ -168,42 +160,10 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
     setShowRequestPopup(!showRequestPopup);
   };
 
-  // // Handle pagination click
-  // const handlePageClick = (pageNumber: number) => {
-  //   setCurrentPage(pageNumber);
-  // };
-
-  // Function to handle filter option change
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterOption(event.target.value);
-    setCurrentPage(1); // Reset current page to 1 when filter option is changed
+    setCurrentPage(1); 
   };
-
-  // const filteredCards = Object.values(cards).filter((card: patientData) => {
-  //   if (filterOption === 'all') {
-  //     return true;
-  //   } else if (filterOption === 'upcoming') {
-  //     return card.date >= new Date();
-  //   } else if (filterOption === 'past') {
-  //     return card.date < new Date();
-  //   }
-  //   return false;
-  // });
-
-  // // Calculate index of first and last card for the current page
-  // const indexOfFirstCard = (currentPage - 1) * cardsPerPage;
-  // const indexOfLastCard = Math.min(indexOfFirstCard + cardsPerPage, filteredCards.length) - 1;
-
-  // // Get subset of cards for the current page
-  // const currentCards = Object.values(filteredCards)
-  //   .slice(indexOfFirstCard, indexOfLastCard + 1)
-  //   .map((card: patientData) => ({
-  //     id: card.id,
-  //     fullname: card.fullname,
-  //     pubAd: card.pubAd,
-  //     date: card.date,
-  //     email: card.email,
-  //   }));
 
   return (
     <div>
@@ -300,6 +260,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                         >
                           Upload
                         </button>
+                        
                       </div>
                       {showRequestPopup && (
                         <div className='fixed z-10 inset-0 overflow-y-auto'>
@@ -353,12 +314,12 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       onClick={() => {
                                         toggleRequestPopup();
                                         // requestMedicalRecord();
-                                        handleRequest(appointment.patient_email);
+                                        //handleRequest(appointment.patient_email);
                                         handleMedicalRecordRequest(
                                           appointment.patient_address,
                                           appointment.doctor_name,
-                                          appointment.patient_name,
                                           appointment.doctor_email,
+                                          appointment.patient_name,
                                           appointment.patient_email,
                                         );
                                       }}
@@ -478,32 +439,6 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
               </table>
             </div>
           </div>
-          {/* <div className='flex justify-center items-center'>
-            {Object.keys(filteredCards).length > cardsPerPage && (
-              <ReactPaginate
-                previousLabel={
-                  <button className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l inline-flex'>
-                    Prev
-                  </button>
-                }
-                nextLabel={
-                  <button className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r inline-flex'>
-                    Next
-                  </button>
-                }
-                breakLabel={'...'}
-                pageCount={Math.ceil(Object.keys(filteredCards).length / cardsPerPage)}
-                pageRangeDisplayed={2}
-                marginPagesDisplayed={1}
-                pageClassName={'mx-1'}
-                containerClassName={'flex'}
-                activeClassName={
-                  'inline-block border border-blue-500 rounded py-1 px-3 bg-blue-500 text-white'
-                }
-                onPageChange={({ selected }: { selected: number }) => handlePageClick(selected + 1)}
-              /> */}
-          {/* )}
-          </div> */}
         </div>
       </div>
     </div>

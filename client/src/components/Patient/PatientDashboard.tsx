@@ -1,12 +1,14 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
+import { HealthContext } from '../../providers/HealthProvider';
 
 const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
   const logouthandler = async () => {
     logout?.();
     navigate('/patientlogin');
@@ -15,19 +17,24 @@ const PatientDashboard: FunctionComponent<{}> = () => {
     console.log(await fetch('POST', '/verify_token/', {}));
   };
 
-  const appointmentHandler = () =>{
-    navigate('/patientappointments')
-
-  }
+  const appointmentHandler = () => {
+    navigate('/patientappointments');
+  };
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+  const fetchDoctors = async () => {
+    await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
+  };
 
   return (
     <div className='flex flex-row min-h-screen justify-center items-center'>
       <button
-              className='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-              onClick={() => appointmentHandler()}
-            >
-              Manage appointments
-            </button>
+        className='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+        onClick={() => appointmentHandler()}
+      >
+        Manage appointments
+      </button>
       <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700'>
         <div className='flex flex-col items-center pb-10'>
           {/* <img className="w-24 h-24 mb-3 rounded-full shadow-lg" src="/docs/images/people/profile-picture-3.jpg" alt="Patient image" />*/}

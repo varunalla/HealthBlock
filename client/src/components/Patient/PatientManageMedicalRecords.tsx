@@ -1,6 +1,7 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useContext, useState ,useEffect} from 'react';
 import ReactPaginate from 'react-paginate';
 import { HealthContext } from '../../providers/HealthProvider';
+import { AuthContext } from '../../providers/AuthProvider';
 import AWS from 'aws-sdk';
 
 interface docData {
@@ -9,203 +10,136 @@ interface docData {
   date: Date;
   email: string;
 }
-const cards: { [key: number]: docData } = {
-  0: {
-    id: 1,
-    fullname: 'John Doe',
-    date: new Date('2023-04-12'),
-    email: 'johndoe@example.com',
-  },
-  1: {
-    id: 2,
-    fullname: 'Jane Doe',
-    date: new Date('2023-03-17'),
-    email: 'janedoe@example.com',
-  },
-  2: {
-    id: 3,
-    fullname: 'Bob Smith',
-    date: new Date('2023-02-22'),
-    email: 'bobsmith@example.com',
-  },
-  3: {
-    id: 4,
-    fullname: 'Alice Smith',
-    date: new Date('2023-03-22'),
-    email: 'dharahasini.gangalapudi@gmail.com',
-  },
-  4: {
-    id: 5,
-    fullname: 'Tom Brown',
-    date: new Date('2023-01-22'),
-    email: 'tombrown@example.com',
-  },
-  5: {
-    id: 6,
-    fullname: 'Sara Kim',
-    date: new Date('2023-04-21'),
-    email: 'sarakhim@example.com',
-  },
-  6: {
-    id: 7,
-    fullname: 'Mary Lee',
-    date: new Date('2023-02-26'),
-    email: 'marylee@example.com',
-  },
-  7: {
-    id: 8,
-    fullname: 'David Kim',
-    date: new Date('2023-04-12'),
-    email: 'davidkim@example.com',
-  },
-  8: {
-    id: 9,
-    fullname: 'Rishi',
-    date: new Date('2023-03-19'),
-    email: 'hasinireddy765@gmail.com',
-  },
-  9: {
-    id: 10,
-    fullname: 'Mike Johnson',
-    date: new Date('2023-03-14'),
-    email: 'mikejohnson@example.com',
-  },
-  10: {
-    id: 11,
-    fullname: 'Lisa Johnson',
-    date: new Date('2023-04-06'),
-    email: 'lisajohnson@example.com',
-  },
-  11: {
-    id: 12,
-    fullname: 'Steve Lee',
-    date: new Date('2022-04-09'),
-    email: 'stevelee@example.com',
-  },
-  12: {
-    id: 13,
-    fullname: 'Kate Lee',
-    date: new Date('2022-02-12'),
-    email: 'katelee@example.com',
-  },
-  13: {
-    id: 14,
-    fullname: 'Alex Brown',
-    date: new Date('2023-02-10'),
-    email: 'alexbrown@example.com',
-  },
-  14: {
-    id: 15,
-    fullname: 'Emily Brown',
-    date: new Date('2023-02-22'),
-    email: 'emilybrown@example.com',
-  },
-};
 const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
+  const { user, role, logout } = useContext(AuthContext);
+  const { getAllRequestsForPatient,approveMedicalRecordsRequestHealthBlockContract,rejectMedicalRecordsRequestHealthBlockContract,medicalRecordRequests} = useContext(HealthContext);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOption, setFilterOption] = useState<string>('all');
   const [showDeclinePopup, setShowDeclinePopup] = useState(false);
   const [selectedFile, setSelectedFile] = useState<undefined | File>(undefined);
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
   const [showAcceptPopup, setShowAcceptPopup] = useState(false);
-  const cardsPerPage = 4;
+  
+  //const cardsPerPage = 4;
 
-  const ses = new AWS.SES({
-    apiVersion: '2010-12-01',
-    region: 'us-east-1',
-    accessKeyId: process.env['ACCESS_KEY_ID'],
-    secretAccessKey: process.env['SECRET_ACCESS_KEY'],
-  });
-
-  function sendAcceptEmail(to: string) {
-    const subject = 'Medical Records Request Accepted';
-    const body =
-      'Your medical records request have been accepted and medical records are uploaded by patient.';
-    sendEmail(to, subject, body);
-  }
-  function sendDeclineEmail(to: string) {
-    const subject = 'Medical Records Request Declined';
-    const body = 'Your medical records request have been declined by your patient.';
-    sendEmail(to, subject, body);
-  }
-
-  function sendEmail(to: string, subject: string, body: string) {
-    const params = {
-      Destination: {
-        ToAddresses: [to],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: body,
-          },
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: subject,
-        },
-      },
-      Source: 'dharahasini.gangalapudi@sjsu.edu',
-    };
-
-    ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const verificationAttributes = data.VerificationAttributes[to];
-        if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
-          // Email identity is verified, send the email
-          ses.sendEmail(params, (err, data) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log('Email sent:', data);
-            }
-          });
-        } else {
-          // Email identity is not verified, verify the email identity
-          ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log(`Email identity verification initiated for ${to}.`);
-              // Wait for the email identity to be verified before sending the email
-              const intervalId = setInterval(() => {
-                ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-                  if (err) {
-                    console.log(err);
-                  } else {
-                    const verificationAttributes = data.VerificationAttributes[to];
-                    if (
-                      verificationAttributes &&
-                      verificationAttributes.VerificationStatus === 'Success'
-                    ) {
-                      clearInterval(intervalId);
-                      ses.sendEmail(params, (err, data) => {
-                        if (err) {
-                          console.log(err);
-                        } else {
-                          console.log('Email sent:', data);
-                        }
-                      });
-                    }
-                  }
-                });
-              }, 5000);
-            }
-          });
-        }
-      }
-    });
-  }
-
-  const handleAccept = (email: string) => {
-    sendAcceptEmail(email);
+  const GetAllMedicalRecordRequests = async (patientAddress: string) => {
+    try {
+      await getAllRequestsForPatient?.(patientAddress);
+      
+    } catch (err) {
+      console.log("Error while fetching the medical Record Requests",err);
+    }
   };
-  const handleDecline = (email: string) => {
-    sendDeclineEmail(email);
+
+  const approveRequest=async(requestID: string)=>{
+    try{
+      await approveMedicalRecordsRequestHealthBlockContract?.(requestID)
+    }catch(err){
+      console.log("Error while approving the medical Record Requests",err);
+    }
   };
+  const rejectRequest=async(requestID: string)=>{
+    try{
+      await rejectMedicalRecordsRequestHealthBlockContract?.(requestID)
+      alert('Medical record request rejected');
+    }catch(err){
+      console.log("Error while rejecting the medical Record Requests",err);
+    }
+  };
+
+  useEffect(()=>{
+    GetAllMedicalRecordRequests("0xac80c82c5633b8fd92bc314142b7b35cf4c77301")
+  },[])  
+
+  // function sendAcceptEmail(to: string) {
+  //   const subject = 'Medical Records Request Accepted';
+  //   const body =
+  //     'Your medical records request have been accepted and medical records are uploaded by patient.';
+  //   sendEmail(to, subject, body);
+  // }
+  // function sendDeclineEmail(to: string) {
+  //   const subject = 'Medical Records Request Declined';
+  //   const body = 'Your medical records request have been declined by your patient.';
+  //   sendEmail(to, subject, body);
+  // }
+
+  // function sendEmail(to: string, subject: string, body: string) {
+  //   const params = {
+  //     Destination: {
+  //       ToAddresses: [to],
+  //     },
+  //     Message: {
+  //       Body: {
+  //         Html: {
+  //           Charset: 'UTF-8',
+  //           Data: body,
+  //         },
+  //       },
+  //       Subject: {
+  //         Charset: 'UTF-8',
+  //         Data: subject,
+  //       },
+  //     },
+  //     Source: 'dharahasini.gangalapudi@sjsu.edu',
+  //   };
+
+  //   ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       const verificationAttributes = data.VerificationAttributes[to];
+  //       if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
+  //         // Email identity is verified, send the email
+  //         ses.sendEmail(params, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //           } else {
+  //             console.log('Email sent:', data);
+  //           }
+  //         });
+  //       } else {
+  //         // Email identity is not verified, verify the email identity
+  //         ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //           } else {
+  //             console.log(`Email identity verification initiated for ${to}.`);
+  //             // Wait for the email identity to be verified before sending the email
+  //             const intervalId = setInterval(() => {
+  //               ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+  //                 if (err) {
+  //                   console.log(err);
+  //                 } else {
+  //                   const verificationAttributes = data.VerificationAttributes[to];
+  //                   if (
+  //                     verificationAttributes &&
+  //                     verificationAttributes.VerificationStatus === 'Success'
+  //                   ) {
+  //                     clearInterval(intervalId);
+  //                     ses.sendEmail(params, (err, data) => {
+  //                       if (err) {
+  //                         console.log(err);
+  //                       } else {
+  //                         console.log('Email sent:', data);
+  //                       }
+  //                     });
+  //                   }
+  //                 }
+  //               });
+  //             }, 5000);
+  //           }
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
+
+  // const handleAccept = (email: string) => {
+  //   sendAcceptEmail(email);
+  // };
+  // const handleDecline = (email: string) => {
+  //   sendDeclineEmail(email);
+  // };
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files !== null) {
       setSelectedFile(event.target.files[0]);
@@ -219,41 +153,10 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
     setShowDeclinePopup(!showDeclinePopup);
   };
 
-  // Handle pagination click
-  const handlePageClick = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  // Function to handle filter option change
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterOption(event.target.value);
     setCurrentPage(1); // Reset current page to 1 when filter option is changed
-  };
-
-  const filteredCards = Object.values(cards).filter((card: docData) => {
-    if (filterOption === 'all') {
-      return true;
-    } else if (filterOption === 'upcoming') {
-      return card.date >= new Date();
-    } else if (filterOption === 'past') {
-      return card.date < new Date();
-    }
-    return false;
-  });
-
-  // Calculate index of first and last card for the current page
-  const indexOfFirstCard = (currentPage - 1) * cardsPerPage;
-  const indexOfLastCard = Math.min(indexOfFirstCard + cardsPerPage, filteredCards.length) - 1;
-
-  // Get subset of cards for the current page
-  const currentCards = Object.values(filteredCards)
-    .slice(indexOfFirstCard, indexOfLastCard + 1)
-    .map((card: docData) => ({
-      id: card.id,
-      fullname: card.fullname,
-      date: card.date,
-      email: card.email,
-    }));
+  }; 
 
   return (
     <div>
@@ -300,13 +203,13 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      Date
+                      EMAIL ID
                     </th>
                     <th
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      Email ID
+                      STATUS
                     </th>
                     <th
                       scope='col'
@@ -315,18 +218,20 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                   </tr>
                 </thead>
 
-                {currentCards.map((card) => (
-                  <tr key={card.id}>
+                {medicalRecordRequests?.map((request) => (
+                  <tr key={request.requestId}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.fullname}</div>
+                      <div className='text-sm text-gray-900'>{request.docName}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.date.toLocaleDateString()}</div>
+                      <div className='text-sm text-gray-900'>{request.docEmail}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{card.email}</div>
+                      <div className={`text-sm ${request.status === 'REJECTED' ? 'text-red-500 font-bold' : request.status === 'CONFIRMED' ? 'text-green-500 font-bold' : 'text-gray-500 font-bold'}`}>{request.status}</div>
                     </td>
+                    
                     <td className='px-6 py-4 whitespace-nowrap'>
+                    {request.status !== "REJECTED" && (
                       <div className='text-sm text-gray-900'>
                         <button
                           id='request-btn'
@@ -342,6 +247,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                           Decline
                         </button>
                       </div>
+                      )}
                       {showDeclinePopup && (
                         <div className='fixed z-10 inset-0 overflow-y-auto'>
                           <div className='flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
@@ -375,10 +281,9 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                     </h3>
                                     <div className='mt-2'>
                                       <p className='text-sm leading-5 text-gray-500'>
-                                        You are declining the request to upload your medical records
-                                        to Doctor{' '}
+                                        You are declining the medical record request to{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {card.fullname}
+                                          {request.docName}
                                         </span>
                                       </p>
                                     </div>
@@ -393,7 +298,8 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                       type='button'
                                       className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5'
                                       onClick={() => {
-                                        handleDecline(card.email);
+                                        //handleDecline(request.docEmail);
+                                        rejectRequest(request.requestId);
                                       }}
                                     >
                                       Confirm
@@ -445,10 +351,10 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                     </h3>
                                     <div className='mt-2'>
                                       <p className='text-sm leading-5 text-gray-500'>
-                                        You are accepting the request and uploading your medical
+                                        You are uploading your medical
                                         records for Doctor{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {card.fullname}
+                                          {request.docName}
                                         </span>
                                       </p>
                                       <div className='mt-2'>
@@ -487,7 +393,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                       className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5'
                                       onClick={() => {
                                         toggleAcceptPopup();
-                                        handleAccept(card.email);
+                                        //handleAccept(request.docEmail);
                                       }}
                                     >
                                       Confirm
@@ -511,33 +417,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                 ))}
               </table>
             </div>
-          </div>
-          <div className='flex justify-center items-center'>
-            {Object.keys(filteredCards).length > cardsPerPage && (
-              <ReactPaginate
-                previousLabel={
-                  <button className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l inline-flex'>
-                    Prev
-                  </button>
-                }
-                nextLabel={
-                  <button className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r inline-flex'>
-                    Next
-                  </button>
-                }
-                breakLabel={'...'}
-                pageCount={Math.ceil(Object.keys(filteredCards).length / cardsPerPage)}
-                pageRangeDisplayed={2}
-                marginPagesDisplayed={1}
-                pageClassName={'mx-1'}
-                containerClassName={'flex'}
-                activeClassName={
-                  'inline-block border border-blue-500 rounded py-1 px-3 bg-blue-500 text-white'
-                }
-                onPageChange={({ selected }: { selected: number }) => handlePageClick(selected + 1)}
-              />
-            )}
-          </div>
+          </div>          
         </div>
       </div>
     </div>

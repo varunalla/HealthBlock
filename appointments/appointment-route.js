@@ -7,6 +7,8 @@ const {
   getAppointments,
   getConfirmedAppointments,
   updateAppointmentStatus,
+  updateDoctorAvailability,
+  postAvailability,
 } = require("../utils/queries");
 const uuid = require("uuid");
 
@@ -51,7 +53,6 @@ module.exports = (app) => {
 
       res.status(201).json("Appointment created succesfully");
     } catch (err) {
-      console.log("err from post");
       res.status(500).json("Error creating appointment");
     }
   });
@@ -101,4 +102,20 @@ module.exports = (app) => {
       }
     }
   );
+  app.post("/availability/:doctor", verify_token, async (req, res) => {
+    let success = true;
+
+    for (const [date, time] of Object.entries(req.body)) {
+      try {
+        await postAvailability(date, time, req.params.doctor);
+      } catch (err) {
+        success = false;
+      }
+      if (success) {
+        res.status(204).send({ success: true, msg: "Insert successful" });
+      } else {
+        res.status(500).send({ success: false, msg: "Insert unsuccessful" });
+      }
+    }
+  });
 };

@@ -29,51 +29,72 @@ contract HealthBlock {
     }   
 
     struct MedicalRecordRequest{
+        string requestId;
         address patientAddress;
         address doctorAddress;
         string docName;
         string docEmail;
         string patientName;
         string patientEmail;
-        string reqStatus;
+        string status;
     }
 
-    mapping(address => MedicalRecordRequest[]) private recordRequests;
-    event MedicalRecordRequestCreated(address indexed doctorAddress, address indexed patientAddress);
-    event MedicalRecordRequestApproved(address indexed doctorAddress, address indexed patientAddress, uint256 requestID);
-    event MedicalRecordRequestDeclined(address indexed doctorAddress, address indexed patientAddress, uint256 requestID);
+    mapping(address => MedicalRecordRequest[]) public recordRequests;
+    event MedicalRecordRequestCreated(address indexed doctorAddress, address indexed patientAddress, string requestId);
+    event MedicalRecordRequestApproved(address indexed doctorAddress, address indexed patientAddress, string requestId);
+    event MedicalRecordRequestRejected(address indexed doctorAddress, address indexed patientAddress, string requestId);
+
 
     function requestMedicalRecord(string memory docName, string memory docEmail, address patientAddress, string memory patientName, string memory patientEmail) public {
-        MedicalRecordRequest memory request = MedicalRecordRequest({
-           doctorAddress: msg.sender,
-           patientAddress: patientAddress,
-           docName: docName,
-           docEmail: docEmail,
-           patientName: patientName,
-           patientEmail: patientEmail,
-           reqStatus: "pending"
-           });
-        recordRequests[owner].push(request);
-        emit MedicalRecordRequestCreated(msg.sender, patientAddress);
+    string memory requestId = string(abi.encodePacked(docEmail, "_", patientEmail));
+
+       MedicalRecordRequest memory newRequest = MedicalRecordRequest({
+            requestId: requestId,
+            doctorAddress: msg.sender,
+            patientAddress: patientAddress,
+            docName: docName,
+            docEmail: docEmail,
+            patientName: patientName,
+            patientEmail: patientEmail,
+            status: "PENDING"
+        });
+
+        recordRequests[patientAddress].push(newRequest);
+        emit MedicalRecordRequestCreated(msg.sender, patientAddress, requestId);
     }
 
-    function getMedicalRecordRequests() public view returns(MedicalRecordRequest[] memory){
-        require(msg.sender == owner, "Only owner can call this function");
-        return recordRequests[owner];
+    function findRequestIndex(string memory requestId, MedicalRecordRequest[] storage requests) private view returns (uint256) {
+        for (uint256 i = 0; i < requests.length; i++) {
+            if (keccak256(abi.encodePacked(requests[i].requestId)) == keccak256(abi.encodePacked(requestId))) {
+                return i;
+            }
+        }
+        return type(uint256).max;
     }
 
-    function approveMedicalRecordsRequest(uint256 requestID) public {  
-        require(msg.sender == owner, "Only owner can call this function");     
-        MedicalRecordRequest storage request = recordRequests[owner][requestID];
-        request.reqStatus= "approved";
-        emit MedicalRecordRequestApproved(request.doctorAddress, owner, requestID);
+    function approveMedicalRecordsRequest(string memory requestId) public {  
+        MedicalRecordRequest[] storage requests = recordRequests[msg.sender];
+
+        uint256 requestIndex = findRequestIndex(requestId, requests);
+        requests[requestIndex].status = "APPROVED";
+        emit MedicalRecordRequestApproved(requests[requestIndex].doctorAddress, msg.sender, requestId);
     }
 
-    function rejectMedicalRecordsRequest(uint256 requestID) public {
-        require(msg.sender == owner, "Only owner can call this function");     
-        MedicalRecordRequest storage request = recordRequests[owner][requestID];
-        request.reqStatus= "declined";
-        emit MedicalRecordRequestDeclined(request.doctorAddress, owner, requestID);
+    function rejectMedicalRecordsRequest(string memory requestId) public {
+        MedicalRecordRequest[] storage requests = recordRequests[msg.sender];
+
+        uint256 requestIndex = findRequestIndex(requestId, requests);
+        requests[requestIndex].status = "REJECTED";
+        emit MedicalRecordRequestRejected(requests[requestIndex].doctorAddress, msg.sender, requestId);
+    }
+
+    function getPatientRequests(address patientAddress) public view returns (MedicalRecordRequest[] memory) {
+        return recordRequests[patientAddress];
+    }
+    struct DoctorToProviderRequest {
+        string doctorName;
+        address doctorAddr;
+        string status;
     }
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
@@ -87,6 +108,8 @@ contract HealthBlock {
         string status;
     }
     mapping(address => Request[]) private doctorRequests;
+    mapping(address => doctor[]) public providerToDoctors;
+    mapping(address => DoctorToProviderRequest[]) public providerToDoctorRequests;
 
    /*
     * @dev Set contract deployer as owner
@@ -137,6 +160,7 @@ contract HealthBlock {
     mapping (address => patient) public patients;
     mapping (address => doctor) internal doctors;
     mapping (address => hcprovider) internal hcproviders;
+   
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -192,6 +216,7 @@ contract HealthBlock {
         require((_age > 0) && (_age < 100));
         require(!(d.id > address(0x0)));
         doctors[msg.sender] = doctor({name:_name,age:_age,id:msg.sender,email:_email, specialization:_specialization});
+       
         emit NPatient(msg.sender, _name);
     } 
 
@@ -212,4 +237,67 @@ contract HealthBlock {
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
     } 
+    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+    return providerToDoctors[providerAddress];
+}
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+ }
+        }
+           
+          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+  
+    }
+
+ function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        bool found = false;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
+                idx = i;
+                break;
+                found = true;
+ }
+        }
+           
+          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
+
+  
+    }
+
+
+
+    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
+  
+   DoctorToProviderRequest memory request = DoctorToProviderRequest({
+            doctorName: doctorName,
+         doctorAddr: _doctorAddress,
+        status:'pending'
+        });
+  
+  providerToDoctorRequests[_providerAddress].push(request);
+    
+    }
+
+    function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
+
+   return providerToDoctorRequests[_hcaddress];
+    }
+
+    
+
+   
+   
+
+
+    
 }

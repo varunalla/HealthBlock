@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
+import { HealthContext } from '../../providers/HealthProvider';
 interface Appointment {
   doctor_name: string;
   doctor_email: string;
@@ -15,9 +16,11 @@ interface Appointment {
 
 const ScheduleAppointment: FunctionComponent<{}> = () => {
   const { state } = useLocation();
+  const navigate = useNavigate();
 
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
+  const { fetchAllDoctors, doctorList, handleRaiseRequest } = useContext(HealthContext);
   const [appt_date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [time, setTime] = useState('10:00 AM');
   const [reason, setReason] = useState('');
@@ -161,7 +164,13 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
           >
             Schedule
           </button>
-          <button className='bg-red-500 text-white font-bold py-2 px-4 rounded'>Close</button>
+
+          <button
+            onClick={() => navigate('/patientappointments')}
+            className='bg-red-500 text-white font-bold py-2 px-4 rounded'
+          >
+            Close
+          </button>
         </div>
       </form>
     </div>
