@@ -4,28 +4,21 @@ import { HealthContext } from '../../providers/HealthProvider';
 import { AuthContext } from '../../providers/AuthProvider';
 import AWS from 'aws-sdk';
 
-interface docData {
-  id: number;
-  fullname: string;
-  date: Date;
-  email: string;
-}
 const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
-  const { getAllRequestsForPatient,approveMedicalRecordsRequestHealthBlockContract,rejectMedicalRecordsRequestHealthBlockContract,medicalRecordRequests} = useContext(HealthContext);
+  const { getAllRequestsForPatient,approveMedicalRecordsRequestHealthBlockContract,rejectMedicalRecordsRequestHealthBlockContract, currentAccount} = useContext(HealthContext);
   const [currentPage, setCurrentPage] = useState(1);
+  const[medicalRecordRequests,setMedicalRecordRequests]=useState<any>([]);
   const [filterOption, setFilterOption] = useState<string>('all');
   const [showDeclinePopup, setShowDeclinePopup] = useState(false);
   const [selectedFile, setSelectedFile] = useState<undefined | File>(undefined);
-  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
   const [showAcceptPopup, setShowAcceptPopup] = useState(false);
-  
-  //const cardsPerPage = 4;
 
   const GetAllMedicalRecordRequests = async (patientAddress: string) => {
     try {
-      await getAllRequestsForPatient?.(patientAddress);
-      
+      const requests=await getAllRequestsForPatient?.(patientAddress);
+      console.log(requests);
+      setMedicalRecordRequests(requests);
     } catch (err) {
       console.log("Error while fetching the medical Record Requests",err);
     }
@@ -34,6 +27,8 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
   const approveRequest=async(requestID: string)=>{
     try{
       await approveMedicalRecordsRequestHealthBlockContract?.(requestID)
+      if(currentAccount){
+        GetAllMedicalRecordRequests(currentAccount);}
     }catch(err){
       console.log("Error while approving the medical Record Requests",err);
     }
@@ -41,6 +36,8 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
   const rejectRequest=async(requestID: string)=>{
     try{
       await rejectMedicalRecordsRequestHealthBlockContract?.(requestID)
+      if(currentAccount){
+      GetAllMedicalRecordRequests(currentAccount);}
       alert('Medical record request rejected');
     }catch(err){
       console.log("Error while rejecting the medical Record Requests",err);
@@ -48,7 +45,9 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
   };
 
   useEffect(()=>{
-    GetAllMedicalRecordRequests("0xac80c82c5633b8fd92bc314142b7b35cf4c77301")
+    if(currentAccount){
+    GetAllMedicalRecordRequests(currentAccount);
+  }
   },[])  
 
   // function sendAcceptEmail(to: string) {
@@ -172,9 +171,10 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
               value={filterOption}
               onChange={handleFilterChange}
             >
-              <option value='all'>All Appointments</option>
-              <option value='upcoming'>Upcoming Appointments</option>
-              <option value='past'>Past Appointments</option>
+              <option value='all'>All Requests</option>
+              <option value='upcoming'>Pending</option>
+              <option value='past'>Confirmed</option>
+              <option value='past'>Rejected</option>
             </select>
             <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
               <svg
@@ -197,13 +197,13 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      Name
+                      EMAIL ID
                     </th>
                     <th
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      EMAIL ID
+                      PUBLIC ADDRESS
                     </th>
                     <th
                       scope='col'
@@ -218,13 +218,13 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                   </tr>
                 </thead>
 
-                {medicalRecordRequests?.map((request) => (
+                {medicalRecordRequests?.map((request:any)=> (
                   <tr key={request.requestId}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{request.docName}</div>
+                      <div className='text-sm text-gray-900'>{request.docEmail}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{request.docEmail}</div>
+                      <div className='text-sm text-gray-900'>{request.doctorAddress}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className={`text-sm ${request.status === 'REJECTED' ? 'text-red-500 font-bold' : request.status === 'CONFIRMED' ? 'text-green-500 font-bold' : 'text-gray-500 font-bold'}`}>{request.status}</div>
@@ -283,7 +283,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                       <p className='text-sm leading-5 text-gray-500'>
                                         You are declining the medical record request to{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {request.docName}
+                                          {request.docEmail}
                                         </span>
                                       </p>
                                     </div>
@@ -300,6 +300,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                       onClick={() => {
                                         //handleDecline(request.docEmail);
                                         rejectRequest(request.requestId);
+                                        toggleDeclinePopup();
                                       }}
                                     >
                                       Confirm
@@ -354,7 +355,7 @@ const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
                                         You are uploading your medical
                                         records for Doctor{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {request.docName}
+                                          {request.docEmail}
                                         </span>
                                       </p>
                                       <div className='mt-2'>

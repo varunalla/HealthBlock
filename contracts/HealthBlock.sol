@@ -26,13 +26,16 @@ contract HealthBlock {
         string email;
         string specialization;
         address id;
-    }   
-
+    }
+    struct DoctorToProviderRequest {
+        string doctorName;
+        address doctorAddr;
+        string status;
+    }
     struct MedicalRecordRequest{
         string requestId;
         address patientAddress;
         address doctorAddress;
-        string docName;
         string docEmail;
         string patientName;
         string patientEmail;
@@ -45,14 +48,13 @@ contract HealthBlock {
     event MedicalRecordRequestRejected(address indexed doctorAddress, address indexed patientAddress, string requestId);
 
 
-    function requestMedicalRecord(string memory docName, string memory docEmail, address patientAddress, string memory patientName, string memory patientEmail) public {
+    function requestMedicalRecord(string memory docEmail, address patientAddress, string memory patientName, string memory patientEmail) public {
     string memory requestId = string(abi.encodePacked(docEmail, "_", patientEmail));
 
        MedicalRecordRequest memory newRequest = MedicalRecordRequest({
             requestId: requestId,
             doctorAddress: msg.sender,
             patientAddress: patientAddress,
-            docName: docName,
             docEmail: docEmail,
             patientName: patientName,
             patientEmail: patientEmail,
@@ -91,11 +93,7 @@ contract HealthBlock {
     function getPatientRequests(address patientAddress) public view returns (MedicalRecordRequest[] memory) {
         return recordRequests[patientAddress];
     }
-    struct DoctorToProviderRequest {
-        string doctorName;
-        address doctorAddr;
-        string status;
-    }
+
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);
@@ -119,7 +117,7 @@ contract HealthBlock {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
+        require(msg.sender == owner, "Not Owner");
         _;
     }
 
@@ -237,67 +235,44 @@ contract HealthBlock {
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
     } 
-    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
-    return providerToDoctors[providerAddress];
-}
-     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
-        doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
-         providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
-  
-    }
-
- function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
-        doctor storage d = doctors[_doctorAddress];
-        uint8 idx =0;
-        bool found = false;
-        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
-            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress){
-                idx = i;
-                break;
-                found = true;
- }
-        }
-           
-          providerToDoctorRequests[_providerAddress][idx].status = 'rejected';
-
-  
-    }
-
-
-
-    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
-  
-   DoctorToProviderRequest memory request = DoctorToProviderRequest({
-            doctorName: doctorName,
-         doctorAddr: _doctorAddress,
-        status:'pending'
-        });
-  
-  providerToDoctorRequests[_providerAddress].push(request);
     
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public {
+        doctor storage d = doctors[_doctorAddress];
+        uint8 idx =0;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) {
+                idx = i;
+                break;
+            }
+        }   
+        providerToDoctorRequests[_providerAddress][idx].status = 'confirmed';
+        providerToDoctors[_providerAddress].push(doctor({name:d.name,email:d.email,specialization:d.specialization,id:_doctorAddress,age:d.age}));
+    }
+
+    function declineDoctorToProviderRequest(address _providerAddress, address _doctorAddress) public{
+        
+        uint8 idx =0;
+        for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++) {
+            if(providerToDoctorRequests[_providerAddress][i].doctorAddr == _doctorAddress) { 
+                idx = i;
+                break;
+                
+            }
+        }
+        providerToDoctorRequests[_providerAddress][idx].status = 'rejected';  
+    }
+    function raiseDoctorToProviderRequest(address _providerAddress,address _doctorAddress, string memory doctorName)public {
+            DoctorToProviderRequest memory request = DoctorToProviderRequest({
+                doctorName: doctorName,
+                doctorAddr: _doctorAddress,
+                status:'pending'
+            });
+  
+            providerToDoctorRequests[_providerAddress].push(request);
     }
 
     function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
-
-   return providerToDoctorRequests[_hcaddress];
+            return providerToDoctorRequests[_hcaddress];
     }
 
-    
-
-   
-   
-
-
-    
 }
