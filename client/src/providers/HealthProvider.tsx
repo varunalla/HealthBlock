@@ -1,10 +1,11 @@
 import { ethers } from 'ethers';
 import React, { useState } from 'react';
 
-import { healthBlockABI, healthBlockAddress } from '../config/constants';
+import { healthBlockABI, healthBlockAddress, providerBlockAddress } from '../config/constants';
 import Web3Modal from 'web3modal';
 import { HealthBlock__factory } from '../contracts/factories/HealthBlock__factory';
 import { HealthBlock } from '../contracts/HealthBlock';
+import { PatientProvider, PatientProvider__factory } from '../contracts';
 
 interface Request {
   doctor: string;
@@ -72,6 +73,8 @@ interface HealthAppContextInterface {
 
 const fetchContract = (signerOrProvider: ethers.Signer | ethers.providers.Provider) =>
   HealthBlock__factory.connect(healthBlockAddress, signerOrProvider);
+const fetchProviderContract = (signerOrProvider: ethers.Signer | ethers.providers.Provider) =>
+  PatientProvider__factory.connect(providerBlockAddress, signerOrProvider);
 
 export const HealthContext = React.createContext<HealthAppContextInterface>({});
 
@@ -278,7 +281,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const requests = await contract.getPatientRequests();
       return requests;
     } catch (error) {
@@ -292,7 +295,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const requests = await contract.getProviderRequests();
       return requests;
     } catch (error) {
@@ -306,7 +309,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const requests = await contract.getProviderPatients();
       return requests;
     } catch (error) {
@@ -320,7 +323,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const requests = await contract.getPatientProviders();
       return requests;
     } catch (error) {
@@ -334,7 +337,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = await fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const tx = await contract.approvePatientProviderRequest(patientAddress);
       await tx.wait();
     } catch (error) {
@@ -347,7 +350,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = await fetchContract(signer);
+      const contract = fetchProviderContract(signer);
       const tx = await contract.rejectPatientProviderRequest(patientAddress);
       await tx.wait();
     } catch (error) {
@@ -361,7 +364,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract: HealthBlock = fetchContract(signer);
+      const contract: PatientProvider = fetchProviderContract(signer);
       const register = await contract.requestProvider(providerAddress);
       register.wait();
     } catch (err: any) {
@@ -374,7 +377,9 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
-      const contract = await fetchContract(signer);
+      const contract = await fetchProviderContract(signer);
+      //const docArr = [];
+      /*
       const doctors = await contract.getAllDoctorsForProvider(
         '0xB3CC507e752Dcc3DA1cEf955B58e97Ae77160103',
       );
@@ -389,8 +394,8 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         };
         docArr.push(obj);
       }
-
-      setDoctorList(docArr);
+  */
+      setDoctorList([]);
     } catch (error) {
       setError('Error Loading Health Contract');
     }

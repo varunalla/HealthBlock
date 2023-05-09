@@ -17,6 +17,8 @@ app.use(
 app.use(express.static("client/build"));
 require("./authentication/auth-routes")(app, metaAuth);
 require("./appointments/appointment-route")(app);
+require("./routes/providers")(app);
+require("./routes/patients")(app);
 app.get("*", (req, res) =>
   res.sendFile(path.resolve("client", "build", "index.html"))
 );

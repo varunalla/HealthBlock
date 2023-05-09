@@ -13,9 +13,11 @@
    `yarn typecheck`
 6. create .env.development and .env.production in the client directory with the following content and replace value with deployed healthblock contract address.
    `REACT_APP_HEALTHBLOCK_ADDRESS=value`
+   `REACT_APP_PROVIDER_ADDRESS=value`
 7. build the client using
    `yarn build`
-
+   or
+   `REACT_APP_HEALTHBLOCK_ADDRESS=VALUE1 REACT_APP_PROVIDER_ADDRESS=VALUE2 yarn build `
 8. run the server with below command by replacing value with deployed healthblock contract address.
    `npm install -g pino-pretty`
    `HEALTHBLOCK_ADDRESS=value node server.js | pino-pretty`

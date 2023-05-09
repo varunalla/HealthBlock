@@ -8,7 +8,9 @@ const ProvierPatients: FunctionComponent<{}> = () => {
 
   return (
     <>
+      <h1>Patient Requests</h1>
       <PatientRequests />
+      <h1>My Patients</h1>
       <PatientList />
     </>
   );
