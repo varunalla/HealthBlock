@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useEffect } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
@@ -6,6 +6,7 @@ import { HealthContext } from '../../providers/HealthProvider';
 const HCManageDoctors: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { user, role, logout } = useContext(AuthContext);
+  let [requests, setReq] = useState<any>([]);
 
   const {
     handleApproveRequest,
@@ -21,7 +22,16 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
   } = useContext(HealthContext);
   useEffect(() => {
     if (currentAccount) {
-      fetchAllDoctorToProviderRequests?.(currentAccount);
+      (async () => {
+        try {
+          let resp = await fetchAllDoctorToProviderRequests?.(currentAccount);
+
+          setReq(resp ?? []);
+        } catch (Err) {
+          console.log('Err-->', Err);
+          setReq([]);
+        }
+      })();
     }
   }, []);
 
@@ -64,9 +74,9 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {doctorToProviderReqList &&
-                  doctorToProviderReqList.length > 0 &&
-                  doctorToProviderReqList.map((req) => (
+                {requests &&
+                  requests.length > 0 &&
+                  requests.map((req: any) => (
                     <tr>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='text-sm text-gray-900'>{req.name}</div>
