@@ -3,8 +3,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
-const AWS = require('aws-sdk');
-import { Buffer } from 'buffer';
 
 const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
@@ -36,7 +34,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       
       uploadFileToS3(file, file!.name, user!.name)
   
-      sendRequestEmail(providerEmail);
+      //sendRequestEmail(providerEmail);
     } catch (err) {
       console.log(err);
     }
@@ -48,7 +46,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       formData.append('file', file);
       formData.append('fileName', filename);
       formData.append('userName', username);
-  
+      formData.append('providerEmail', providerEmail);
       try {
         await axios.post('/upload', formData, {
           headers: {
@@ -61,90 +59,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       }
     }
   };
-
-  const ses = new AWS.SES({
-    apiVersion: '2010-12-01',
-    region: 'us-east-1',
-    accessKeyId: 'AKIAWKISFSUD75424ZI4',
-    secretAccessKey: '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',
-  });
-
-  function sendRequestEmail(to: string) {
-    const subject = 'Credentials Verification Request';
-    const body = 'Credentials Verification Request has been raised by Dr.'+user?.name;
-    sendEmail(to, subject, body);
-  }
-
-  function sendEmail(to: string, subject: string, body: string) {
-    const params = {
-      Destination: {
-        ToAddresses: [to],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: body,
-          },
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: subject,
-        },
-      },
-      Source: 'aishwarya.ravi@sjsu.edu',
-    };
-
-    ses.getIdentityVerificationAttributes({ Identities: [to] }, (err: any, data: { VerificationAttributes: { [x: string]: any; }; }) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const verificationAttributes = data.VerificationAttributes[to];
-        if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
-          // Email identity is verified, send the email
-          ses.sendEmail(params, (err: any, data: any) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log('Email sent:', data);
-            }
-          });
-        } else {
-          // Email identity is not verified, verify the email identity
-          ses.verifyEmailIdentity({ EmailAddress: to }, (err: any, data: any) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log(`Email identity verification initiated for ${to}.`);
-              // Wait for the email identity to be verified before sending the email
-              const intervalId = setInterval(() => {
-                ses.getIdentityVerificationAttributes({ Identities: [to] }, (err: any, data: { VerificationAttributes: { [x: string]: any; }; }) => {
-                  if (err) {
-                    console.log(err);
-                  } else {
-                    const verificationAttributes = data.VerificationAttributes[to];
-                    if (
-                      verificationAttributes &&
-                      verificationAttributes.VerificationStatus === 'Success'
-                    ) {
-                      clearInterval(intervalId);
-                      ses.sendEmail(params, (err: any, data: any) => {
-                        if (err) {
-                          console.log(err);
-                        } else {
-                          console.log('Email sent:', data);
-                        }
-                      });
-                    }
-                  }
-                });
-              }, 5000);
-            }
-          });
-        }
-      }
-    });
-  }
 
   useEffect(() => {
     (() => {

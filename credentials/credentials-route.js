@@ -5,7 +5,6 @@ const multer = require('multer');
 require("dotenv").config();
 const path = require('path');
 
-
 const s3 = new AWS.S3({
   accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
@@ -34,8 +33,7 @@ const upload = multer({ storage });
 
 app.post('/upload', upload.single('file'), (req, res) => {
   
-     console.log("request", req.body.fileName);
-    // try {
+    try {
 
       const file = req.file;
       const fileName = req.body.fileName;
@@ -66,13 +64,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
           res.status(500).json({ error: 'Failed to upload file to S3.' });
         } else {
           console.log('File uploaded successfully. ' + data.Location);
+          sendRequestEmail(req.body.providerEmail, userName);
           res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
         }
       });
-    // } catch (err) {
-    //   console.error(err);
-    //   res.status(500).json({ error: 'An error occurred.' });
-    // }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred.' });
+    }
   });
 
   app.post('/download', async (req, res) => {
@@ -103,17 +102,99 @@ app.post('/upload', upload.single('file'), (req, res) => {
       });
       const decryptedFile = fs.readFileSync(fileName);
       const decryptedBuffer = Buffer.from(decryptedFile);
-
+      
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.send(decryptedFile);
+      res.send(decryptedBuffer);
       
     } catch (err) {
       console.log(err);
       res.status(500).json({ error: 'Failed to download file' });
     }
   });
-  
+
+const ses = new AWS.SES({
+  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+  region: process.env.REACT_APP_AWS_REGION
+});
+
+function sendRequestEmail(to, userName) {
+  const subject = 'Credentials Verification Request';
+  const body = 'Credentials Verification Request has been raised by Dr.' + userName;
+  sendEmail(to, subject, body);
+}
+
+function sendEmail(to, subject, body) {
+  const params = {
+    Destination: {
+      ToAddresses: [to],
+    },
+    Message: {
+      Body: {
+        Html: {
+          Charset: 'UTF-8',
+          Data: body,
+        },
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: subject,
+      },
+    },
+    Source: 'aishwarya.ravi@sjsu.edu',
+  };
+
+  ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const verificationAttributes = data.VerificationAttributes[to];
+      if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
+        // Email identity is verified, send the email
+        ses.sendEmail(params, (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log('Email sent:', data);
+          }
+        });
+      } else {
+        // Email identity is not verified, verify the email identity
+        ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(`Email identity verification initiated for ${to}.`);
+            // Wait for the email identity to be verified before sending the email
+            const intervalId = setInterval(() => {
+              ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  const verificationAttributes = data.VerificationAttributes[to];
+                  if (
+                    verificationAttributes &&
+                    verificationAttributes.VerificationStatus === 'Success'
+                  ) {
+                    clearInterval(intervalId);
+                    ses.sendEmail(params, (err, data) => {
+                      if (err) {
+                        console.log(err);
+                      } else {
+                        console.log('Email sent:', data);
+                      }
+                    });
+                  }
+                }
+              });
+            }, 5000);
+          }
+        });
+      }
+    }
+  });
+}
 };
 
 
