@@ -16,9 +16,12 @@ app.use(
     extended: false,
   })
 );
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static("client/build"));
 require("./authentication/auth-routes")(app, metaAuth);
 require("./appointments/appointment-route")(app);
+require("./credentials/credentials-route")(app);
 app.get("*", (req, res) =>
   res.sendFile(path.resolve("client", "build", "index.html"))
 );

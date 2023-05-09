@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 const AWS = require('aws-sdk');
-const s3 = require('./s3Client');
-import * as CryptoJS from 'crypto-js';
+import { Buffer } from 'buffer';
 
 const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
@@ -15,23 +14,13 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const [providerEmail, setProviderEmail] = useState<any>('');
   const { fetchAllDoctors, doctorList } = useContext(HealthContext);
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>();
+  const [file, setFile] = useState<File | null | undefined>();
 
   const logouthandler = () => {
     logout?.();
     navigate('/doctorlogin');
   };
 
-  const encrypt = (data: Uint8Array, key: string): Uint8Array => {
-    const encrypted = CryptoJS.AES.encrypt(
-      CryptoJS.enc.Utf8.parse(new TextDecoder().decode(data)),
-      key, {
-      mode: CryptoJS.mode.ECB,
-      padding: CryptoJS.pad.Pkcs7,
-    }).ciphertext;
-    return new Uint8Array(encrypted.words);
-  };
-  
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files ? event.target.files[0] : null;
     setFile(selectedFile);
@@ -39,76 +28,38 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 
   const handleVerificationRequest = async () => {
     try {
-      await handleRaiseRequest?.(user!.name, file!.name, providerId);
-      if (file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const encryptedFile = encrypt(new Uint8Array(arrayBuffer), file.name+'-'+user?.name);
-        setFile(new File([encryptedFile], file.name, { type: file.type }));
-        const params = {
-          Bucket: process.env.REACT_APP_BUCKET_NAME,
-          Key: file.name+"-"+user?.name,
-          Body: encryptedFile.buffer,
-          ACL: 'public-read'
-        };
-        s3.upload(params, (err: any, data: any) => {
-          if (err) {
-            console.error(err);
-          } else {
-            console.log('File uploaded successfully.'+ data.Location);
-          }
-        });
-        sendRequestEmail(providerEmail);
+      if (!file) {
+        console.error("File is undefined.");
+        return undefined;
       }
+      await handleRaiseRequest?.(user!.name, file!.name, providerId);
+      
+      uploadFileToS3(file, file!.name, user!.name)
+  
+      sendRequestEmail(providerEmail);
     } catch (err) {
       console.log(err);
     }
   };
 
-  useEffect(() => {
-    (() => {
-      fetchHealthCareProviders?.();
-    })();
-  }, []);
-
-  const appointmentHandler = () => {
-    navigate('/doctorappointments');
-  };
-
-  const _renderAppointmentSection = () => {
-    return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
-        <button
-          onClick={() => appointmentHandler()}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
-        >
-          Appointments
-        </button>
-      </div>
-    );
-  };
-  const _renderManageScheduleSection = () => {
-    return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
-        <button
-          onClick={() => navigate('/manageschedule')}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
-        >
-          Manage Schedule
-        </button>
-      </div>
-    );
-  };
-  const _renderUpdateProfileSection = () => {
-    return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
-        <button
-          onClick={() => navigate('/update-profile')}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
-        >
-          Register with Health Care
-        </button>
-      </div>
-    );
+  const uploadFileToS3 = async (file: File | undefined, filename: string, username: string) => {
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', filename);
+      formData.append('userName', username);
+  
+      try {
+        await axios.post('/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        console.log('File uploaded successfully');
+      } catch (error) {
+        console.error('Failed to upload file:', error);
+      }
+    }
   };
 
   const ses = new AWS.SES({
@@ -195,6 +146,54 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     });
   }
 
+  useEffect(() => {
+    (() => {
+      fetchHealthCareProviders?.();
+    })();
+  }, []);
+
+  const appointmentHandler = () => {
+    navigate('/doctorappointments');
+  };
+
+  const _renderAppointmentSection = () => {
+    return (
+      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+        <button
+          onClick={() => appointmentHandler()}
+          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+        >
+          Appointments
+        </button>
+      </div>
+    );
+  };
+  const _renderManageScheduleSection = () => {
+    return (
+      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+        <button
+          onClick={() => navigate('/manageschedule')}
+          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+        >
+          Manage Schedule
+        </button>
+      </div>
+    );
+  };
+  const _renderUpdateProfileSection = () => {
+    return (
+      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+        <button
+          onClick={() => navigate('/update-profile')}
+          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+        >
+          Register with Health Care
+        </button>
+      </div>
+    );
+  };
+
+  
   return (
     <div className='flex flex-col justify-center h-screen'>
       <div className='flex flex-row space-x-6'>

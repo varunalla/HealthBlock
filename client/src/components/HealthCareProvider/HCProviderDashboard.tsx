@@ -1,25 +1,22 @@
-import React, { FunctionComponent, useContext, useEffect } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
-import * as CryptoJS from 'crypto-js';
-const s3 = require('./s3Client');
-import { StringifyOptions } from 'querystring';
-const AWS = require('aws-sdk');
 
 const HCProviderDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { user, role, logout } = useContext(AuthContext);
-  const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests } =
+  const [providerId, setProviderId] = useState<any>('');
+  const { handleApproveRequest, handleRejectRequest, verificationRequests, fetchRequests, fetchHealthCareProviderContract } =
     useContext(HealthContext);
-
+ 
   const logouthandler = () => {
     logout?.();
     navigate('/hcproviderlogin');
   };
   const approveRequest = async (requestId: number) => {
     try {
-      await handleApproveRequest?.(requestId);
+      await handleApproveRequest?.(requestId, providerId);
     } catch (err) {
       console.log(err);
     }
@@ -27,45 +24,38 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
 
   const rejectRequest = async (requestId: number) => {
     try {
-      await handleRejectRequest?.(requestId);
+      await handleRejectRequest?.(requestId, providerId);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const decrypt = (data: Uint8Array, key: string): Uint8Array => {
-    const cipherParams = CryptoJS.lib.CipherParams.create({
-      ciphertext: CryptoJS.lib.WordArray.create(Array.from(data)),
-    });
-    const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
-      mode: CryptoJS.mode.ECB,
-      padding: CryptoJS.pad.Pkcs7,
-    });
-    return new Uint8Array(decrypted.words);
-  };
-  
-
-  const downloadFile = async (fileName ?: string, doctorName ?: string) => {
-    if (!fileName) {
-      throw new Error('File name is required');
-    }
-
-    if(!doctorName) {
-      throw new Error('Doctor name is required')
-    }
-  
+  const downloadFile = async (filename?: string, doctorname?: string) => {
     try {
-      const params = {
-        Bucket: process.env.REACT_APP_BUCKET_NAME,
-        Key: fileName+'-'+doctorName,
+      if (!filename) {
+        throw new Error('File name is required');
+      }
+    
+      if (!doctorname) {
+        throw new Error('Doctor name is required');
+      }
+      const body = {
+        fileName: filename,
+        userName: doctorname,
       };
-      const { Body } = await s3.getObject(params).promise();
-      const decryptedFile = decrypt(new Uint8Array(Body as ArrayBuffer), fileName+'-'+doctorName);
-      const blob = new Blob([decryptedFile], { type: "application/pdf"});
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const buffer = await resp.arrayBuffer();
+      const blob = new Blob([buffer], { type: 'application/pdf' });
+      console.log("blob", buffer)
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -75,8 +65,13 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   };
 
   useEffect(() => {
-    (() => {
-      fetchRequests?.();
+    (async () => {
+      const userinfo =  await fetchHealthCareProviderContract?.();
+      if(userinfo!== undefined) {
+        const id = await userinfo.id
+        setProviderId(id);
+        fetchRequests?.(id);
+      }
     })();
   }, []);
 

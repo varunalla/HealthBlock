@@ -64,23 +64,23 @@ contract HealthBlock {
         emit DoctorRequestRaised(msg.sender, doctorName, fileName);
     }
 
-    function getRequests() public view returns(Request[] memory) {
-        require(msg.sender == owner, "Only owner can call this function");
-        return doctorRequests[owner];
+    function getRequests(address hcpAddress) public view returns(Request[] memory) {
+        require(msg.sender == hcpAddress, "Only health care provider can call this function");
+        return doctorRequests[hcpAddress];
     }
 
-    function rejectRequest(uint256 requestId) public {
-        require(msg.sender == owner, "Only owner can call this function");
-        Request storage request = doctorRequests[owner][requestId];
+    function rejectRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only owner can call this function");
+        Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "rejected";
-        emit RequestRejected(request.doctor, owner, requestId);
+        emit RequestRejected(request.doctor, hcpAddress, requestId);
     }
 
-    function approveRequest(uint256 requestId) public {
-        require(msg.sender == owner, "Only owner can call this function");
-        Request storage request = doctorRequests[owner][requestId];
+    function approveRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only owner can call this function");
+        Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "approved";
-        emit RequestApproved(request.doctor, owner, requestId);
+        emit RequestApproved(request.doctor, hcpAddress, requestId);
     }
 
     // event for EVM logging
@@ -88,8 +88,8 @@ contract HealthBlock {
     event NDoctor(address indexed _from, string indexed _name);
     event NHCProvider(address indexed _from, string indexed _name);
     mapping (address => patient) public patients;
-    mapping (address => doctor) internal doctors;
-    mapping (address => hcprovider) internal hcproviders;
+    mapping (address => doctor) public doctors;
+    mapping (address => hcprovider) public hcproviders;
     hcprovider[] public providerList;
 
     modifier checkHealthCareProvider(address id) {
@@ -161,9 +161,9 @@ contract HealthBlock {
         return providerList;
     }
 
-    function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory) {
+    function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory, address) {
             hcprovider storage h = hcproviders[msg.sender];
-            return (h.name, h.email, h.providerAddress, h.phone);
+            return (h.name, h.email, h.providerAddress, h.phone, h.id);
     }
 
     function getHCProviderInfoAll(address _address) public view returns(string memory, string memory, string memory, string memory) {

@@ -17,4 +17,4 @@ function createSESClient(region, accessKeyId, secretAccessKey) {
   };
   return new AWS.SES(config);
 }
-module.exports = { createDynamoDBClient, createSESClient };
+module.exports = { createDynamoDBClient, createSESClient};
