@@ -16,6 +16,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   };
   const approveRequest = async (requestId: number) => {
     try {
+      console.log("req id", requestId);
+      console.log("providerid", providerId);
       await handleApproveRequest?.(requestId, providerId);
     } catch (err) {
       console.log(err);
@@ -24,6 +26,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
 
   const rejectRequest = async (requestId: number) => {
     try {
+      console.log("req id", requestId);
+      console.log("providerid", providerId);
       await handleRejectRequest?.(requestId, providerId);
     } catch (err) {
       console.log(err);
@@ -194,10 +198,12 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
   useEffect(() => {
     (async () => {
       const userinfo =  await fetchHealthCareProviderContract?.();
+      console.log(userinfo!.id)
       if(userinfo!== undefined) {
-        const id = await userinfo.id
-        setProviderId(id);
-        fetchRequests?.(id);
+        const id = userinfo.id
+        console.log("id", id)
+         setProviderId(id);
+         fetchRequests?.(id);
       }
     })();
   }, []);

@@ -3,8 +3,6 @@ import random
 from flask import Flask, request, jsonify
 from umbral import Capsule, PublicKey, SecretKey, Signer, VerifiedCapsuleFrag, VerifiedKeyFrag, decrypt_original, encrypt, generate_kfrags, reencrypt, decrypt_reencrypted
 from Crypto.Cipher import AES
-#from Crypto.Random import get_random_bytes
-
 
 app = Flask(__name__)
 

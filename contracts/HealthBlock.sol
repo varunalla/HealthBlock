@@ -71,16 +71,19 @@ contract HealthBlock {
     }
 
     function getRequests(address hcpAddress) public view returns(Request[] memory) {
+        require(msg.sender == hcpAddress, "Only Health Care Provider can call this function");
         return doctorRequests[hcpAddress];
     }
 
     function rejectRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only Health Care Provider can call this function");
         Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "rejected";
         emit RequestRejected(request.doctor, hcpAddress, requestId);
     }
 
     function approveRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only Health Care Provider  can call this function");
         Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "approved";
         emit RequestApproved(request.doctor, hcpAddress, requestId);

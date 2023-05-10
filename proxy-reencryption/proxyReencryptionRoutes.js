@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-
+require("dotenv").config();
+const pythonHost = process.env.PYTHON_HOST;
 
 router.get('/keys', async (req, res) => {
   console.log("/keys api is called")
   try {
-    const response = await axios.get('http://127.0.0.1:5001/keys', {
+    const response = await axios.get(pythonHost+'/keys', {
     headers: {
         'Content-Type': 'application/json'
       }
@@ -24,9 +25,10 @@ router.get('/keys', async (req, res) => {
 });
 
 router.post('/encrypt', async (req, res) => {
+    console.log("pythonhost", pythonHost);
   const { aesKey, private_key, public_key, signing_key } = req.body;
   try {
-    const response = await axios.post('http://127.0.0.1:5001/encrypt', {
+    const response = await axios.post(pythonHost+'/encrypt', {
       aesKey,
       private_key,
       public_key,
@@ -43,7 +45,7 @@ router.post('/reencrypt', async (req, res) => {
   const { capsule, private_key, public_key, signing_key } = req.body;
   try {
     console.log("public_key:",public_key)
-    const response = await axios.post('http://127.0.0.1:5001/reencrypt', {
+    const response = await axios.post(pythonHost+'/reencrypt', {
       capsule:capsule,
       private_key:private_key,
       public_key:public_key,
@@ -61,7 +63,7 @@ router.post('/decryptReencrypt', async (req, res) => {
 
   try {
     // const cfrags_verified = cfrags.map(cfrag => VerifiedCapsuleFrag.fromVerifiedBytes(Buffer.from(cfrag, 'base64')));
-    const response = await axios.post('http://127.0.0.1:5001/decryptReencrypt', {
+    const response = await axios.post(pythonHost+'/decryptReencrypt', {
       private_key: private_key,
       public_key: public_key,
       capsule: capsule,

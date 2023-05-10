@@ -77,6 +77,9 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         return undefined;
       }
 
+      await handleRaiseRequest?.(user!.name, file!.name, providerId);
+      uploadEncryptedFileToS3(file, file!.name, user!.name)
+
       const keys = await checkDoctorKeys(user!.name);
       console.log(keys);
 
@@ -135,22 +138,18 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         key: `hcprovider_${hcProvider}`,
         data: cfragsBuffer,
       };
-      await handleRaiseRequest?.(user!.name, file!.name, providerId);
-      uploadEncryptedFileToS3(file, file!.name, user!.name)
 
-      const r1 = await fetch('/s3upload', {
+      await fetch('/s3upload', {
         method: 'POST',
         body: JSON.stringify(params_encrypt),
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log("r1", r1);
 
-      const r2 = await fetch('/s3upload', {
+      await fetch('/s3upload', {
         method: 'POST',
         body: JSON.stringify(params_reencrypt),
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log("r2", r2);
 
     } catch (err) {
       console.log(err);

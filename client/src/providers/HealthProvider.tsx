@@ -233,6 +233,20 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
   };
 
+  const fetchHealthCareProviderContract = async () => {
+    try {
+      const web3modal = new Web3Modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      const contract: HealthBlock = fetchContract(signer);
+      const [name,  email, providerAddress, phone, id] = await contract.getHCProviderInfo();
+      return { name, email, providerAddress, phone, id } as hcProvider;
+    } catch (err) {
+      throw(`Error Loading Health Contract ${err}`);
+    }
+  };
+
   const registerHCProviderHealthBlockContract = async (
     name: string,
     email: string,
@@ -281,6 +295,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const signer = provider.getSigner();
       const contract = await fetchContract(signer);
       if (hcpId !== null) {
+        console.log("hcp");
         const tx = await contract.approveRequest(requestId, hcpId);
         await tx.wait();
         fetchRequests(hcpId);
@@ -537,8 +552,6 @@ const fetchPatientProviderRequests = async () => {
         healthBlockContract,
         registerHealthBlockContract,
         fetchPatientContract,
-        fetchDoctorContract,
-        fetchHealthCareProviderContract,
         fetchPatientInfoContract,
         registerDoctorHealthBlockContract,
         registerHCProviderHealthBlockContract,
@@ -555,6 +568,7 @@ const fetchPatientProviderRequests = async () => {
         fetchPatients,
         fetchProviders,
         approveProviderPatientRequest,
+        fetchHealthCareProviderContract,
         rejectProviderPatientRequest,
         fetchAllDoctors,
         doctorList,

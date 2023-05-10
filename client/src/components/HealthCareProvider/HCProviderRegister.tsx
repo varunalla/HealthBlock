@@ -49,31 +49,26 @@ const HCProviderRegister: FunctionComponent<{}> = ({}) => {
 
   const registerHCProvider = async () => {
     try {
-      const user = await fetchHealthCareProviderContract?.();
-      if (!user?.email) {
-        toast('HealthCare Provider Registration Initiated!');
+      // const user = await fetchHealthCareProviderContract?.();
+      // if (!user?.email) {
+      //   toast('HealthCare Provider Registration Initiated!');
         await registerHCProviderHealthBlockContract?.(name, email, address, phone);
-        toast('HealthCare Provider Created');
-      } else {
-        toast.error('User already present', {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-        });
-      }
+      //   toast('HealthCare Provider Created');
+      // } else {
+      //   toast.error('User already present', {
+      //     position: 'top-right',
+      //     autoClose: 5000,
+      //     hideProgressBar: false,
+      //     closeOnClick: true,
+      //     pauseOnHover: true,
+      //     draggable: true,
+      //     progress: undefined,
+      //     theme: 'colored',
+      //   });
+      // }
     } catch (err) {
       toast.error('Error Registering HealthCare Provider, please try after sometime!');
       console.log('Register Error', err);
-    }
-    try {
-      await registerHCProviderHealthBlockContract?.(name, email, address, phone);
-    } catch (err) {
-      console.log(err);
     }
   };
   return (
