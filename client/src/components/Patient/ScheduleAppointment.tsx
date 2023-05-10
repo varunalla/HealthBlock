@@ -20,11 +20,13 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
 
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, doctorList, handleRaiseRequest } = useContext(HealthContext);
+  const { fetchAllDoctors, doctorList, handleRaiseRequest, currentAccount } =
+    useContext(HealthContext);
   const [appt_date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [time, setTime] = useState('10:00 AM');
   const [reason, setReason] = useState('');
   const [time_slots, setTimeSlots] = useState([]);
+  const [doctorAddress, setDoctorAddress] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<Appointment>({
     doctor_name: '',
     doctor_email: '',
@@ -40,7 +42,8 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
     let resp = await fetch('GET', '/availability/' + `${doc_email}` + `/${appt_date}`);
 
     if (resp && resp.data && resp.data.result) {
-      setTimeSlots(resp.data.result);
+      setTimeSlots(resp.data.result.availability_time);
+      setDoctorAddress(resp.data.result.doctor_address);
     } else {
       setTimeSlots([]);
     }
@@ -55,6 +58,8 @@ const ScheduleAppointment: FunctionComponent<{}> = () => {
       appointmentDate: appt_date,
       appointmentTime: time,
       status: 'pending',
+      doctorAddress: doctorAddress,
+      patientAddress: currentAccount,
     };
     let resp = await fetch('POST', '/appointments', body);
 

@@ -11,6 +11,7 @@ const {
   postAvailability,
 } = require("../utils/queries");
 const uuid = require("uuid");
+const { verifyEmail, sendEmail } = require("../utils/ses");
 
 module.exports = (app) => {
   app.get("/provider/:hcprovider/doctors", verify_token, async (req, res) => {
@@ -47,6 +48,8 @@ module.exports = (app) => {
       created_at: req.body.appointmentDate,
       appointment_time: req.body.appointmentTime,
       appointment_status: req.body.status,
+      doctor_address: req.body.doctorAddress,
+      patient_address: req.body.patientAddress,
     };
     try {
       let result = await postAppointments(appointment);
@@ -102,20 +105,38 @@ module.exports = (app) => {
       }
     }
   );
-  app.post("/availability/:doctor", verify_token, async (req, res) => {
-    let success = true;
+  app.post(
+    "/availability/:doctor/:doctorAddress",
+    verify_token,
+    async (req, res) => {
+      let success = true;
 
-    for (const [date, time] of Object.entries(req.body)) {
-      try {
-        await postAvailability(date, time, req.params.doctor);
-      } catch (err) {
-        success = false;
+      for (const [date, time] of Object.entries(req.body)) {
+        try {
+          await postAvailability(
+            date,
+            time,
+            req.params.doctor,
+            req.params.doctorAddress
+          );
+        } catch (err) {
+          success = false;
+        }
       }
       if (success) {
         res.status(204).send({ success: true, msg: "Insert successful" });
       } else {
         res.status(500).send({ success: false, msg: "Insert unsuccessful" });
       }
+    }
+  );
+
+  app.post("/verify_emails", async (req, res) => {
+    let email = req.body.email;
+    try {
+      await verifyEmail(email);
+    } catch (err) {
+      console.log("err-->", err);
     }
   });
 };

@@ -3,6 +3,7 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import moment from 'moment';
 import { useAuthFetch } from '../../hooks/api';
 import { AuthContext } from '../../providers/AuthProvider';
+import { HealthContext } from '../../providers/HealthProvider';
 
 type Schedule = {
   [day: string]: { startTime: string; endTime: string };
@@ -14,6 +15,7 @@ type Schedule1 = {
 const ManageSchedule: FunctionComponent<{}> = () => {
   const [daysOfTheweek, setDaysOfWeek] = useState<String[]>([]);
   const { user } = useContext(AuthContext);
+  const { currentAccount } = useContext(HealthContext);
   let opt = [
     '9:00 AM',
     '10:00 AM',
@@ -38,7 +40,7 @@ const ManageSchedule: FunctionComponent<{}> = () => {
       datesUntilSaturday.push(moment(currentDate).format('YYYY-MM-DD'));
       currentDate = moment(currentDate).add(1, 'day');
     }
-    console.log('dates-->', datesUntilSaturday);
+
     setDaysOfWeek(datesUntilSaturday);
 
     return datesUntilSaturday;
@@ -63,7 +65,6 @@ const ManageSchedule: FunctionComponent<{}> = () => {
       const date = moment(dateStr);
       const timeSlots = [];
 
-      // loop through each hour between start and end times
       for (
         let time = moment(startTime, 'h:mm A');
         time.isSameOrBefore(moment(endTime, 'h:mm A'));
@@ -75,7 +76,11 @@ const ManageSchedule: FunctionComponent<{}> = () => {
       // assign the time slots array to the date in the schedule object
       schedule1[dateStr] = timeSlots;
     }
-    let resp = await fetch('POST', '/availability/' + user?.email, schedule1);
+    let resp = await fetch(
+      'POST',
+      '/availability/' + user?.email + `/${currentAccount}`,
+      schedule1,
+    );
     if (resp && resp.status == 204) {
       alert('Schedule created');
     } else {
@@ -108,6 +113,9 @@ const ManageSchedule: FunctionComponent<{}> = () => {
                   >
                     {' '}
                     Start Time
+                    <option value='' disabled selected>
+                      Select a start time
+                    </option>
                     {opt.map((time) => {
                       return <option value={time}>{time}</option>;
                     })}
@@ -119,6 +127,9 @@ const ManageSchedule: FunctionComponent<{}> = () => {
                   >
                     {' '}
                     End time
+                    <option value='' disabled selected>
+                      Select an end time
+                    </option>
                     {opt.map((time) => {
                       return <option value={time}>{time}</option>;
                     })}

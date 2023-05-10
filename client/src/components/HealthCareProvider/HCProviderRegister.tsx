@@ -1,18 +1,74 @@
+import axios from 'axios';
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { HealthContext } from '../../providers/HealthProvider';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const HCProviderRegister: FunctionComponent<{}> = ({}) => {
-  const { currentAccount, registerHCProviderHealthBlockContract } = useContext(HealthContext);
+  const { currentAccount, 
+          healthBlockContract,
+          fetchHealthCareProviderContract,
+          registerHCProviderHealthBlockContract } = useContext(HealthContext);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
 
+  const generateKeys = async () => {
+    try {
+      const response = await axios.get('/proxy-reencryption/keys', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = response.data;
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };  
+  const uploadHCPKeysToS3 = async (Keys: any, Name: string) => {
+    try {
+      const Buffer = require('buffer').Buffer;
+      const keysString = JSON.stringify(Keys);
+      const params = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `hcprovider_${Name}`,
+        data: Buffer.from(keysString)
+      };
+      console.log(params);
+      await fetch('/s3upload', {
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log('Error uploading HC provider Keys:', err);
+    } };
+
   const registerHCProvider = async () => {
     try {
-      await registerHCProviderHealthBlockContract?.(name, email, address, phone);
+      // const user = await fetchHealthCareProviderContract?.();
+      // if (!user?.email) {
+      //   toast('HealthCare Provider Registration Initiated!');
+        await registerHCProviderHealthBlockContract?.(name, email, address, phone);
+      //   toast('HealthCare Provider Created');
+      // } else {
+      //   toast.error('User already present', {
+      //     position: 'top-right',
+      //     autoClose: 5000,
+      //     hideProgressBar: false,
+      //     closeOnClick: true,
+      //     pauseOnHover: true,
+      //     draggable: true,
+      //     progress: undefined,
+      //     theme: 'colored',
+      //   });
+      // }
     } catch (err) {
-      console.log(err);
+      toast.error('Error Registering HealthCare Provider, please try after sometime!');
+      console.log('Register Error', err);
     }
   };
   return (
@@ -84,7 +140,10 @@ const HCProviderRegister: FunctionComponent<{}> = ({}) => {
       <div className='md:flex md:items-center mb-6'>
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-          onClick={() => registerHCProvider()}
+          onClick={async() => {
+            let Keys= await generateKeys();
+            await registerHCProvider();
+           await uploadHCPKeysToS3(Keys, name);}}
         >
           Register HealthCare Provider
         </button>

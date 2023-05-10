@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hc_address } from '../../config/hc_constants';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 
