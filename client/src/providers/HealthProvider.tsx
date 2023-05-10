@@ -227,10 +227,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     patientEmail: string,
   ) => {
       try {
-        console.log("patientAddress",patientAddress);
-        console.log("patientName",patientName);
-        console.log("docEmail",docEmail);
-        console.log("patientEmail",patientEmail);
         const web3modal = new Web3Modal();
         const connection = await web3modal.connect();
         const provider = new ethers.providers.Web3Provider(connection);

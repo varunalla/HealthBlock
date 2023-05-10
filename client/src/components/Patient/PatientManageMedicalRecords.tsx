@@ -1,8 +1,6 @@
 import React, { FunctionComponent, useContext, useState ,useEffect} from 'react';
-import ReactPaginate from 'react-paginate';
 import { HealthContext } from '../../providers/HealthProvider';
 import { AuthContext } from '../../providers/AuthProvider';
-import AWS from 'aws-sdk';
 
 const PatientManageMedicalRecords: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
