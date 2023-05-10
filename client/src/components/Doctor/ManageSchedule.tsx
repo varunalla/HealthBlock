@@ -65,7 +65,6 @@ const ManageSchedule: FunctionComponent<{}> = () => {
       const date = moment(dateStr);
       const timeSlots = [];
 
-      // loop through each hour between start and end times
       for (
         let time = moment(startTime, 'h:mm A');
         time.isSameOrBefore(moment(endTime, 'h:mm A'));
@@ -114,6 +113,9 @@ const ManageSchedule: FunctionComponent<{}> = () => {
                   >
                     {' '}
                     Start Time
+                    <option value='' disabled selected>
+                      Select a start time
+                    </option>
                     {opt.map((time) => {
                       return <option value={time}>{time}</option>;
                     })}
@@ -125,6 +127,9 @@ const ManageSchedule: FunctionComponent<{}> = () => {
                   >
                     {' '}
                     End time
+                    <option value='' disabled selected>
+                      Select an end time
+                    </option>
                     {opt.map((time) => {
                       return <option value={time}>{time}</option>;
                     })}

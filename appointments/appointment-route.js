@@ -106,11 +106,11 @@ module.exports = (app) => {
         } catch (err) {
           success = false;
         }
-        if (success) {
-          res.status(204).send({ success: true, msg: "Insert successful" });
-        } else {
-          res.status(500).send({ success: false, msg: "Insert unsuccessful" });
-        }
+      }
+      if (success) {
+        res.status(204).send({ success: true, msg: "Insert successful" });
+      } else {
+        res.status(500).send({ success: false, msg: "Insert unsuccessful" });
       }
     }
   );
