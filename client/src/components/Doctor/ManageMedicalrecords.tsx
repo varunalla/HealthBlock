@@ -20,10 +20,9 @@ interface AppointmentDetails {
 
 const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
-  
-  const [confirmedAppointmentData, setConfirmedAppointmentData] = useState<AppointmentDetails[]>(
-    [],
-  );
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDetails | null>(null);
+  //const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDetails[]>([]);
+  const [confirmedAppointmentData, setConfirmedAppointmentData] = useState<AppointmentDetails[]>([], );
   const[foundFile,setFoundFile]=useState<Boolean>(false);
   const { requestMedicalRecordHealthBlockContract } = useContext(HealthContext);
   const [currentPage, setCurrentPage] = useState(1);
@@ -250,11 +249,6 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
       console.log(err);
     }
   };
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files !== null) {
-      setSelectedFile(event.target.files[0]);
-    }
-  };
   const toggleUploadPopup = () => {
     setShowUploadPopup(!showUploadPopup);
   };
@@ -362,7 +356,11 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                         <button
                           id='request-btn'
                           className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'
-                          onClick={toggleRequestPopup}
+                          
+                          onClick={() => {
+                            setSelectedAppointment(appointment);
+                            toggleRequestPopup();
+                          }}
                         >
                           Request
                         </button>
@@ -403,7 +401,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                                       <p className='text-sm leading-5 text-gray-500'>
                                         You are requesting medical records from{' '}
                                         <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {appointment.patient_name}
+                                          {selectedAppointment!.patient_name}
                                         </span>
                                       </p>
                                     </div>

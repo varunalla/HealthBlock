@@ -7,6 +7,7 @@
     const { user, role, logout } = useContext(AuthContext);
     const { getAllRequestsForPatient,approveMedicalRecordsRequestHealthBlockContract,rejectMedicalRecordsRequestHealthBlockContract, currentAccount} = useContext(HealthContext);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedRequest, setSelectedRequest] = useState<any>([]);
     const[medicalRecordRequests,setMedicalRecordRequests]=useState<any>([]);
     const [filterOption, setFilterOption] = useState<string>('all');
     const [showDeclinePopup, setShowDeclinePopup] = useState(false);
@@ -285,7 +286,10 @@
                           <button
                             id='request-btn'
                             className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'
-                            onClick={toggleAcceptPopup}
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              toggleAcceptPopup();
+                            }}
                           >
                             Accept
                           </button>
@@ -332,7 +336,7 @@
                                         <p className='text-sm leading-5 text-gray-500'>
                                           You are declining the medical record request to{' '}
                                           <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                            {request.docEmail}
+                                            {selectedRequest.docEmail}
                                           </span>
                                         </p>
                                       </div>
@@ -404,7 +408,7 @@
                                           You are uploading your medical
                                           records for Doctor{' '}
                                           <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                            {request.docEmail}
+                                            {selectedRequest.docEmail}
                                           </span>
                                         </p>
                                         <div className='mt-2'>
@@ -443,8 +447,8 @@
                                         className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5'
                                         onClick={() => {
                                           toggleAcceptPopup();
-                                          approveRequest(request.requestId, request.docEmail)
-                                          uploadEncryptedFileToS3(selectedFile, request.requestId, user!.name)
+                                          approveRequest(selectedRequest.requestId, selectedRequest.docEmail)
+                                          uploadEncryptedFileToS3(selectedFile, selectedRequest.requestId, user!.name)
                                           //handleAccept(request.docEmail);
                                         }}
                                       >
