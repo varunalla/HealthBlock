@@ -40,13 +40,12 @@ contract HealthBlock {
     struct Request {
         address doctor;
         string doctorName;
-        string credentialsHash;
+        string fileName;
         string status;
     }
     mapping(address => Request[]) private doctorRequests;
     mapping(address => doctor[]) public providerToDoctors;
     mapping(address => DoctorToProviderRequest[]) public providerToDoctorRequests;
-    hcprovider[] public providerList;
 
    /*
     * @dev Set contract deployer as owner
@@ -60,34 +59,34 @@ contract HealthBlock {
         _;
     }
 
-    function raiseRequest(string memory doctorName, string memory credentialsHash) public {
+    function raiseRequest(string memory doctorName, string memory fileName, address hcpAddress) public {
         Request memory request = Request({
             doctor: msg.sender,
             doctorName: doctorName,
-            credentialsHash: credentialsHash,
+            fileName: fileName,
             status: "pending"
         });
-        doctorRequests[owner].push(request);
-        emit DoctorRequestRaised(msg.sender, doctorName, credentialsHash);
+        doctorRequests[hcpAddress].push(request);
+        emit DoctorRequestRaised(msg.sender, doctorName, fileName);
     }
 
-    function getRequests() public view returns(Request[] memory) {
-        require(msg.sender == owner, "Only owner can call this function");
-        return doctorRequests[owner];
+    function getRequests(address hcpAddress) public view returns(Request[] memory) {
+        require(msg.sender == hcpAddress, "Only Health Care Provider can call this function");
+        return doctorRequests[hcpAddress];
     }
 
-    function rejectRequest(uint256 requestId) public {
-        require(msg.sender == owner, "Only owner can call this function");
-        Request storage request = doctorRequests[owner][requestId];
+    function rejectRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only Health Care Provider can call this function");
+        Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "rejected";
-        emit RequestRejected(request.doctor, owner, requestId);
+        emit RequestRejected(request.doctor, hcpAddress, requestId);
     }
 
-    function approveRequest(uint256 requestId) public {
-        require(msg.sender == owner, "Only owner can call this function");
-        Request storage request = doctorRequests[owner][requestId];
+    function approveRequest(uint256 requestId, address hcpAddress) public {
+        require(msg.sender == hcpAddress, "Only Health Care Provider  can call this function");
+        Request storage request = doctorRequests[hcpAddress][requestId];
         request.status = "approved";
-        emit RequestApproved(request.doctor, owner, requestId);
+        emit RequestApproved(request.doctor, hcpAddress, requestId);
     }
 
     // event for EVM logging
@@ -95,9 +94,9 @@ contract HealthBlock {
     event NDoctor(address indexed _from, string indexed _name);
     event NHCProvider(address indexed _from, string indexed _name);
     mapping (address => patient) public patients;
-    mapping (address => doctor) internal doctors;
-    mapping (address => hcprovider) internal hcproviders;
-   
+    mapping (address => doctor) public doctors;
+    mapping (address => hcprovider) public hcproviders;
+    hcprovider[] public providerList;
 
     modifier checkHealthCareProvider(address id) {
         hcprovider storage h = hcproviders[id];
@@ -110,11 +109,13 @@ contract HealthBlock {
         require(d.id > address(0x0));//check if doctor exists
         _;
     }
+
     modifier checkPatient(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
         _;
     }
+
     modifier checkRequests(address id) {
         patient storage p = patients[id];
         require(p.id > address(0x0));//check if patient exist
@@ -125,10 +126,12 @@ contract HealthBlock {
         patient storage p = patients[msg.sender];
         return (p.name, p.age, p.email);
     }  
+
     function getPatientInfoAll(address _address) public view returns(string memory, uint8, string memory) {
         patient storage p = patients[_address];
         return (p.name, p.age, p.email);
     }
+
     function registerPatient(string memory _name, uint8 _age,string memory _email) public {
         //patient storage p = patients[msg.sender];
         require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
@@ -137,14 +140,17 @@ contract HealthBlock {
         patients[msg.sender] = patient({name:_name,age:_age,id:msg.sender,email:_email});
         emit NPatient(msg.sender, _name);
     }
+
     function getDoctorInfo() public view checkDoctor(msg.sender) returns(string memory, uint8,string memory, string memory) {
         doctor storage d = doctors[msg.sender];
         return (d.name, d.age, d.email, d.specialization);
     }
+
     function getDoctorInfoAll(address _address) public view returns(string memory, uint8,string memory, string memory) {
         doctor storage d = doctors[_address];
         return (d.name, d.age, d.email, d.specialization);
     }
+
     function registerDoctor(string memory _name, uint8 _age,string memory _email, string memory _specialization) public {
         doctor storage d = doctors[msg.sender];
         require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
@@ -157,14 +163,20 @@ contract HealthBlock {
         emit NPatient(msg.sender, _name);
     } 
 
-    function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory) {
-            hcprovider storage h = hcproviders[msg.sender];
-            return (h.name, h.email, h.providerAddress, h.phone);
+    function getAllProviders() public view returns (hcprovider[] memory) {
+        return providerList;
     }
+
+    function getHCProviderInfo() public view checkHealthCareProvider(msg.sender) returns(string memory, string memory, string memory,  string memory, address) {
+            hcprovider storage h = hcproviders[msg.sender];
+            return (h.name, h.email, h.providerAddress, h.phone, h.id);
+    }
+
     function getHCProviderInfoAll(address _address) public view returns(string memory, string memory, string memory, string memory) {
         hcprovider storage h = hcproviders[_address];
         return (h.name, h.email, h.providerAddress, h.phone);
     }
+
     function registerHCProvider(string memory _name, string memory _email, string memory _address, string memory _phone) public {
             hcprovider storage h = hcproviders[msg.sender];
             require(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")));
@@ -173,10 +185,14 @@ contract HealthBlock {
             require(keccak256(abi.encodePacked(_phone)) != keccak256(abi.encodePacked("")));
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
-             providerList.push(hcproviders[msg.sender]);
+            providerList.push(hcproviders[msg.sender]);
     } 
     
-     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public {
+    function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+        return providerToDoctors[providerAddress];
+    }
+    
+     function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public{
         doctor storage d = doctors[_doctorAddress];
         uint8 idx =0;
         for(uint8 i =0;i< providerToDoctorRequests[_providerAddress].length;i++){
@@ -214,11 +230,5 @@ contract HealthBlock {
     function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
             return providerToDoctorRequests[_hcaddress];
     }
-      function getAllProviders() public view returns (hcprovider[] memory) {
-        return providerList;
-    }
-function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
-    return providerToDoctors[providerAddress];
-}
 
 }

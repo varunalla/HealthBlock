@@ -14,9 +14,14 @@ app.use(
     extended: false,
   })
 );
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static("client/build"));
+
+app.use('/proxy-reencryption', require("./proxy-reencryption/proxyReencryptionRoutes"));
 require("./authentication/auth-routes")(app, metaAuth);
 require("./appointments/appointment-route")(app);
+require("./credentials/credentials-route")(app);
 require("./routes/providers")(app);
 require("./routes/patients")(app);
 app.get("*", (req, res) =>
