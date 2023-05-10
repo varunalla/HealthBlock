@@ -130,14 +130,18 @@ app.post('/upload', upload.single('file'), (req, res) => {
     }
   });
 
-  app.post('/s3download', (req, res) => {
+  app.post('/s3download', async (req, res) => {
     try {
       const params = {
         Bucket: req.body.bucket, 
         Key: req.body.key,
       };
-  
-      return s3.getObject(params).promise();
+      const resp = await s3.getObject(params).promise();
+      console.log(resp.Body)
+      return resp.Body;
+      // const data = JSON.parse(resp.Body.toString('utf-8'));
+      // console.log(data)
+      // return data;
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'An error occurred.' });

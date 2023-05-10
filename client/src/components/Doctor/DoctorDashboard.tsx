@@ -35,8 +35,10 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log("keys", resp);
       const Buffer = require('buffer').Buffer;
-      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      const keys = JSON.parse(Buffer.from(resp).toString('utf-8'));
+      console.log("keys", keys);
       return keys;
     } catch (err: any) {
       if (err.code === 'NotFound') {
@@ -61,6 +63,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       });
       const Buffer = require('buffer').Buffer;
       const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      console.log("keys", keys);
       return keys;
     } catch (err: any) {
       if (err.code === 'NotFound') {
@@ -131,7 +134,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       const cfragsBuffer = Buffer.from(JSON.stringify(cfrags), 'utf-8');
 
       const params_encrypt = {
-        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        bucket: process.env.REACT_APP_BUCKET_ENCRYPT,
         key: `doctor_${user!.name}`,
         file: encryptedDataBuffer
       };
