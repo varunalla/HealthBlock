@@ -3,6 +3,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
+import { nanoid } from 'nanoid';
 
 const DoctorDashboard: React.FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
@@ -77,8 +78,15 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         return undefined;
       }
 
+      const keyLength = 32; 
+      const generatedEncryptionKey = nanoid();
+      // Generate encryption random key
+      //const generatedEncryptionKey : string = crypto.randomBytes(32).toString('hex');
+
+      const encryptionKey = user!.name + generatedEncryptionKey;
+
       await handleRaiseRequest?.(user!.name, file!.name, providerId);
-      uploadEncryptedFileToS3(file, file!.name, user!.name)
+      uploadEncryptedFileToS3(file, file!.name, encryptionKey)
 
       const keys = await checkDoctorKeys(user!.name);
       console.log(keys);
@@ -89,7 +97,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        aesKey: user!.name,
+        aesKey: encryptionKey,
         private_key: keys.data.private_key,
         public_key: keys.data.public_key,
         signing_key: keys.data.signing_key

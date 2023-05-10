@@ -61,7 +61,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
           } else {
             console.log('File uploaded successfully. ' + data.Location);
             sendRequestEmail(req.body.providerEmail, key);
-            res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
+            res.status(200).json({ message: 'File uploaded successfully.', location: data.Location});
           }
         });
       });
