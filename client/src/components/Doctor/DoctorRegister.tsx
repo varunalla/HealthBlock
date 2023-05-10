@@ -35,7 +35,7 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       const doctorKeysString = JSON.stringify(Keys);
       const params = {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
-        key: `doctor_${name}`,
+        key: `doctor_${Name}`,
         data: Buffer.from(doctorKeysString)
       };
       console.log("uploaddoctorkeys", params);

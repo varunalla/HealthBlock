@@ -196,10 +196,10 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 
   const _renderAppointmentSection = () => {
     return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-md p-6 flex justify-center w-400 h-300'>
         <button
           onClick={() => appointmentHandler()}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+          className='bg-white text-white-800 py-2 px-6 rounded-full font-medium'
         >
           Appointments
         </button>
@@ -208,10 +208,10 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   };
   const _renderManageScheduleSection = () => {
     return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-md p-6 flex justify-center w-400 h-300'>
         <button
           onClick={() => navigate('/manageschedule')}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+          className='bg-white text-white-800 py-2 px-6 rounded-full font-medium'
         >
           Manage Schedule
         </button>
@@ -220,10 +220,10 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
   };
   const _renderUpdateProfileSection = () => {
     return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-md p-6 flex justify-center w-400 h-300'>
         <button
           onClick={() => navigate('/update-profile')}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
+          className='bg-white text-white-800 py-2 px-6 rounded-full font-medium'
         >
           Register with Health Care
         </button>
@@ -233,20 +233,106 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 
   
   return (
-    <div className='flex flex-col justify-center h-screen'>
-      <div className='flex flex-row space-x-6'>
+    <div className='flex flex-col h-screen p-10'>
+       {/* <button
+          className='mb-4 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+          onClick={() => logouthandler()}
+        >
+          Logout
+        </button> */}
+        {/* <div >
+          Hello {user?.name}
+          <button className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded">
+            Logout
+        </button>
+      </div> */}
+      <div className='flex justify-end items-center h-screen'>
+      <div className='ml-auto mr-4'>
+        <span className='text-gray-600'>Hello, {user?.name}</span>
+        <button className='ml-4 bg-red-500 text-white px-4 py-2 rounded'>
+          Logout
+        </button>
+      </div>
+    </div>
+      <div className='flex flex-row space-x-6 justify-center'>
         {_renderAppointmentSection()}
         {_renderUpdateProfileSection()}
         {_renderManageScheduleSection()}
       </div>
+      <div>
+        <div className='mt-8 w-full max-w-screen-lg mx-auto'>
+          <div className='bg-white border border-gray-300 rounded-lg shadow-md dark:bg-gray-3000 dark:border-gray-2500 w-300 p-4'>
+            <form onSubmit={(e) => e.preventDefault()}>
+            <div className='md:flex md:items-center mb-6'>
+                <div className='md:w-1/3'>
+                  <label
+                    className='block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4'
+                    htmlFor='health-care-provider'
+                  >
+                    HealthCare Provider
+                  </label>
+                </div>
+                <div className='md:w-1/2'>
+                  <select
+                    className='bg-gray-200 appearance-none border border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500'
+                    id='health-care-provider'
+                    value={hcProvider}
+                    onChange={(e) => {
+                      const selectedProviderName = e.target.value;
+                      const selectedProvider = providers && providers.find(provider => provider.name === selectedProviderName);
+                      const hcpId = selectedProvider ? selectedProvider.id : '';
+                      const hcpEmail = selectedProvider ? selectedProvider.email : '';
+                      setHCProvider(e.target.value);
+                      setProviderId(hcpId);
+                      setProviderEmail(hcpEmail);
+                    }}
+                  >
+                    <option value=''>Select a provider</option>
+                    {providers && providers.map(provider => (
+                      <option key={provider.email} value={provider.name}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className='md:flex md:items-center mb-6'>
+                <div className='md:w-1/3'>
+                  <label
+                    className='block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4'
+                    htmlFor='file'
+                  >
+                    File Upload
+                  </label>
+                </div>
+                <div className='md:w-1/2'>
+                  <input
+                    type='file'
+                    id='file'
+                    name='file'
+                    accept='.pdf,.doc,.docx,.txt'
+                    onChange={handleFileUpload}
+                    className='border border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500'
+                  />
+                </div>
+              </div>
+              <div className='md:flex md:items-center mb-6'>
+                <div className='md:w-1/3'></div>
+                <div className='md:w-1/2'>
+                  <button
+                    className='bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 border border-blue-700 rounded'
+                    onClick={() => handleVerificationRequest()}
+                  >
+                    Request Credential Verification
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
 
-      {/* <button
-        className='mb-4 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-        onClick={() => appointmentHandler()}
-      >
-        Appointments
-      </button> */}
-      <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 flex flex-col items-center'>
+      {/* <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 flex flex-col items-center'>
         <h5 className='mt-4 mb-1 text-xl font-medium text-gray-900 dark:text-white'>
           {user?.name}
         </h5>
@@ -257,79 +343,9 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         >
           Logout
         </button>
-      </div>
+      </div> */}
 
-      <div className='mt-8 w-full max-w-screen-lg mx-auto'>
-        <div className='bg-white border border-gray-300 rounded-lg shadow-md dark:bg-gray-3000 dark:border-gray-2500 p-4'>
-          <form onSubmit={(e) => e.preventDefault()}>
-          <div className='md:flex md:items-center mb-6'>
-              <div className='md:w-1/3'>
-                <label
-                  className='block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4'
-                  htmlFor='health-care-provider'
-                >
-                  HealthCare Provider
-                </label>
-              </div>
-              <div className='md:w-1/2'>
-                <select
-                  className='bg-gray-200 appearance-none border border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500'
-                  id='health-care-provider'
-                  value={hcProvider}
-                  onChange={(e) => {
-                    const selectedProviderName = e.target.value;
-                    const selectedProvider = providers && providers.find(provider => provider.name === selectedProviderName);
-                    const hcpId = selectedProvider ? selectedProvider.id : '';
-                    const hcpEmail = selectedProvider ? selectedProvider.email : '';
-                    setHCProvider(e.target.value);
-                    setProviderId(hcpId);
-                    setProviderEmail(hcpEmail);
-                  }}
-                >
-                  <option value=''>Select a provider</option>
-                  {providers && providers.map(provider => (
-                    <option key={provider.email} value={provider.name}>
-                      {provider.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className='md:flex md:items-center mb-6'>
-              <div className='md:w-1/3'>
-                <label
-                  className='block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4'
-                  htmlFor='file'
-                >
-                  File Upload
-                </label>
-              </div>
-              <div className='md:w-1/2'>
-                <input
-                  type='file'
-                  id='file'
-                  name='file'
-                  accept='.pdf,.doc,.docx,.txt'
-                  onChange={handleFileUpload}
-                  className='border border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500'
-                />
-              </div>
-            </div>
-            <div className='md:flex md:items-center mb-6'>
-              <div className='md:w-1/3'></div>
-              <div className='md:w-1/2'>
-                <button
-                  className='bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 border border-blue-700 rounded'
-                  onClick={() => handleVerificationRequest()}
-                >
-                  Request Credential Verification
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+     </div>
   );
 };
 
