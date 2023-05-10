@@ -30,7 +30,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
         key: `doctor_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -54,7 +54,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
         key: `hcprovider_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -78,6 +78,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         console.error("File is undefined.");
         return undefined;
       }
+      console.log("handle");
       await handleRaiseRequest?.(user!.name, file!.name, providerId);
 
 
@@ -148,12 +149,14 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         body: JSON.stringify(params_encrypt),
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log("r1", r1);
 
       const r2 = await fetch('/s3upload', {
         method: 'POST',
         body: JSON.stringify(params_reencrypt),
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log("r2", r2);
 
     } catch (err) {
       console.log(err);

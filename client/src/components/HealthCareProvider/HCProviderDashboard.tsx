@@ -36,7 +36,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
         key: `doctor_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -60,7 +60,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
         key: `hcprovider_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +84,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_ENCRYPT!,
         key: `doctor_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -109,7 +109,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
         key: `hcprovider_${name}`,
       };
-      let resp = await fetch('/download', {
+      let resp = await fetch('/s3download', {
         method: 'POST',
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
