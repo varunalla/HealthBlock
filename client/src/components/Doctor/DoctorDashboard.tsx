@@ -24,6 +24,54 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
     setFile(selectedFile);
   };
 
+  const checkDoctorKeys = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `doctor_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+          console.log("No keys found")
+          return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkHCProviderKeys = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `hcprovider_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
   const handleVerificationRequest = async () => {
     try {
       if (!file) {
@@ -31,21 +79,93 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         return undefined;
       }
       await handleRaiseRequest?.(user!.name, file!.name, providerId);
+
+
+      const keys = await checkDoctorKeys(user!.name);
+
+      console.log("doctor keys", keys);
+
+      const response_encrypt = await fetch('/proxy-reencryption/encrypt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        aesKey: user!.name,
+        private_key: keys.data.private_key,
+        public_key: keys.data.public_key,
+        signing_key: keys.data.signing_key
+      })
+      });
       
-      uploadFileToS3(file, file!.name, user!.name)
-  
-      //sendRequestEmail(providerEmail);
+      const encryptedData = await response_encrypt.json();
+
+      console.log("encrypt", encryptedData);
+
+      const hcProviderKeys = await checkHCProviderKeys(hcProvider);
+
+      console.log("HCP keys", hcProviderKeys);
+
+      const req_public_key = hcProviderKeys.data.public_key;
+
+      const response_reencrypt = await fetch('/proxy-reencryption/reencrypt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        capsule: encryptedData.data.capsule,
+        private_key: keys.data.private_key,
+        public_key: hcProviderKeys.data.public_key,
+        signing_key: keys.data.signing_key,
+      })
+      });
+
+      const cfrags = await response_reencrypt.json();
+
+      console.log("cfrags", cfrags);
+
+      const Buffer = require('buffer').Buffer;
+      const encryptedDataBuffer = Buffer.from(JSON.stringify(encryptedData), 'utf-8');
+      const cfragsBuffer = Buffer.from(JSON.stringify(cfrags), 'utf-8');
+
+      const params_encrypt = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `doctor_${user!.name}`,
+        file: encryptedDataBuffer
+      };
+
+      const params_reencrypt = {
+        Bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+        Key: `hcprovider_${hcProvider}`,
+        Body: cfragsBuffer,
+      };
+
+      uploadEncryptedFileToS3(file, file!.name, user!.name)
+
+      const r1 = await fetch('/s3upload', {
+        method: 'POST',
+        body: JSON.stringify(params_encrypt),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const r2 = await fetch('/s3upload', {
+        method: 'POST',
+        body: JSON.stringify(params_reencrypt),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
     } catch (err) {
       console.log(err);
     }
   };
 
-  const uploadFileToS3 = async (file: File | undefined, filename: string, username: string) => {
+  const uploadEncryptedFileToS3 = async (file: File | undefined, filename: string, key: string) => {
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('fileName', filename);
-      formData.append('userName', username);
+      formData.append('key', key);
       formData.append('providerEmail', providerEmail);
       try {
         await axios.post('/upload', formData, {
@@ -210,3 +330,4 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 };
 
 export default DoctorDashboard;
+

@@ -30,6 +30,103 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
     }
   };
 
+  const checkDoctorKeys = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `doctor_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+          console.log("Keys not found")
+          return null
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkHCProviderKeys = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `hcprovider_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const Buffer = require('buffer').Buffer;
+      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return keys;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkEncryptRes = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_ENCRYPT!,
+        key: `doctor_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      const Buffer = require('buffer').Buffer;
+      const encryptedData = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return encryptedData;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkReencryptRes = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+        key: `hcprovider_${name}`,
+      };
+      let resp = await fetch('/download', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const Buffer = require('buffer').Buffer;
+      const cfrags = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
+      return cfrags;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
   const downloadFile = async (filename?: string, doctorname?: string) => {
     try {
       if (!filename) {
@@ -39,9 +136,44 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       if (!doctorname) {
         throw new Error('Doctor name is required');
       }
+
+      const docKeys = await checkDoctorKeys(doctorname);
+      console.log("Doctor keys:")
+      console.log(docKeys)
+
+      const hcProviderKeys = await checkHCProviderKeys(user!.name);
+      console.log("HCProvider keys")
+      console.log(hcProviderKeys)
+      
+      const encryptedData =await checkEncryptRes(doctorname);
+      console.log("Encrypt Response Data")
+      console.log(encryptedData)
+      
+      const reencryptedData=await checkReencryptRes(user!.name);
+      console.log("Reencrypt Response Data")
+      console.log(reencryptedData)
+
+      const response_decryptReencrypt = await fetch('/proxy-reencryption/decryptReencrypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          private_key: hcProviderKeys.data.private_key,
+          public_key: docKeys.data.public_key,
+          capsule: encryptedData.data.capsule,
+          ciphertext: encryptedData.data.ciphertext,
+          cfrags: reencryptedData.data.cfrags
+        })
+      });
+      
+      const cleartext = await response_decryptReencrypt.json();
+      console.log("cleartext:",cleartext)
+      console.log("cleartext.data:",cleartext.data)
+      
       const body = {
         fileName: filename,
-        userName: doctorname,
+        key: cleartext.data,
       };
       let resp = await fetch('/download', {
         method: 'POST',

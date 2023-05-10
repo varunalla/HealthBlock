@@ -13,10 +13,10 @@ const s3 = new AWS.S3({
 console.log("access id", process.env.REACT_APP_AWS_ACCESS_KEY_ID)
 module.exports = (app) => {
 
-  const uploadDirectory = './uploads';
-  if (!fs.existsSync(uploadDirectory)) {
-    fs.mkdirSync(uploadDirectory);
-  }
+const uploadDirectory = './uploads';
+if (!fs.existsSync(uploadDirectory)) {
+  fs.mkdirSync(uploadDirectory);
+}
   // Configure Multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -34,24 +34,22 @@ const upload = multer({ storage });
 app.post('/upload', upload.single('file'), (req, res) => {
   
     try {
-
       const file = req.file;
       const fileName = req.body.fileName;
       const extension = path.extname(fileName);
       const filenameWithoutExtension = path.basename(fileName, extension);
-      const userName = req.body.userName;
+      const key = req.body.key;
       
 
       if (!file) {
         return res.status(400).json({ error: 'No file provided' });
       }
 
-      // Access the uploaded file details
-      encryptor.encryptFile(req.file.path, filenameWithoutExtension+'-'+userName+'.dat', filenameWithoutExtension, function(err) {
-        const encryptedFile = fs.readFileSync('./'+filenameWithoutExtension+'-'+userName+'.dat');
+      encryptor.encryptFile(req.file.path, filenameWithoutExtension+'-'+key+'.dat', key, function(err) {
+        const encryptedFile = fs.readFileSync('./'+filenameWithoutExtension+'-'+key+'.dat');
         const params = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
-          Key: filenameWithoutExtension+userName,
+          Key: filenameWithoutExtension+key,
           Body: encryptedFile,
           ACL: 'public-read',
         };
@@ -62,14 +60,11 @@ app.post('/upload', upload.single('file'), (req, res) => {
             res.status(500).json({ error: 'Failed to upload file to S3.' });
           } else {
             console.log('File uploaded successfully. ' + data.Location);
-            sendRequestEmail(req.body.providerEmail, userName);
+            sendRequestEmail(req.body.providerEmail, key);
             res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
           }
         });
       });
-      
-
-      
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'An error occurred.' });
@@ -81,25 +76,22 @@ app.post('/upload', upload.single('file'), (req, res) => {
     const fileName = req.body.fileName;
     const extension = path.extname(fileName);
     const filenameWithoutExtension = path.basename(fileName, extension);
-    const doctorName = req.body.userName;
+    const key = req.body.key;
   
     if (!fileName) {
       return res.status(400).json({ error: 'File name is required' });
     }
-  
-    if (!doctorName) {
-      return res.status(400).json({ error: 'Doctor name is required' });
-    }
+ 
     try {
       const params = {
         Bucket: process.env.REACT_APP_BUCKET_NAME, 
-        Key: filenameWithoutExtension+doctorName,
+        Key: filenameWithoutExtension+key,
       };
   
       const { Body } = await s3.getObject(params).promise();
       const localFilePath = `uploads/${fileName}`;
       fs.writeFileSync(localFilePath, Body);
-      encryptor.decryptFile(localFilePath, fileName, filenameWithoutExtension, function(err) {
+      encryptor.decryptFile(localFilePath, fileName, key, function(err) {
         const decryptedFile = fs.readFileSync(fileName);
         const decryptedBuffer = Buffer.from(decryptedFile);
         
@@ -112,6 +104,43 @@ app.post('/upload', upload.single('file'), (req, res) => {
     } catch (err) {
       console.log(err);
       res.status(500).json({ error: 'Failed to download file' });
+    }
+  });
+
+  app.post('/s3upload', (req, res) => {
+    try {
+      const params = {
+        Bucket: req.body.bucket,
+        Key: req.body.key,
+        Body: req.body.file,
+      };
+  
+      s3.upload(params, (err, data) => {
+        if (err) {
+          console.error(err);
+          res.status(500).json({ error: 'Failed to upload file to S3.' });
+        } else {
+          console.log('File uploaded successfully. ' + data.Location);
+          res.status(200).json({ message: 'File uploaded successfully.', location: data.Location });
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred.' });
+    }
+  });
+
+  app.post('/s3download', (req, res) => {
+    try {
+      const params = {
+        Bucket: req.body.bucket, 
+        Key: req.body.key,
+      };
+  
+      return s3.getObject(params).promise();
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred.' });
     }
   });
 
