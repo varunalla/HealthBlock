@@ -112,9 +112,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
       const params = {
         Bucket: req.body.bucket,
         Key: req.body.key,
-        Body: req.body.file,
+        Body: Buffer.from(req.body.data),
       };
-  
+      console.log("params",  params);
       s3.upload(params, (err, data) => {
         if (err) {
           console.error(err);
@@ -137,11 +137,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
         Key: req.body.key,
       };
       const resp = await s3.getObject(params).promise();
-      console.log(resp.Body)
-      return resp.Body;
-      // const data = JSON.parse(resp.Body.toString('utf-8'));
-      // console.log(data)
-      // return data;
+      const data = JSON.parse(resp.Body.toString('utf-8'));
+      console.log(data)
+      res.status(200).json({ message: 'File downloaded successfully.', data: data });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'An error occurred.' });

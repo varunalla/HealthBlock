@@ -41,9 +41,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-      const Buffer = require('buffer').Buffer;
-      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
-      return keys;
+      const keys:any = await resp.json();
+      return keys.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
           console.log("Keys not found")
@@ -65,9 +64,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-      const Buffer = require('buffer').Buffer;
-      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
-      return keys;
+      const keys:any = await resp.json();
+      return keys.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
         console.log("No keys found")
@@ -89,10 +87,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-  
-      const Buffer = require('buffer').Buffer;
-      const encryptedData = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
-      return encryptedData;
+      const encryptRes:any = await resp.json();
+      return encryptRes.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
         console.log("No keys found")
@@ -114,9 +110,8 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-      const Buffer = require('buffer').Buffer;
-      const cfrags = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
-      return cfrags;
+      const encryptRes:any = await resp.json();
+      return encryptRes.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
         console.log("No keys found")

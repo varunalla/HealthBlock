@@ -35,11 +35,8 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log("keys", resp);
-      const Buffer = require('buffer').Buffer;
-      const keys = JSON.parse(Buffer.from(resp).toString('utf-8'));
-      console.log("keys", keys);
-      return keys;
+      const keys:any = await resp.json();
+      return keys.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
           console.log("No keys found")
@@ -61,10 +58,8 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       });
-      const Buffer = require('buffer').Buffer;
-      const keys = JSON.parse(Buffer.from(resp.body).toString('utf-8'));
-      console.log("keys", keys);
-      return keys;
+      const keys:any = await resp.json();
+      return keys.data;
     } catch (err: any) {
       if (err.code === 'NotFound') {
         console.log("No keys found")
@@ -81,13 +76,9 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
         console.error("File is undefined.");
         return undefined;
       }
-      console.log("handle");
-      await handleRaiseRequest?.(user!.name, file!.name, providerId);
-
 
       const keys = await checkDoctorKeys(user!.name);
-
-      console.log("doctor keys", keys);
+      console.log(keys);
 
       const response_encrypt = await fetch('/proxy-reencryption/encrypt', {
       method: 'POST',
@@ -136,15 +127,15 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
       const params_encrypt = {
         bucket: process.env.REACT_APP_BUCKET_ENCRYPT,
         key: `doctor_${user!.name}`,
-        file: encryptedDataBuffer
+        data: encryptedDataBuffer
       };
 
       const params_reencrypt = {
-        Bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
-        Key: `hcprovider_${hcProvider}`,
-        Body: cfragsBuffer,
+        bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+        key: `hcprovider_${hcProvider}`,
+        data: cfragsBuffer,
       };
-
+      await handleRaiseRequest?.(user!.name, file!.name, providerId);
       uploadEncryptedFileToS3(file, file!.name, user!.name)
 
       const r1 = await fetch('/s3upload', {

@@ -36,9 +36,9 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       const params = {
         bucket: process.env.REACT_APP_BUCKET_KEYS!,
         key: `doctor_${name}`,
-        file: Buffer.from(doctorKeysString)
+        data: Buffer.from(doctorKeysString)
       };
-      console.log(params);
+      console.log("uploaddoctorkeys", params);
       await fetch('/s3upload', {
         method: 'POST',
         body: JSON.stringify(params),
@@ -51,23 +51,23 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
 
   const registerDoctor = async () => {
     try {
-      // const user = await fetchDoctorContract?.();
-      // if (!user?.email) {
-      //   toast('Doctor Registration Initiated!');
+      const user = await fetchDoctorContract?.();
+      if (!user?.email) {
+        toast('Doctor Registration Initiated!');
         await registerDoctorHealthBlockContract?.(name, age, email, specialization);
-      //   toast('Doctor Created');
-      // } else {
-      //   toast.error('User already present', {
-      //     position: 'top-right',
-      //     autoClose: 5000,
-      //     hideProgressBar: false,
-      //     closeOnClick: true,
-      //     pauseOnHover: true,
-      //     draggable: true,
-      //     progress: undefined,
-      //     theme: 'colored',
-      //   });
-      // }
+        toast('Doctor Created');
+      } else {
+        toast.error('User already present', {
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+        });
+      }
     } catch (err) {
       toast.error('Error Registering Doctor, please try after sometime!');
       console.log('Register Error', err);
