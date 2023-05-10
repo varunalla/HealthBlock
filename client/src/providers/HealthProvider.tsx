@@ -111,11 +111,6 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
   const [file, setFile] = useState<File | null>(null);
   const [doctorList, setDoctorList] = useState<Doctor[]>([]);
   const [doctorToProviderReqList, setDocToProviderList] = useState<DoctorToProviderRequest[]>([]);
-  const [patientAddress, setPatientAddress] = useState('');
-  const [docName, setDocName] = useState('');
-  const [docEmail, setDocEmail] = useState('');
-  const [patientName, setPatientName] = useState('');
-  const [patientEmail, setpatientEmail] = useState('');
 
   //fetch metamask accounts
   const checkIfWalletIsConnected = async () => {
