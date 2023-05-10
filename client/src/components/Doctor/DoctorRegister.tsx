@@ -23,7 +23,7 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
     }
   };  
 
-  const uploadDoctorKeysToS3 = async (Keys: any, Email: string) => {
+  const uploadDoctorKeysToS3WithEmail = async (Keys: any, Email: string) => {
     try {
       const Buffer = require('buffer').Buffer;
       const doctorKeysString = JSON.stringify(Keys);
@@ -126,7 +126,7 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
             let Keys= await generateKeys();
             
            await registerDoctor();
-           await uploadDoctorKeysToS3(Keys, email);}}
+           await uploadDoctorKeysToS3WithEmail(Keys, email);}}
         >
           Register Doctor
         </button>
