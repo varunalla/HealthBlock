@@ -65,7 +65,7 @@ interface HealthAppContextInterface {
   fetchAllDoctors?: (
     provider: string[],
   ) => Promise<Array<{ name: string; email: string; specialization: string }> | undefined>;
-  fetchAllDoctorToProviderRequests?: (provider: string) => Promise<void>;
+  fetchAllDoctorToProviderRequests?: (provider: string) => Promise<Array<any> | undefined>;
   raiseDoctorToHCRequest?: (provider: string, doctor: string, name: string) => Promise<void>;
   fetchHCProviders?: () => Promise<Array<any> | undefined>;
   currentAccount?: string;
@@ -180,20 +180,19 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
       const contract: HealthBlock = fetchContract(signer);
-      return [];
-      // let resp = await contract.getAllProviders()
-      // console.log('Resp from get providers-->', resp);
-      // let hcArr = [];
-      // if (resp && resp.length > 0) {
-      //   for (let i = 0; i < resp.length; i++) {
-      //     let obj = {
-      //       name: resp[i][0],
-      //       address: resp[i][4],
-      //     };
-      //     hcArr.push(obj);
-      //   }
-      //   return hcArr;
-      // }
+      let resp = await contract.getAllProviders();
+      console.log('Resp from get providers-->', resp);
+      let hcArr = [];
+      if (resp && resp.length > 0) {
+        for (let i = 0; i < resp.length; i++) {
+          let obj = {
+            name: resp[i][0],
+            address: resp[i][4],
+          };
+          hcArr.push(obj);
+        }
+        return hcArr;
+      }
 
       //return { name, age, email } as Patient;
     } catch (err) {
@@ -411,11 +410,10 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
           doctorForProviderList.push(obj);
         }
       }
-      //console.log('doctorArr', docArr);
 
       return doctorForProviderList;
     } catch (error) {
-      throw error;
+      setError('Error Loading Health Contract');
     }
   };
   const updateProfile = async (hcAddress: string, docAddress: string, status: string) => {
@@ -434,7 +432,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
 
       update.wait();
     } catch (err: any) {
-      throw err;
+      setError(`Error Loading Health Contract ${err}`);
     }
   };
 
@@ -455,10 +453,11 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
         };
         docArr.push(obj);
       }
+      return docArr;
 
-      setDocToProviderList(docArr);
+      //setDocToProviderList(docArr);
     } catch (err: any) {
-      throw err;
+      setError(`Error Loading Health Contract ${err}`);
     }
   };
 
@@ -475,7 +474,7 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
       const contract: HealthBlock = fetchContract(signer);
       const update = await contract.raiseDoctorToProviderRequest(hcAddress, docAddress, doctorName);
     } catch (err: any) {
-      throw err;
+      setError(`Error Loading Health Contract ${err}`);
     }
   };
 

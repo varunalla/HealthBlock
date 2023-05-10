@@ -9,7 +9,7 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, doctorList, fetchProviders } = useContext(HealthContext);
+  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
   const logouthandler = async () => {
     logout?.();
     navigate('/patientlogin');

@@ -64,9 +64,11 @@ async function postAppointments(body) {
   };
   try {
     let resp = await dynamodb.put(params).promise();
+    console.log("Resp-->", resp);
 
     return JSON.stringify(body);
   } catch (err) {
+    console.log("Err-->", err);
     throw new Error("Unable to add appointment");
   }
 }

@@ -10,6 +10,7 @@ const {
   postAvailability,
 } = require("../utils/queries");
 const uuid = require("uuid");
+const { verifyEmail, sendEmail } = require("../utils/ses");
 
 module.exports = (app) => {
   app.get("/provider/:hcprovider/doctors", verify_token, async (req, res) => {
@@ -113,4 +114,13 @@ module.exports = (app) => {
       }
     }
   );
+
+  app.post("/verify_emails", async (req, res) => {
+    let email = req.body.email;
+    try {
+      await verifyEmail(email);
+    } catch (err) {
+      console.log("err-->", err);
+    }
+  });
 };

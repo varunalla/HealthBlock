@@ -55,4 +55,14 @@ function sendEmail(patient, doctor, body) {
   );
 }
 
-module.exports = { sendEmail };
+async function verifyEmail(email) {
+  await ses.verifyEmailIdentity({ EmailAddress: email }, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(`Email identity verification initiated for ${email}.`, data);
+    }
+  });
+}
+
+module.exports = { sendEmail, verifyEmail };

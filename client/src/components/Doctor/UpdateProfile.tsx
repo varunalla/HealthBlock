@@ -4,7 +4,6 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 import { HealthContext } from '../../providers/HealthProvider';
-import { hc_address, hc_registed } from '../../config/hc_constants';
 interface AppointmentDetails {
   name: string;
   patient_email: string;
@@ -19,8 +18,19 @@ const UpdateProfile: FunctionComponent<{}> = () => {
   const [address, setAddress] = useState('');
   const [hc, setHc] = useState('');
   const { user } = useContext(AuthContext);
-  const { updateProfile, currentAccount, raiseDoctorToHCRequest } = useContext(HealthContext);
+  const [hcProviderList, setHCProviderList] = useState<any>([]);
+  const { updateProfile, currentAccount, raiseDoctorToHCRequest, fetchHCProviders, hcProviderArr } =
+    useContext(HealthContext);
+
   const account = currentAccount || '';
+
+  useEffect(() => {
+    (async () => {
+      let resp = await fetchHCProviders?.();
+
+      setHCProviderList(resp);
+    })();
+  }, []);
 
   return (
     <div className='flex flex-col items-center'>
@@ -44,10 +54,9 @@ const UpdateProfile: FunctionComponent<{}> = () => {
               }}
             >
               <option value=''>Select a provider</option>
-              {hc_registed &&
-                hc_registed.map((provider) => (
-                  <option value={provider.address}>{provider.name}</option>
-                ))}
+              {hcProviderList &&
+                hcProviderList.length > 0 &&
+                hcProviderList.map((ele: any) => <option value={ele.address}>{ele.name}</option>)}
             </select>
           </div>
           <button
