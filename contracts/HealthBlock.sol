@@ -108,6 +108,7 @@ contract HealthBlock {
     mapping(address => Request[]) private doctorRequests;
     mapping(address => doctor[]) public providerToDoctors;
     mapping(address => DoctorToProviderRequest[]) public providerToDoctorRequests;
+    hcprovider[] public providerList;
 
    /*
     * @dev Set contract deployer as owner
@@ -234,6 +235,7 @@ contract HealthBlock {
             require(keccak256(abi.encodePacked(_phone)) != keccak256(abi.encodePacked("")));
             require(!(h.id > address(0x0)));
             hcproviders[msg.sender] = hcprovider({name:_name, email:_email, providerAddress:_address, phone:_phone, id:msg.sender});
+             providerList.push(hcproviders[msg.sender]);
     } 
     
      function mapDoctorToProvider(address _providerAddress, address _doctorAddress) public {
@@ -274,5 +276,11 @@ contract HealthBlock {
     function getAllDoctorToProviderRequests(address _hcaddress) public view returns(DoctorToProviderRequest[] memory) {
             return providerToDoctorRequests[_hcaddress];
     }
+      function getAllProviders() public view returns (hcprovider[] memory) {
+        return providerList;
+    }
+function getAllDoctorsForProvider(address providerAddress) public view returns (doctor[] memory) {
+    return providerToDoctors[providerAddress];
+}
 
 }

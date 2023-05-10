@@ -20,12 +20,6 @@ const PatientDashboard: FunctionComponent<{}> = () => {
   const appointmentHandler = () => {
     navigate('/patientappointments');
   };
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-  const fetchDoctors = async () => {
-    await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
-  };
 
   return (
     <div className='flex flex-row min-h-screen justify-center items-center'>
