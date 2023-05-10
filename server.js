@@ -19,6 +19,8 @@ require("./authentication/auth-routes")(app, metaAuth);
 require("./appointments/appointment-route")(app);
 require("./routes/providers")(app);
 require("./routes/patients")(app);
+require("./manageMedicalRecords/medicalRecords-routes")(app);
+app.use('/proxy-reencryption', require("./proxy-reencryption/proxyReencryption-routes"));
 app.get("*", (req, res) =>
   res.sendFile(path.resolve("client", "build", "index.html"))
 );

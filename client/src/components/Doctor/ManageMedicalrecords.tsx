@@ -20,10 +20,11 @@ interface AppointmentDetails {
 
 const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const { user, role, logout } = useContext(AuthContext);
-  const { fetch } = useAuthFetch();
+  
   const [confirmedAppointmentData, setConfirmedAppointmentData] = useState<AppointmentDetails[]>(
     [],
   );
+  const[foundFile,setFoundFile]=useState<Boolean>(false);
   const { requestMedicalRecordHealthBlockContract } = useContext(HealthContext);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOption, setFilterOption] = useState<string>('all');
@@ -31,10 +32,198 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
   const [selectedFile, setSelectedFile] = useState<undefined | File>(undefined);
   const [showUploadPopup, setShowUploadPopup] = useState(false);
 
+  const checkDoctorKeys = async (email: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `doctor_${email}`,
+      };
+      let resp = await fetch('/downloadKeysFroms3', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const keys:any = await resp.json();
+      return keys.data;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+          console.log("No keys found")
+          return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+  const checkPatientKeys = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS!,
+        key: `patient_${name}`,
+      };
+      let resp = await fetch('/downloadKeysFroms3', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const keys:any = await resp.json();
+      return keys.data;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkEncryptRes = async (name: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_ENCRYPT!,
+        key: `patient_${name}`,
+      };
+      let resp = await fetch('downloadKeysFroms3', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const encryptRes:any = await resp.json();
+      return encryptRes.data;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const checkReencryptRes = async (Email: string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_REENCRYPT,
+        key: `doctor_${Email}`,
+      };
+      let resp = await fetch('/downloadKeysFroms3', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const encryptRes:any = await resp.json();
+      return encryptRes.data;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+        console.log("No keys found")
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  };
+  const checkMedicalRecord = async (docEmail: string,patientEmail:string,patientName:string) => {
+    try {
+      const body = {
+        bucket: process.env.REACT_APP_BUCKET_RECORDS,
+        key: `${docEmail}_${patientEmail}`,
+      };
+      let resp = await fetch('/downloadFroms3', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const medicalRecords = await resp.json();
+      console.log("medical Records:",medicalRecords)
+      await downloadFile(`${docEmail}${"_"}${patientEmail}`,patientName)
+     
+     // return medicalRecords.data;
+    } catch (err: any) {
+      if (err.code === 'NotFound') {
+       
+        console.log("No Medical Record found")
+        return null;
+      } else {
+       
+        throw err;
+      }
+    }
+  };
+  const downloadFile = async (filename?: string, patientName?: string) => {
+    try {
+      console.log("File Name:",filename);
+      if (!filename) {
+        throw new Error('File name is required');
+      }
+    
+      if (!patientName) {
+        throw new Error('Patient name is required');
+      }
+
+      const doctorKeys = await checkDoctorKeys(user!.email);
+      console.log("Doctor keys:")
+      console.log(doctorKeys)
+
+      const patientKeys = await checkPatientKeys(patientName);
+      console.log("Patient keys")
+      console.log(patientKeys)
+      
+      const encryptedData =await checkEncryptRes(patientName);
+      console.log("Encrypt Response Data")
+      console.log(encryptedData)
+      
+      const reencryptedData=await checkReencryptRes(user!.email);
+      console.log("Reencrypt Response Data")
+      console.log(reencryptedData)
+
+      const response_decryptReencrypt = await fetch('/proxy-reencryption/decryptReencrypt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          private_key: doctorKeys.data.private_key,
+          public_key: patientKeys.data.public_key,
+          capsule: encryptedData.data.capsule,
+          ciphertext: encryptedData.data.ciphertext,
+          cfrags: reencryptedData.data.cfrags
+        })
+      });
+      
+      const cleartext = await response_decryptReencrypt.json();
+      console.log("cleartext:",cleartext)
+      console.log("cleartext.data:",cleartext.data)
+      
+      const body = {
+        fileName: filename,
+        key: cleartext.data,
+      };
+      let resp = await fetch('/downloadFile', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const buffer = await resp.arrayBuffer();
+      const blob = new Blob([buffer], { type: 'application/pdf' });
+      console.log("blob", buffer)
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     getConfirmedAppointment();
   }, []);
   const getConfirmedAppointment = async () => {
+    const { fetch } = useAuthFetch();
     let resp = await fetch('GET', '/confirmedAppointments/' + user?.email);
     if (resp && resp.data && resp.data.result) {
       setConfirmedAppointmentData(resp.data.result);
@@ -49,7 +238,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
     docEmail: string,
     patientEmail: string,
   ) => {
-    try {
+    try {      
       await requestMedicalRecordHealthBlockContract?.(
         patientAddress,
         docEmail,
@@ -61,87 +250,6 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
       console.log(err);
     }
   };
-
-  // function sendRequestEmail(to: string) {
-  //   const subject = 'Medical Record Request';
-  //   const body = 'Your medical records have been requested by your doctor.';
-  //   sendEmail(to, subject, body);
-  // }
-
-  // function sendEmail(to: string, subject: string, body: string) {
-  //   const params = {
-  //     Destination: {
-  //       ToAddresses: [to],
-  //     },
-  //     Message: {
-  //       Body: {
-  //         Html: {
-  //           Charset: 'UTF-8',
-  //           Data: body,
-  //         },
-  //       },
-  //       Subject: {
-  //         Charset: 'UTF-8',
-  //         Data: subject,
-  //       },
-  //     },
-  //     Source: 'dharahasini.gangalapudi@sjsu.edu',
-  //   };
-
-  //   ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-  //     if (err) {
-  //       console.log(err);
-  //     } else {
-  //       const verificationAttributes = data.VerificationAttributes[to];
-  //       if (verificationAttributes && verificationAttributes.VerificationStatus === 'Success') {
-  //         // Email identity is verified, send the email
-  //         ses.sendEmail(params, (err, data) => {
-  //           if (err) {
-  //             console.log(err);
-  //           } else {
-  //             console.log('Email sent:', data);
-  //           }
-  //         });
-  //       } else {
-  //         // Email identity is not verified, verify the email identity
-  //         ses.verifyEmailIdentity({ EmailAddress: to }, (err, data) => {
-  //           if (err) {
-  //             console.log(err);
-  //           } else {
-  //             console.log(`Email identity verification initiated for ${to}.`);
-  //             // Wait for the email identity to be verified before sending the email
-  //             const intervalId = setInterval(() => {
-  //               ses.getIdentityVerificationAttributes({ Identities: [to] }, (err, data) => {
-  //                 if (err) {
-  //                   console.log(err);
-  //                 } else {
-  //                   const verificationAttributes = data.VerificationAttributes[to];
-  //                   if (
-  //                     verificationAttributes &&
-  //                     verificationAttributes.VerificationStatus === 'Success'
-  //                   ) {
-  //                     clearInterval(intervalId);
-  //                     ses.sendEmail(params, (err, data) => {
-  //                       if (err) {
-  //                         console.log(err);
-  //                       } else {
-  //                         console.log('Email sent:', data);
-  //                       }
-  //                     });
-  //                   }
-  //                 }
-  //               });
-  //             }, 5000);
-  //           }
-  //         });
-  //       }
-  //     }
-  //   });
-  // }
-
-  // const handleRequest = (email: string) => {
-  //   sendRequestEmail(email);
-  // };
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files !== null) {
       setSelectedFile(event.target.files[0]);
@@ -205,7 +313,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      Public Address
+                      Email ID
                     </th>
                     <th
                       scope='col'
@@ -217,7 +325,7 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                       scope='col'
                       className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                     >
-                      Email ID
+                      File
                     </th>
                     <th
                       scope='col'
@@ -226,19 +334,28 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                   </tr>
                 </thead>
 
-                {confirmedAppointmentData.map((appointment) => (
+                {confirmedAppointmentData.map((appointment) => {
+                 
+              
+                  return (
                   <tr key={appointment.appointment_id}>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900'>{appointment.patient_name}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{appointment.patient_address}</div>
+                      <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900'>{appointment.created_at}</div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>{appointment.patient_email}</div>
+                    <button
+                          id='request-btn'
+                          className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'
+                          onClick={() =>checkMedicalRecord(user!.email,appointment.patient_email,appointment.patient_name)}
+                        >
+                          Download
+                        </button>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900'>
@@ -248,12 +365,6 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                           onClick={toggleRequestPopup}
                         >
                           Request
-                        </button>
-                        <button
-                          className='bg-blue-500 text-white font-bold rounded-md px-4 py-2 ml-2'
-                          onClick={toggleUploadPopup}
-                        >
-                          Upload
                         </button>
                         
                       </div>
@@ -333,102 +444,10 @@ const ManageMedicalRecords: FunctionComponent<{}> = () => {
                           </div>
                         </div>
                       )}
-                      {showUploadPopup && (
-                        <div className='fixed z-10 inset-0 overflow-y-auto'>
-                          <div className='flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
-                            <div className='fixed inset-0 transition-opacity'>
-                              <div className='absolute inset-0 bg-gray-500 opacity-30'></div>
-                            </div>
-
-                            <span
-                              className='hidden sm:inline-block sm:align-middle sm:h-screen'
-                              aria-hidden='true'
-                            >
-                              &#8203;
-                            </span>
-
-                            <div className='inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full'>
-                              <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
-                                <div className='sm:flex sm:items-start'>
-                                  <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left'>
-                                    <h3
-                                      className='text-lg leading-6 font-medium text-gray-900'
-                                      id='modal-title'
-                                    >
-                                      Attention
-                                      <span
-                                        className='text-red-500'
-                                        aria-label='Warning'
-                                        role='img'
-                                      >
-                                        ⚠️
-                                      </span>
-                                    </h3>
-                                    <div className='mt-2'>
-                                      <p className='text-sm leading-5 text-gray-500'>
-                                        You are uploading medical records for{' '}
-                                        <span style={{ fontWeight: 'bold', color: 'blue' }}>
-                                          {appointment.patient_name}
-                                        </span>
-                                        <p>({appointment.patient_address})</p>
-                                      </p>
-                                      <div className='mt-2'>
-                                        <label htmlFor='file-upload' className='cursor-pointer'>
-                                          <p
-                                            className='bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow inline-block'
-                                            style={{ width: 'auto' }}
-                                          >
-                                            Browse
-                                          </p>
-                                        </label>
-                                        {selectedFile && (
-                                          <span className='text-sm leading-5 text-gray-500 ml-2'>
-                                            {selectedFile.name}
-                                          </span>
-                                        )}
-                                        <input
-                                          id='file-upload'
-                                          name='file-upload'
-                                          type='file'
-                                          accept='.pdf,.doc,.docx'
-                                          className='sr-only'
-                                          onChange={handleFileSelect}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className='bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse'>
-                                <span className='flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto'>
-                                  <div className='flex justify-center'>
-                                    <button
-                                      id='confirm-btn'
-                                      type='button'
-                                      className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5'
-                                      onClick={() => {
-                                        toggleUploadPopup();
-                                      }}
-                                    >
-                                      Confirm
-                                    </button>
-                                    <button
-                                      type='button'
-                                      className='inline-flex justify-center w-full sm:w-auto rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5 mt-3 sm:mt-0 sm:ml-3'
-                                      onClick={toggleUploadPopup}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </td>
                   </tr>
-                ))}
+                
+                )})}
               </table>
             </div>
           </div>

@@ -1,11 +1,48 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { HealthContext } from '../../providers/HealthProvider';
+import axios from 'axios';
 const DoctorRegister: FunctionComponent<{}> = ({}) => {
   const { currentAccount, registerDoctorHealthBlockContract } = useContext(HealthContext);
   const [name, setName] = useState<string>('');
   const [age, setAge] = useState<number>(0);
   const [email, setEmail] = useState<string>('');
   const [specialization, setSpecialization] = useState<string>('');
+
+  const generateKeys = async () => {
+    try {
+      const response = await axios.get('/proxy-reencryption/keys', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = response.data;
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };  
+
+  const uploadDoctorKeysToS3 = async (Keys: any, Email: string) => {
+    try {
+      const Buffer = require('buffer').Buffer;
+      const doctorKeysString = JSON.stringify(Keys);
+      const params = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS,
+        key: `doctor_${Email}`,
+        file: Buffer.from(doctorKeysString)
+      };
+      console.log(params);
+      await fetch('uploadTos3', {
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log('Error uploading Doctor Keys:', err);
+    }
+  };
+
 
   const registerDoctor = async () => {
     try {
@@ -85,7 +122,11 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       <div className='md:flex md:items-center mb-6'>
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-          onClick={() => registerDoctor()}
+          onClick={async() => {
+            let Keys= await generateKeys();
+            
+           await registerDoctor();
+           await uploadDoctorKeysToS3(Keys, email);}}
         >
           Register Doctor
         </button>
