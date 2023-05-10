@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 import { HealthContext } from '../../providers/HealthProvider';
+import { hc_address } from '../../config/hc_constants';
 
 interface AppointmentRequestDetails {
   doctor_name: string;
@@ -16,21 +17,34 @@ interface AppointmentRequestDetails {
 interface Doctor {
   name: string;
   email: string;
-  age: Number;
+
   specialization: string;
 }
 const PatientAppointment: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { fetch } = useAuthFetch();
   const { user, role, logout } = useContext(AuthContext);
-  const { fetchAllDoctors, doctorList } = useContext(HealthContext);
+  const { fetchAllDoctors, fetchProviders } = useContext(HealthContext);
   const [doctorDetails, setDoctorDetails] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState({});
+  const [doctorList, setDoctorList] = useState<Doctor[]>([]);
 
   useEffect(() => {
-    fetchAllDoctors?.('0x752A3fC80A04F7F2Bed1F70693143B5d41A3Ad73');
+    (async () => {
+      try {
+        const result = await fetchProviders?.();
 
-    setDoctorDetails(doctorDetails);
+        if (result && result.length > 0) {
+          let res = await fetchAllDoctors?.(result);
+
+          setDoctorList(res ?? []);
+        }
+      } catch (err) {
+        console.log('fetching requests', err);
+      }
+    })();
+
+    //fetchDoctors();
   }, []);
 
   return (
@@ -80,6 +94,7 @@ const PatientAppointment: FunctionComponent<{}> = () => {
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
                 {doctorList &&
+                  doctorList.length > 0 &&
                   doctorList.map((details) => (
                     <tr>
                       <td className='px-6 py-4 whitespace-nowrap'>

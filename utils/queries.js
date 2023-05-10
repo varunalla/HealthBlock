@@ -41,13 +41,14 @@ async function getDocAvailability(doc_email, availability_date) {
       ":email": doc_email,
       ":avail_date": availability_date,
     },
+    ProjectionExpression: "availability_time, doctor_address",
   };
 
   try {
     const result = await dynamodb.query(params).promise();
 
     if (result.Items && result.Items.length > 0) {
-      return result.Items[0].availability_time;
+      return result.Items[0];
     } else {
       return null;
     }
@@ -63,9 +64,11 @@ async function postAppointments(body) {
   };
   try {
     let resp = await dynamodb.put(params).promise();
+    console.log("Resp-->", resp);
 
     return JSON.stringify(body);
   } catch (err) {
+    console.log("Err-->", err);
     throw new Error("Unable to add appointment");
   }
 }
@@ -92,7 +95,6 @@ async function getAppointments(doctor) {
 }
 
 async function updateAppointmentStatus(appt_id, appt_status) {
-  console.log("update Appointments");
   const params = {
     TableName: "appointments",
     FilterExpression: "appointment_id = :appointmentId",
@@ -103,10 +105,8 @@ async function updateAppointmentStatus(appt_id, appt_status) {
 
   dynamodb.scan(params, (err, data) => {
     if (err) {
-      console.error("Error scanning appointment", err);
       return new Error("Could not retrieve appointment data");
     } else {
-      console.log("Scan succeeded:", data);
     }
     if (data && data.Items && data.Items.length > 0) {
       let results = data.Items[0];
@@ -127,23 +127,19 @@ async function updateAppointmentStatus(appt_id, appt_status) {
         if (err) {
           return new Error("Could not update");
         } else {
-          console.log("Appointment update-->", data.Attributes);
           let body = "";
-          // if (data.Attributes?.appointment_status == "confirmed") {
-          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>Thank you for booking an appointment with "abc". Your appointment is confirmed for ${data.Attributes?.appointment_time} on ${created_at}</p>`;
-          // } else {
-          //   body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
-          // }
-          // sendEmail(
-          //   data.Attributes?.patient_email,
+          if (data.Attributes?.appointment_status == "confirmed") {
+            body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>Thank you for booking an appointment with ${data.Attributes?.doctor_email}. Your appointment is confirmed for ${data.Attributes?.appointment_time} on ${data.Attributes?.created_at}</p>`;
+          } else {
+            body = `<h1>Appointment Status Update for ${data.Attributes?.patient_name}</h1><br><p>We regret to inform that your appointment with abc has been cancelled. Please choose another date to book an appointment</p>`;
+          }
+          sendEmail(
+            data.Attributes?.patient_email,
 
-          //   data.Attributes?.doctor_email,
-          //   body
-          // );
-          console.log(
-            "data.Attributes?.appointment_time",
-            data.Attributes?.appointment_time
+            data.Attributes?.doctor_email,
+            body
           );
+
           updateDoctorAvailability(
             data.Attributes?.doctor_email,
             data.Attributes?.created_at,
@@ -157,17 +153,11 @@ async function updateAppointmentStatus(appt_id, appt_status) {
 }
 
 async function updateDoctorAvailability(doctor, appt_date, timeslot) {
-  console.log(
-    "update doc avail--> with idex of updated set",
-    doctor,
-    appt_date
-  );
   let res = await getDocAvailability(doctor, appt_date);
-  console.log("res-->", res);
-  let updatedTimeSlot = res.filter((ele) => {
+
+  let updatedTimeSlot = res.availability_time.filter((ele) => {
     return ele != timeslot;
   });
-  console.log("updatedtimeslot-->", updatedTimeSlot);
 
   const params = {
     TableName: "availability",
@@ -195,7 +185,7 @@ async function updateDoctorAvailability(doctor, appt_date, timeslot) {
   });
 }
 
-async function postAvailability(avail_date, time, doctor) {
+async function postAvailability(avail_date, time, doctor, doctorAddress) {
   const attributeValues = time.map((time) => {
     return { S: time };
   });
@@ -205,6 +195,7 @@ async function postAvailability(avail_date, time, doctor) {
       doctor_email: doctor,
       availability_date: avail_date,
       availability_time: time,
+      doctor_address: doctorAddress,
     },
   };
   dynamodb.put(params, function (err, data) {

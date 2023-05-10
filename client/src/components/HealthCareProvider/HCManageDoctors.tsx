@@ -1,11 +1,13 @@
-import React, { FunctionComponent, useContext, useEffect } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hc_address } from '../../config/hc_constants';
 import { AuthContext } from '../../providers/AuthProvider';
 import { HealthContext } from '../../providers/HealthProvider';
 
 const HCManageDoctors: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
   const { user, role, logout } = useContext(AuthContext);
+  let [requests, setReq] = useState<any>([]);
 
   const {
     handleApproveRequest,
@@ -20,7 +22,18 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
     currentAccount,
   } = useContext(HealthContext);
   useEffect(() => {
-    fetchAllDoctorToProviderRequests?.('0xb3cc507e752dcc3da1cef955b58e97ae77160103');
+    if (currentAccount) {
+      (async () => {
+        try {
+          let resp = await fetchAllDoctorToProviderRequests?.(currentAccount);
+
+          setReq(resp ?? []);
+        } catch (Err) {
+          console.log('Err-->', Err);
+          setReq([]);
+        }
+      })();
+    }
   }, []);
 
   const getStatusColor = (status: String) => {
@@ -62,9 +75,9 @@ const HCManageDoctors: FunctionComponent<{}> = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {doctorToProviderReqList &&
-                  doctorToProviderReqList.length > 0 &&
-                  doctorToProviderReqList.map((req) => (
+                {requests &&
+                  requests.length > 0 &&
+                  requests.map((req: any) => (
                     <tr>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='text-sm text-gray-900'>{req.name}</div>

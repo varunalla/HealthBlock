@@ -2,6 +2,7 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import { HealthContext } from '../../providers/HealthProvider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuthFetch } from '../../hooks/api';
 
 const PatientRegister: FunctionComponent<{}> = ({}) => {
   const {
@@ -11,9 +12,14 @@ const PatientRegister: FunctionComponent<{}> = ({}) => {
     fetchPatientContract,
     fetchPatientInfoContract,
   } = useContext(HealthContext);
+  const { fetch } = useAuthFetch();
   const [name, setName] = useState<string>('varun');
   const [age, setAge] = useState<number>(32);
   const [email, setEmail] = useState<string>('abc@abc.com');
+
+  const verifyEmail = () => {
+    fetch('POST', '/verify_emails/', { email });
+  };
   const registerPatient = async () => {
     try {
       //read patient info
@@ -23,6 +29,7 @@ const PatientRegister: FunctionComponent<{}> = ({}) => {
         await registerHealthBlockContract?.(name, age, email);
         //feed back to user for registration
         toast('Patient Created');
+        verifyEmail();
       } else {
         toast.error('User already present', {
           position: 'top-right',

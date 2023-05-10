@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 import { HealthContext } from '../../providers/HealthProvider';
+import { hc_address } from '../../config/hc_constants';
 
 const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();
@@ -19,12 +20,6 @@ const PatientDashboard: FunctionComponent<{}> = () => {
 
   const appointmentHandler = () => {
     navigate('/patientappointments');
-  };
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-  const fetchDoctors = async () => {
-    await fetchAllDoctors?.('0x8eda1014b9177d464306935e8fcf9fd27c20aa08');
   };
 
   return (
