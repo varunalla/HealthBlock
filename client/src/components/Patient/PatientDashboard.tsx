@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../providers/AuthProvider';
 import { useAuthFetch } from '../../hooks/api';
 import { HealthContext } from '../../providers/HealthProvider';
+import { hc_address } from '../../config/hc_constants';
 
 const PatientDashboard: FunctionComponent<{}> = () => {
   const navigate = useNavigate();

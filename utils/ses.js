@@ -1,16 +1,17 @@
 const { createSESClient } = require("../factories/aws");
+
 require("dotenv").config();
 
 const ses = createSESClient(
-  process.env.AWS_ACCESS_KEY_ID,
-  process.env.AWS_SECRET_ACCESS_KEY,
-  process.env.AWS_REGION
+  process.env.AWS_REGION,
+  process.env.AWS_ACCESS_KEY_ID_FOR_SES,
+  process.env.AWS_SECRET_ACCESS_KEY_FOR_SES
 );
-function sendEmail(patient_email, doctor_email, body) {
-  console.log("patient email", patient_email, doctor_email);
+
+function sendEmail(patient, doctor, body) {
   const params = {
     Destination: {
-      ToAddresses: patient_email,
+      ToAddresses: [patient],
     },
     Message: {
       Body: {
@@ -21,15 +22,47 @@ function sendEmail(patient_email, doctor_email, body) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: "Update on Appointment status",
+        Data: "Update on your appointment",
       },
     },
-    Source: doctor_email,
+    Source: doctor,
   };
-  try {
-    ses.sendEmail(params);
-  } catch (Err) {
-    console.log("Error sending email", Err);
-  }
+
+  ses.getIdentityVerificationAttributes(
+    { Identities: [patient] },
+    (err, data) => {
+      if (err) {
+        return err;
+      } else {
+        const verificationAttributes = data.VerificationAttributes[patient];
+
+        if (
+          verificationAttributes &&
+          verificationAttributes.VerificationStatus === "Success"
+        ) {
+          // Email identity is verified, send the email
+          ses.sendEmail(params, (err, data) => {
+            if (err) {
+              console.log(err);
+              return err;
+            } else {
+              return true;
+            }
+          });
+        }
+      }
+    }
+  );
 }
-module.exports = { sendEmail };
+
+async function verifyEmail(email) {
+  await ses.verifyEmailIdentity({ EmailAddress: email }, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(`Email identity verification initiated for ${email}.`, data);
+    }
+  });
+}
+
+module.exports = { sendEmail, verifyEmail };
