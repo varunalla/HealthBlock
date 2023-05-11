@@ -303,7 +303,11 @@ export const HealthProvider: React.FC<Props> = ({ children, ...props }) => {
     }
     setDoctorName('');
     setFile(null);
+<<<<<<< HEAD
     fetchRequests(hcpId);
+=======
+    //fetchRequests(hcpId);
+>>>>>>> main
   };
 
   const handleApproveRequest = async (requestId: number, hcpId: string | null) => {
