@@ -32,6 +32,68 @@ contract HealthBlock {
         address doctorAddr;
         string status;
     }
+    struct MedicalRecordRequest{
+        string requestId;
+        address patientAddress;
+        address doctorAddress;
+        string docEmail;
+        string patientName;
+        string patientEmail;
+        string status;
+    }
+
+    mapping(address => MedicalRecordRequest[]) public recordRequests;
+    event MedicalRecordRequestCreated(address indexed doctorAddress, address indexed patientAddress, string requestId);
+    event MedicalRecordRequestApproved(address indexed doctorAddress, address indexed patientAddress, string requestId);
+    event MedicalRecordRequestRejected(address indexed doctorAddress, address indexed patientAddress, string requestId);
+
+
+    function requestMedicalRecord(string memory docEmail, address patientAddress, string memory patientName, string memory patientEmail) public {
+    string memory requestId = string(abi.encodePacked(docEmail, "_", patientEmail));
+
+       MedicalRecordRequest memory newRequest = MedicalRecordRequest({
+            requestId: requestId,
+            doctorAddress: msg.sender,
+            patientAddress: patientAddress,
+            docEmail: docEmail,
+            patientName: patientName,
+            patientEmail: patientEmail,
+            status: "PENDING"
+        });
+
+        recordRequests[patientAddress].push(newRequest);
+        emit MedicalRecordRequestCreated(msg.sender, patientAddress, requestId);
+    }
+
+    function findRequestIndex(string memory requestId, MedicalRecordRequest[] storage requests) private view returns (uint256) {
+        for (uint256 i = 0; i < requests.length; i++) {
+            if (keccak256(abi.encodePacked(requests[i].requestId)) == keccak256(abi.encodePacked(requestId))) {
+                return i;
+            }
+        }
+        return type(uint256).max;
+    }
+
+    function approveMedicalRecordsRequest(string memory requestId) public {  
+        MedicalRecordRequest[] storage requests = recordRequests[msg.sender];
+
+        uint256 requestIndex = findRequestIndex(requestId, requests);
+        requests[requestIndex].status = "APPROVED";
+        emit MedicalRecordRequestApproved(requests[requestIndex].doctorAddress, msg.sender, requestId);
+    }
+
+    function rejectMedicalRecordsRequest(string memory requestId) public {
+        MedicalRecordRequest[] storage requests = recordRequests[msg.sender];
+
+        uint256 requestIndex = findRequestIndex(requestId, requests);
+        requests[requestIndex].status = "REJECTED";
+        emit MedicalRecordRequestRejected(requests[requestIndex].doctorAddress, msg.sender, requestId);
+    }
+
+    function getPatientRequests(address patientAddress) public view returns (MedicalRecordRequest[] memory) {
+        return recordRequests[patientAddress];
+    }
+
 
     event DoctorRequestRaised(address indexed doctor, string indexed doctorName, string credentialsHash);
     event RequestApproved(address indexed doctor, address indexed provider, uint256 indexed requestId);

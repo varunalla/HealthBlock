@@ -276,7 +276,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                   <tr key={index}>
                     <td className='px-6 py-4 text-center'>{request.doctorName}</td>
                     <button
-                            className='ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                            className='ml-2 px-3 py-1 text-sm flex items-center font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
                             onClick={() => {
                               if (typeof request.fileName === 'string' && typeof request.doctorName === 'string') {
                                 downloadFile(request.fileName, request.doctorName);
