@@ -207,35 +207,18 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
       }
     })();
   }, []);
-  const _renderManageDoctorsSection = () => {
-    return (
-      <div className='bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg shadow-lg p-6 flex justify-center w-400 h-300"'>
-        <button
-          onClick={() => navigate('/manage-doctors-request')}
-          className='bg-white text-gray-800 py-2 px-6 rounded-full font-medium'
-        >
-          Appointments
-        </button>
-      </div>
-    );
-  };
 
   return (
-    <div className='flex flex-col justify-center items-center'>
-      {_renderManageDoctorsSection()}
-
-      <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 flex flex-col items-center mt-0'>
-        <h5 className='mt-4 mb-1 text-xl font-medium text-gray-900 dark:text-white'>
-          {user?.name}
-        </h5>
-        <span className='mb-4 text-sm text-gray-500 dark:text-gray-400'>{user?.email}</span>
-        <button
-          className='mb-4 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-          onClick={() => logouthandler()}
-        >
+    <div className='flex flex-col h-screen'>
+      <div className='flex justify-end items-center h-50 pr-11'>
+      <div className='ml-auto mr-4'>
+        <span className='text-gray-600'>Hello, {user?.name}</span>
+        <button className='ml-4 bg-red-500 text-white px-4 py-2 rounded' onClick={() => logouthandler()}>
           Logout
         </button>
       </div>
+    </div>
+    <div>
       <div className='mt-8 w-full max-w-screen-lg mx-auto'>
         <table className='w-full'>
           <thead>
@@ -276,7 +259,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
                   <tr key={index}>
                     <td className='px-6 py-4 text-center'>{request.doctorName}</td>
                     <button
-                            className='ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                            className='mt-4 ml-2 px-3 py-1 text-sm font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
                             onClick={() => {
                               if (typeof request.fileName === 'string' && typeof request.doctorName === 'string') {
                                 downloadFile(request.fileName, request.doctorName);
@@ -316,6 +299,7 @@ const HCProviderDashboard: FunctionComponent<{}> = () => {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 };

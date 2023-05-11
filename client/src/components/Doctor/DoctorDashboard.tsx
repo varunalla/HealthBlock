@@ -233,7 +233,7 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
 
   
   return (
-    <div className='flex flex-col h-screen p-10'>
+    <div className='flex flex-col h-screen'>
        {/* <button
           className='mb-4 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
           onClick={() => logouthandler()}
@@ -246,21 +246,21 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
             Logout
         </button>
       </div> */}
-      <div className='flex justify-end items-center h-screen'>
+      <div className='flex justify-end items-center h-50 pr-11'>
       <div className='ml-auto mr-4'>
         <span className='text-gray-600'>Hello, {user?.name}</span>
-        <button className='ml-4 bg-red-500 text-white px-4 py-2 rounded'>
+        <button className='ml-4 bg-red-500 text-white px-4 py-2 rounded' onClick={() => logouthandler()}>
           Logout
         </button>
       </div>
     </div>
-      <div className='flex flex-row space-x-6 justify-center'>
+      <div className='flex flex-row space-x-6 justify-center p-10'>
         {_renderAppointmentSection()}
         {_renderUpdateProfileSection()}
         {_renderManageScheduleSection()}
       </div>
       <div>
-        <div className='mt-8 w-full max-w-screen-lg mx-auto'>
+        <div className='mt-8 w-full max-w-screen-lg mx-auto justify-center'>
           <div className='bg-white border border-gray-300 rounded-lg shadow-md dark:bg-gray-3000 dark:border-gray-2500 w-300 p-4'>
             <form onSubmit={(e) => e.preventDefault()}>
             <div className='md:flex md:items-center mb-6'>
@@ -331,19 +331,6 @@ const DoctorDashboard: React.FunctionComponent<{}> = () => {
           </div>
         </div>
       </div>
-
-      {/* <div className='w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 flex flex-col items-center'>
-        <h5 className='mt-4 mb-1 text-xl font-medium text-gray-900 dark:text-white'>
-          {user?.name}
-        </h5>
-        <span className='mb-4 text-sm text-gray-500 dark:text-gray-400'>{user?.email}</span>
-        <button
-          className='mb-4 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-          onClick={() => logouthandler()}
-        >
-          Logout
-        </button>
-      </div> */}
 
      </div>
   );
