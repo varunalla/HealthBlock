@@ -1409,13 +1409,6 @@ export interface HealthBlock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    raiseRequest(
-      doctorName: PromiseOrValue<string>,
-      fileName: PromiseOrValue<string>,
-      hcpAddress: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     recordRequests(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
@@ -1576,13 +1569,6 @@ export interface HealthBlock extends BaseContract {
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    raiseRequest(
-      doctorName: PromiseOrValue<string>,
-      fileName: PromiseOrValue<string>,
-      hcpAddress: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     recordRequests(

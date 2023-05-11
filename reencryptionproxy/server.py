@@ -2,7 +2,7 @@ import base64
 import random
 from flask import Flask, request, jsonify
 from umbral import Capsule, PublicKey, SecretKey, Signer, VerifiedCapsuleFrag, VerifiedKeyFrag, decrypt_original, encrypt, generate_kfrags, reencrypt, decrypt_reencrypted
-from Crypto.Cipher import AES
+#from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
