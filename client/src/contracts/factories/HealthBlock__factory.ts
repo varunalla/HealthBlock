@@ -43,6 +43,81 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "doctorAddress",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "patientAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "requestId",
+        type: "string",
+      },
+    ],
+    name: "MedicalRecordRequestApproved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "doctorAddress",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "patientAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "requestId",
+        type: "string",
+      },
+    ],
+    name: "MedicalRecordRequestCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "doctorAddress",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "patientAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "requestId",
+        type: "string",
+      },
+    ],
+    name: "MedicalRecordRequestRejected",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "_from",
         type: "address",
       },

@@ -94,6 +94,31 @@ async function getAppointments(doctor) {
   }
 }
 
+async function getConfirmedAppointments(doctor) {
+  console.log("get Confirmed Appointments");
+  const params = {
+    TableName: "appointments",
+    KeyConditionExpression: "doctor_email = :doctorEmail",
+    FilterExpression: "appointment_status = :status",
+    ExpressionAttributeValues: {
+      ":doctorEmail": doctor,
+      ":status": "confirmed",
+    },
+  };
+  try {
+    let result = await dynamodb.query(params).promise();
+    console.log("resp from getConfirmedAppointments-->", result);
+    if (result.Items && result.Items.length > 0) {
+      return result.Items;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.log(err);
+    return new Error("Could not retrieve confirmed appointments data");
+  }
+}
+
 async function updateAppointmentStatus(appt_id, appt_status) {
   const params = {
     TableName: "appointments",
@@ -214,6 +239,7 @@ module.exports = {
   getDocAvailability,
   postAppointments,
   getAppointments,
+  getConfirmedAppointments,
   updateAppointmentStatus,
   postAvailability,
 };

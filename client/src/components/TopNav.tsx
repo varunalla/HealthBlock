@@ -50,6 +50,15 @@ const TopNav: FunctionComponent<{}> = () => {
               <>
                 <li>
                   <Link
+                    to='/patientManageMedicalRecords'
+                    className='block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white'
+                    aria-current='page'
+                  >
+                    Manage Records
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to='/patient'
                     className='block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white'
                     aria-current='page'
@@ -77,6 +86,16 @@ const TopNav: FunctionComponent<{}> = () => {
                     aria-current='page'
                   >
                     Dashboard
+                  </Link>
+                </li>
+                <li>
+                  {' '}
+                  <Link
+                    to='/manageMedicalRecords'
+                    className='block py-2 pr-4 pl-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white'
+                    aria-current='page'
+                  >
+                    Manage Medical Records
                   </Link>
                 </li>
               </>

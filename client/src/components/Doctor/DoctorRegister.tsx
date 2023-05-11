@@ -28,7 +28,6 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       console.log(error);
     }
   };  
-
   const uploadDoctorKeysToS3 = async (Keys: any, Name: string) => {
     try {
       const Buffer = require('buffer').Buffer;
@@ -40,6 +39,26 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       };
       console.log("uploaddoctorkeys", params);
       await fetch('/s3upload', {
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log('Error uploading Doctor Keys:', err);
+    }
+  };
+  
+  const uploadDoctorKeysToS3WithEmail = async (Keys: any, Email: string) => {
+    try {
+      const Buffer = require('buffer').Buffer;
+      const doctorKeysString = JSON.stringify(Keys);
+      const params = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS,
+        key: `doctor_${Email}`,
+        file: Buffer.from(doctorKeysString)
+      };
+      console.log(params);
+      await fetch('uploadTos3', {
         method: 'POST',
         body: JSON.stringify(params),
         headers: { 'Content-Type': 'application/json' },
@@ -161,10 +180,11 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
           onClick={async() => {
-             let Keys= await generateKeys();
-             
-            await registerDoctor();
-            await uploadDoctorKeysToS3(Keys, name);}}
+            let Keys= await generateKeys();
+            
+           await registerDoctor();
+           await uploadDoctorKeysToS3(Keys, name);
+           await uploadDoctorKeysToS3WithEmail(Keys, email);}}
         >
           Register Doctor
         </button>

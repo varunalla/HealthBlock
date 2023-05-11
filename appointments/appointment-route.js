@@ -5,6 +5,7 @@ const {
   getDocAvailability,
   postAppointments,
   getAppointments,
+  getConfirmedAppointments,
   updateAppointmentStatus,
   updateDoctorAvailability,
   postAvailability,
@@ -69,6 +70,21 @@ module.exports = (app) => {
       res.status(500).send({ success: false, msg: "Internal server err" });
     }
   });
+
+  app.get(
+    "/confirmedAppointments/:doctorEmail",
+    verify_token,
+    async (req, res) => {
+      let { doctorEmail } = req.params;
+      try {
+        let result = await getConfirmedAppointments(doctorEmail);
+
+        res.send({ success: true, result });
+      } catch (err) {
+        res.status(500).send({ success: false, msg: "Internal server err" });
+      }
+    }
+  );
 
   app.put(
     "/appointmentStatus/:appointmentID/status",
