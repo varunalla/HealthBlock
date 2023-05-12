@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { HealthContext } from '../../providers/HealthProvider';
-import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 const DoctorRegister: FunctionComponent<{}> = ({}) => {
   const { currentAccount, 
@@ -28,27 +28,6 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       console.log(error);
     }
   };  
-
-  const uploadDoctorKeysToS3WithEmail = async (Keys: any, Email: string) => {
-    try {
-      const Buffer = require('buffer').Buffer;
-      const doctorKeysString = JSON.stringify(Keys);
-      const params = {
-        bucket: process.env.REACT_APP_BUCKET_KEYS,
-        key: `doctor_${Email}`,
-        file: Buffer.from(doctorKeysString)
-      };
-      console.log(params);
-      await fetch('uploadTos3', {
-        method: 'POST',
-        body: JSON.stringify(params),
-        headers: { 'Content-Type': 'application/json' },
-      });
-    } catch (err) {
-      console.log('Error uploading Doctor Keys:', err);
-    }
-  };
-
   const uploadDoctorKeysToS3 = async (Keys: any, Name: string) => {
     try {
       const Buffer = require('buffer').Buffer;
@@ -60,6 +39,26 @@ const DoctorRegister: FunctionComponent<{}> = ({}) => {
       };
       console.log("uploaddoctorkeys", params);
       await fetch('/s3upload', {
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.log('Error uploading Doctor Keys:', err);
+    }
+  };
+  
+  const uploadDoctorKeysToS3WithEmail = async (Keys: any, Email: string) => {
+    try {
+      const Buffer = require('buffer').Buffer;
+      const doctorKeysString = JSON.stringify(Keys);
+      const params = {
+        bucket: process.env.REACT_APP_BUCKET_KEYS,
+        key: `doctor_${Email}`,
+        file: Buffer.from(doctorKeysString)
+      };
+      console.log(params);
+      await fetch('uploadTos3', {
         method: 'POST',
         body: JSON.stringify(params),
         headers: { 'Content-Type': 'application/json' },
